@@ -124,8 +124,6 @@ password: password
 
 Scramble generates the OpenAPI specification from routes, requests, resources, and PHPDoc blocks. The documentation UI does not regenerate the specification on each visit. Instead, `/docs` serves the pre-exported `public/api.json` file and `/docs/api.json` exposes the same file as JSON.
 
-The exported OpenAPI file only includes endpoints that exist in the current commit. Right now, Scramble is limited to the authentication routes under `api/v1/auth`.
-
 Regenerate the specification after changing API routes, request validation, resources, or controller PHPDocs:
 
 ```bash

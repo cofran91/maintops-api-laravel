@@ -9,6 +9,7 @@ use Dedoc\Scramble\Support\Generator\SecurityScheme;
 use Dedoc\Scramble\Support\RouteInfo;
 use Illuminate\Routing\Route;
 use Illuminate\Support\ServiceProvider;
+use Illuminate\Support\Str;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -19,7 +20,7 @@ class AppServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
-        Scramble::routes(fn (Route $route): bool => str_starts_with($route->uri, 'api/v1/auth'));
+        Scramble::routes(fn (Route $route): bool => str_starts_with($route->uri, 'api/v1'));
 
         Scramble::configure()
             ->withDocumentTransformers(function (OpenApi $openApi): void {
@@ -29,6 +30,14 @@ class AppServiceProvider extends ServiceProvider
                 );
             });
 
-        Scramble::resolveTagsUsing(fn (RouteInfo $routeInfo, Operation $operation): array => ['Authentication']);
+        Scramble::resolveTagsUsing(function (RouteInfo $routeInfo, Operation $operation): array {
+            $uri = $routeInfo->route->uri();
+
+            return match (true) {
+                Str::startsWith($uri, 'api/v1/auth') => ['Authentication'],
+                Str::startsWith($uri, 'api/v1/users') => ['User Management'],
+                default => ['General'],
+            };
+        });
     }
 }

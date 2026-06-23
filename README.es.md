@@ -124,8 +124,6 @@ password: password
 
 Scramble genera la especificacion OpenAPI desde rutas, requests, resources y bloques PHPDoc. La UI de documentacion no regenera la especificacion en cada visita. En su lugar, `/docs` sirve el archivo preexportado `public/api.json` y `/docs/api.json` expone ese mismo archivo como JSON.
 
-El archivo OpenAPI exportado solo incluye endpoints que existen en el commit actual. Por ahora, Scramble esta limitado a las rutas de autenticacion bajo `api/v1/auth`.
-
 Regenera la especificacion despues de cambiar rutas API, validaciones, resources o PHPDocs de controladores:
 
 ```bash
