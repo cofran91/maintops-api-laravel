@@ -1,0 +1,83 @@
+services:
+    app:
+        build:
+            context: .
+        image: maintops-api-laravel/app
+        ports:
+            - '${APP_PORT:-8000}:8000'
+        volumes:
+            - .:/var/www/html
+            - maintops-api-vendor:/var/www/html/vendor
+        depends_on:
+            mysql:
+                condition: service_healthy
+            redis:
+                condition: service_healthy
+            mailpit:
+                condition: service_started
+        command: >
+            sh -c "composer install --no-interaction --prefer-dist &&
+            php artisan serve --host=0.0.0.0 --port=8000"
+        networks:
+            - maintops-api
+
+    mysql:
+        image: mysql:8.4
+        ports:
+            - '${FORWARD_DB_PORT:-3306}:3306'
+        environment:
+            MYSQL_ROOT_PASSWORD: '${DB_PASSWORD:-password}'
+            MYSQL_ROOT_HOST: '%'
+            MYSQL_DATABASE: '${DB_DATABASE:-maintops}'
+            MYSQL_USER: '${DB_USERNAME:-maintops}'
+            MYSQL_PASSWORD: '${DB_PASSWORD:-password}'
+            MYSQL_ALLOW_EMPTY_PASSWORD: 1
+            MYSQL_EXTRA_OPTIONS: '${MYSQL_EXTRA_OPTIONS:-}'
+        volumes:
+            - maintops-api-mysql:/var/lib/mysql
+        healthcheck:
+            test:
+                - CMD
+                - mysqladmin
+                - ping
+                - '-p${DB_PASSWORD:-password}'
+            retries: 3
+            timeout: 5s
+        networks:
+            - maintops-api
+
+    redis:
+        image: redis:alpine
+        ports:
+            - '${FORWARD_REDIS_PORT:-6379}:6379'
+        volumes:
+            - maintops-api-redis:/data
+        healthcheck:
+            test:
+                - CMD
+                - redis-cli
+                - ping
+            retries: 3
+            timeout: 5s
+        networks:
+            - maintops-api
+
+    mailpit:
+        image: axllent/mailpit:latest
+        ports:
+            - '${FORWARD_MAILPIT_SMTP_PORT:-1025}:1025'
+            - '${FORWARD_MAILPIT_DASHBOARD_PORT:-8025}:8025'
+        networks:
+            - maintops-api
+
+networks:
+    maintops-api:
+        driver: bridge
+
+volumes:
+    maintops-api-mysql:
+        driver: local
+    maintops-api-redis:
+        driver: local
+    maintops-api-vendor:
+        driver: local
