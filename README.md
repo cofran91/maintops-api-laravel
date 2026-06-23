@@ -1,132 +1,165 @@
 # MaintOps Laravel API
 
-API Laravel de MaintOps preparada para ejecutarse con Docker directo. No necesitas instalar PHP, Composer, MySQL, Redis ni Mailpit en el host.
+Laravel API for MaintOps, configured to run with direct Docker Compose. You do not need PHP, Composer, MySQL, Redis, or Mailpit installed on the host machine.
 
-## Por que Docker directo y no Laravel Sail
+Spanish documentation is available in [README.es.md](README.es.md).
 
-Laravel Sail es util para proyectos que aceptan depender del runtime publicado dentro de `vendor/laravel/sail`. Este proyecto no usa Sail porque el objetivo es que un clone limpio desde GitHub pueda arrancar con solo Docker, sin requerir PHP ni Composer en la maquina local y sin depender de archivos generados dentro de `vendor`.
+## Why Direct Docker Instead Of Laravel Sail
 
-Este repositorio usa un `Dockerfile` propio y `compose.yaml` para que el flujo inicial sea reproducible con solo Docker:
+Laravel Sail is useful when a project accepts the runtime shipped through `vendor/laravel/sail`. This project does not use Sail because the development environment must boot from a clean GitHub clone with Docker only, without local PHP or Composer, and without depending on generated files inside `vendor`.
 
-- `Dockerfile` instala PHP, extensiones necesarias y Composer dentro de la imagen.
-- `compose.yaml` levanta la API, MySQL, Redis y Mailpit con nombres de servicio estables.
-- `docker/init-development.sh` prepara `.env`, dependencias, `APP_KEY` y migraciones desde el contenedor.
+This repository owns its runtime through `Dockerfile` and `compose.yaml`:
 
-Por esa razon `laravel/sail` no se instala en este repositorio.
+- `Dockerfile` installs PHP, required extensions, and Composer inside the application image.
+- `compose.yaml` starts the API, MySQL, Redis, and Mailpit with stable service names.
+- `docker/init-development.sh` prepares `.env`, dependencies, `APP_KEY`, migrations, and seed data from inside the container.
 
-## Requisitos
+For that reason, `laravel/sail` is not installed in this repository.
 
-- Docker Desktop o Docker Engine con Docker Compose.
+## Requirements
+
+- Docker Desktop or Docker Engine with Docker Compose.
 - Git.
 
-## Instalacion inicial
+## Initial Setup
 
-1. Clona el proyecto y entra a la carpeta:
+Clone the repository and enter the project directory:
 
 ```bash
 git clone https://github.com/cofran91/maintops-api-laravel.git
 cd maintops-api-laravel
 ```
 
-2. Prepara el proyecto:
+Build the application image and initialize the project:
 
 ```bash
 docker compose build
 docker compose run --rm app sh docker/init-development.sh
 ```
 
-3. Levanta la API:
+Start the services:
 
 ```bash
 docker compose up -d
 ```
 
-La aplicacion queda disponible en:
+Export the OpenAPI specification used by the documentation UI:
+
+```bash
+docker compose exec app php artisan scramble:export
+```
+
+The API is available at:
 
 ```text
 http://localhost:8000
 ```
 
-Endpoints iniciales:
-
-```text
-http://localhost:8000/up
-http://localhost:8000/api/v1
-```
-
-Mailpit queda disponible en:
+Mailpit is available at:
 
 ```text
 http://localhost:8025
 ```
 
-Si el puerto local `3306` ya esta ocupado, cambia en `.env`:
+If local port `3306` is already in use, change this value in `.env`:
 
 ```dotenv
 FORWARD_DB_PORT=3307
 ```
 
-La aplicacion dentro de Docker sigue usando `DB_HOST=mysql` y `DB_PORT=3306`.
+The application inside Docker still connects to MySQL with `DB_HOST=mysql` and `DB_PORT=3306`.
 
-## Uso diario
+## Daily Usage
 
-Levantar servicios:
+Start services:
 
 ```bash
 docker compose up -d
 ```
 
-Detener servicios:
+Stop services:
 
 ```bash
 docker compose down
 ```
 
-Ejecutar comandos Artisan:
+Run Artisan commands:
 
 ```bash
-docker compose exec app php artisan <comando>
+docker compose exec app php artisan <command>
 ```
 
-Ejecutar Composer:
+Run Composer commands:
 
 ```bash
-docker compose exec app composer <comando>
+docker compose exec app composer <command>
 ```
 
-Ver logs:
+View logs:
 
 ```bash
 docker compose logs -f
 ```
 
-## Librerias principales
+## Initial Authentication
 
-- `laravel/sanctum`: autenticacion API mediante tokens personales.
-- `spatie/laravel-permission`: roles y permisos del sistema.
-- `owen-it/laravel-auditing`: auditoria de cambios en modelos del dominio.
-- `spatie/laravel-model-states`: maquinas de estado para flujos operativos.
-- `tucker-eric/eloquentfilter`: filtros declarativos para consultas y listados paginados.
-- `dedoc/scramble`: documentacion OpenAPI generada desde rutas, requests y resources.
-- `laravel/telescope`: observabilidad local de requests, queries, jobs, logs y eventos.
+The `docker/init-development.sh` script runs migrations and seeders. It creates the base system roles and a development `super_admin` user:
 
-## Variables de entorno
+```text
+super_admin
+admin
+workshop_manager
+advisor
+technician
+```
 
-El archivo `.env` no se debe subir al repositorio porque puede contener datos sensibles.
+Development credentials:
 
-El archivo `.env.example` debe mantenerse actualizado con valores de ejemplo seguros.
+```text
+email: admin@maint.test
+password: password
+```
 
-Puertos locales principales:
+## API Documentation
+
+Scramble generates the OpenAPI specification from routes, requests, resources, and PHPDoc blocks. The documentation UI does not regenerate the specification on each visit. Instead, `/docs` serves the pre-exported `public/api.json` file and `/docs/api.json` exposes the same file as JSON.
+
+The exported OpenAPI file only includes endpoints that exist in the current commit. Right now, Scramble is limited to the authentication routes under `api/v1/auth`.
+
+Regenerate the specification after changing API routes, request validation, resources, or controller PHPDocs:
+
+```bash
+docker compose exec app php artisan scramble:export
+```
+
+## Main Libraries
+
+- `laravel/sanctum`: API authentication with personal access tokens.
+- `spatie/laravel-permission`: system roles and permissions.
+- `owen-it/laravel-auditing`: audit trail support for domain model changes.
+- `spatie/laravel-model-states`: state machines for operational workflows.
+- `tucker-eric/eloquentfilter`: declarative filtering for queries and paginated lists.
+- `dedoc/scramble`: OpenAPI documentation generated from the Laravel codebase.
+- `laravel/telescope`: local observability for requests, queries, jobs, logs, and events.
+
+## Environment Variables
+
+The `.env` file must not be committed because it can contain sensitive values.
+
+Keep `.env.example` updated with safe example values.
+
+Main local ports and API version:
 
 ```dotenv
 APP_PORT=8000
+API_VERSION=1.0.0
 FORWARD_DB_PORT=3306
 FORWARD_REDIS_PORT=6379
 FORWARD_MAILPIT_SMTP_PORT=1025
 FORWARD_MAILPIT_DASHBOARD_PORT=8025
 ```
 
-## Pruebas
+## Tests
 
 ```bash
 docker compose exec app php artisan test
