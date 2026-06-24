@@ -3,10 +3,13 @@
 namespace App\States\MaintenanceOrderItems\Transitions;
 
 use App\Enums\MaintenanceOrderItemStatus;
-use App\Enums\MaintenanceTaskStatus;
 use App\Models\MaintenanceOrderItem;
 use App\States\MaintenanceOrders\OrderCompleted;
 use App\States\MaintenanceOrders\OrderInProgress;
+use App\States\MaintenanceTasks\TaskCompleted;
+use App\States\MaintenanceTasks\TaskCreated;
+use App\States\MaintenanceTasks\TaskScheduled;
+use App\States\MaintenanceTasks\TaskStarted;
 use Illuminate\Validation\ValidationException;
 
 class CompleteMaintenanceOrderItem extends UpdateMaintenanceOrderItemStatus
@@ -56,17 +59,26 @@ class CompleteMaintenanceOrderItem extends UpdateMaintenanceOrderItemStatus
     {
         $task = $this->model->maintenanceTask()->first();
 
-        if ($task === null || $task->vehicle_id === null || $task->status === MaintenanceTaskStatus::Completed) {
+        if ($task === null || $task->vehicle_id === null || $task->status->equals(TaskCompleted::class)) {
             return;
         }
 
-        if (! in_array($task->status, [
-            MaintenanceTaskStatus::Scheduled,
-            MaintenanceTaskStatus::Started,
-        ], true)) {
+        if (! $task->status->equals(TaskCreated::class, TaskScheduled::class, TaskStarted::class)) {
             return;
         }
 
-        $task->update(['status' => MaintenanceTaskStatus::Completed->value]);
+        if ($task->status->equals(TaskCreated::class)) {
+            $task->status->transitionTo(TaskScheduled::class);
+            $task->refresh();
+        }
+
+        if ($task->status->equals(TaskScheduled::class)) {
+            $task->status->transitionTo(TaskStarted::class);
+            $task->refresh();
+        }
+
+        if ($task->status->equals(TaskStarted::class)) {
+            $task->status->transitionTo(TaskCompleted::class);
+        }
     }
 }

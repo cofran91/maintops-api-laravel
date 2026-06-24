@@ -2,7 +2,7 @@
 
 namespace App\Models;
 
-use App\Enums\MaintenanceTaskStatus;
+use App\States\MaintenanceTasks\MaintenanceTaskState;
 use Database\Factories\MaintenanceTaskFactory;
 use EloquentFilter\Filterable;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
@@ -14,6 +14,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use OwenIt\Auditing\Auditable;
 use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
+use Spatie\ModelStates\HasStates;
 
 #[Fillable([
     'vehicle_id',
@@ -28,7 +29,7 @@ use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
 class MaintenanceTask extends Model implements AuditableContract
 {
     /** @use HasFactory<MaintenanceTaskFactory> */
-    use Auditable, Filterable, HasFactory, SoftDeletes;
+    use Auditable, Filterable, HasFactory, HasStates, SoftDeletes;
 
     /**
      * @return BelongsTo<Vehicle, MaintenanceTask>
@@ -72,7 +73,7 @@ class MaintenanceTask extends Model implements AuditableContract
     {
         return [
             'estimated_duration_minutes' => 'integer',
-            'status' => MaintenanceTaskStatus::class,
+            'status' => MaintenanceTaskState::class,
             'is_active' => 'boolean',
         ];
     }

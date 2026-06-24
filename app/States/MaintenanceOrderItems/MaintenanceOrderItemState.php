@@ -26,10 +26,13 @@ abstract class MaintenanceOrderItemState extends State
             ])
             ->allowTransition(OrderItemPendingOwnerApproval::class, OrderItemScheduled::class, UpdateMaintenanceOrderItemStatus::class)
             ->allowTransition(OrderItemPendingOwnerApproval::class, OrderItemRejected::class, RejectMaintenanceOrderItem::class)
+            ->allowTransition(OrderItemPendingOwnerApproval::class, OrderItemCancelled::class, CancelMaintenanceOrderItem::class)
             ->allowTransition(OrderItemScheduled::class, OrderItemRejected::class, RejectMaintenanceOrderItem::class)
             ->allowTransition(OrderItemScheduled::class, OrderItemCancelled::class, CancelMaintenanceOrderItem::class)
             ->allowTransition(OrderItemScheduled::class, OrderItemInProgress::class, StartMaintenanceOrderItem::class)
             ->allowTransition(OrderItemInProgress::class, OrderItemCancelled::class, CancelMaintenanceOrderItem::class)
-            ->allowTransition(OrderItemInProgress::class, OrderItemCompleted::class, CompleteMaintenanceOrderItem::class);
+            ->allowTransition(OrderItemInProgress::class, OrderItemCompleted::class, CompleteMaintenanceOrderItem::class)
+            ->allowTransition(OrderItemCompleted::class, OrderItemCancelled::class, CancelMaintenanceOrderItem::class)
+            ->allowTransition(OrderItemRejected::class, OrderItemCancelled::class, CancelMaintenanceOrderItem::class);
     }
 }

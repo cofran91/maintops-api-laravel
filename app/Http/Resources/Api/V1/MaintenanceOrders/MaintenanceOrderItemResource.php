@@ -51,7 +51,7 @@ class MaintenanceOrderItemResource extends JsonResource
                     'code' => $this->maintenanceTask->code,
                     'description' => $this->maintenanceTask->description,
                     'estimated_duration_minutes' => $this->maintenanceTask->estimated_duration_minutes,
-                    'status' => $this->maintenanceTask->status?->value,
+                    'status' => $this->maintenanceTask->status?->getValue(),
                     'is_active' => (bool) $this->maintenanceTask->is_active,
                 ];
             }),

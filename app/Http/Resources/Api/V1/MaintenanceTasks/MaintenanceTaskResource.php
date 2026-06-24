@@ -2,7 +2,6 @@
 
 namespace App\Http\Resources\Api\V1\MaintenanceTasks;
 
-use App\Enums\MaintenanceTaskStatus;
 use App\Models\MaintenanceTask;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
@@ -48,7 +47,7 @@ class MaintenanceTaskResource extends JsonResource
             'code' => $this->code,
             'description' => $this->description,
             'estimated_duration_minutes' => $this->estimated_duration_minutes,
-            'status' => $this->status instanceof MaintenanceTaskStatus ? $this->status->value : $this->status,
+            'status' => $this->status?->getValue(),
             'is_active' => (bool) $this->is_active,
             'created_at' => $this->created_at?->toISOString(),
             'updated_at' => $this->updated_at?->toISOString(),

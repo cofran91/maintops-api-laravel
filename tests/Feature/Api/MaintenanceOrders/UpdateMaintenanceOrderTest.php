@@ -4,6 +4,7 @@ namespace Tests\Feature\Api\MaintenanceOrders;
 
 use App\Enums\MaintenanceOrderItemStatus;
 use App\Enums\MaintenanceOrderStatus;
+use App\Enums\MaintenanceTaskStatus;
 use App\Enums\SystemRole;
 use Database\Seeders\RolesAndAdminUserSeeder;
 use Database\Seeders\VehicleSystemSeeder;
@@ -54,6 +55,8 @@ class UpdateMaintenanceOrderTest extends TestCase
         $otherAdvisor = $this->userWithRole(SystemRole::Advisor, ['email' => 'other.advisor.order.reject@example.com']);
         $vehicle = $this->vehicleFor($this->ownerFor(['email' => 'order.reject.owner@example.com']));
         $order = $this->maintenanceOrderFor($vehicle, $otherAdvisor);
+        $task = $this->maintenanceTaskFor(['vehicle_id' => $vehicle->id]);
+        $item = $this->maintenanceOrderItemFor($order, $task);
 
         $this->withToken($advisor->createToken('feature-test')->plainTextToken)
             ->putJson('/api/v1/maintenance-orders/'.$order->id, [
@@ -61,6 +64,15 @@ class UpdateMaintenanceOrderTest extends TestCase
             ])
             ->assertOk()
             ->assertJsonPath('data.status', MaintenanceOrderStatus::Rejected->value);
+
+        $this->assertDatabaseHas('maintenance_order_items', [
+            'id' => $item->id,
+            'status' => MaintenanceOrderItemStatus::Rejected->value,
+        ]);
+        $this->assertDatabaseHas('maintenance_tasks', [
+            'id' => $task->id,
+            'status' => MaintenanceTaskStatus::Rejected->value,
+        ]);
     }
 
     public function test_approval_with_rejected_items_marks_order_as_partially_approved(): void
@@ -96,7 +108,8 @@ class UpdateMaintenanceOrderTest extends TestCase
             'status' => MaintenanceOrderStatus::Scheduled->value,
             'scheduled_at' => now(),
         ]);
-        $item = $this->maintenanceOrderItemFor($order, $this->maintenanceTaskFor(), [
+        $task = $this->maintenanceTaskFor(['vehicle_id' => $vehicle->id]);
+        $item = $this->maintenanceOrderItemFor($order, $task, [
             'status' => MaintenanceOrderItemStatus::Scheduled->value,
             'scheduled_at' => now(),
         ]);
@@ -111,6 +124,10 @@ class UpdateMaintenanceOrderTest extends TestCase
         $this->assertDatabaseHas('maintenance_order_items', [
             'id' => $item->id,
             'status' => MaintenanceOrderItemStatus::Cancelled->value,
+        ]);
+        $this->assertDatabaseHas('maintenance_tasks', [
+            'id' => $task->id,
+            'status' => MaintenanceTaskStatus::Cancelled->value,
         ]);
     }
 

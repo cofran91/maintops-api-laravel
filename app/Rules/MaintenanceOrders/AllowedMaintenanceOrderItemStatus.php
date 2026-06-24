@@ -7,6 +7,8 @@ use App\Enums\SystemRole;
 use App\Models\MaintenanceOrderItem;
 use App\Models\User;
 use App\States\MaintenanceOrderItems\MaintenanceOrderItemState;
+use App\States\MaintenanceOrderItems\OrderItemInProgress;
+use App\States\MaintenanceOrderItems\OrderItemScheduled;
 use Closure;
 use Illuminate\Contracts\Validation\ValidationRule;
 
@@ -27,6 +29,16 @@ final class AllowedMaintenanceOrderItemStatus implements ValidationRule
 
         if (! in_array($value, $this->allowedStatuses(), true)) {
             $fail('The authenticated role cannot apply this item status change.');
+
+            return;
+        }
+
+        if (
+            $status === MaintenanceOrderItemStatus::Cancelled
+            && $this->item instanceof MaintenanceOrderItem
+            && ! $this->item->status->equals(OrderItemScheduled::class, OrderItemInProgress::class)
+        ) {
+            $fail('Only scheduled or in-progress items can be cancelled from this endpoint.');
 
             return;
         }

@@ -3,9 +3,11 @@
 namespace App\States\MaintenanceOrderItems\Transitions;
 
 use App\Enums\MaintenanceOrderItemStatus;
-use App\Enums\MaintenanceTaskStatus;
 use App\Models\MaintenanceOrderItem;
 use App\States\MaintenanceOrders\OrderRejected;
+use App\States\MaintenanceTasks\TaskCreated;
+use App\States\MaintenanceTasks\TaskRejected;
+use App\States\MaintenanceTasks\TaskScheduled;
 use Illuminate\Validation\ValidationException;
 
 class RejectMaintenanceOrderItem extends UpdateMaintenanceOrderItemStatus
@@ -38,18 +40,15 @@ class RejectMaintenanceOrderItem extends UpdateMaintenanceOrderItemStatus
     {
         $task = $this->model->maintenanceTask()->first();
 
-        if ($task === null || $task->vehicle_id === null || $task->status === MaintenanceTaskStatus::Rejected) {
+        if ($task === null || $task->vehicle_id === null || $task->status->equals(TaskRejected::class)) {
             return;
         }
 
-        if (! in_array($task->status, [
-            MaintenanceTaskStatus::Created,
-            MaintenanceTaskStatus::Scheduled,
-        ], true)) {
+        if (! $task->status->equals(TaskCreated::class, TaskScheduled::class)) {
             return;
         }
 
-        $task->update(['status' => MaintenanceTaskStatus::Rejected->value]);
+        $task->status->transitionTo(TaskRejected::class);
     }
 
     private function rejectOrderWhenAllItemsAreRejected(): void

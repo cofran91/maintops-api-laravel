@@ -2,9 +2,10 @@
 
 namespace App\States\MaintenanceOrderItems\Transitions;
 
-use App\Enums\MaintenanceTaskStatus;
 use App\Models\MaintenanceOrderItem;
 use App\States\MaintenanceOrderItems\OrderItemScheduled;
+use App\States\MaintenanceTasks\TaskCreated;
+use App\States\MaintenanceTasks\TaskScheduled;
 use Spatie\ModelStates\DefaultTransition;
 use Spatie\ModelStates\State;
 
@@ -46,10 +47,10 @@ class UpdateMaintenanceOrderItemStatus extends DefaultTransition
 
         $task = $this->model->maintenanceTask()->first();
 
-        if ($task === null || $task->vehicle_id === null || $task->status !== MaintenanceTaskStatus::Created) {
+        if ($task === null || $task->vehicle_id === null || ! $task->status->equals(TaskCreated::class)) {
             return;
         }
 
-        $task->update(['status' => MaintenanceTaskStatus::Scheduled->value]);
+        $task->status->transitionTo(TaskScheduled::class);
     }
 }

@@ -138,7 +138,8 @@ class UpdateMaintenanceOrderItemTest extends TestCase
         $order = $this->maintenanceOrderFor($vehicle, $advisor, [
             ...$orderAttributes,
         ]);
-        $item = $this->maintenanceOrderItemFor($order, $this->maintenanceTaskFor(), [
+        $task = $this->maintenanceTaskFor(['vehicle_id' => $vehicle->id]);
+        $item = $this->maintenanceOrderItemFor($order, $task, [
             ...$itemAttributes,
         ]);
 
@@ -153,6 +154,10 @@ class UpdateMaintenanceOrderItemTest extends TestCase
             $this->assertDatabaseHas('maintenance_orders', [
                 'id' => $order->id,
                 'status' => MaintenanceOrderStatus::Completed->value,
+            ]);
+            $this->assertDatabaseHas('maintenance_tasks', [
+                'id' => $task->id,
+                'status' => MaintenanceTaskStatus::Completed->value,
             ]);
         }
     }

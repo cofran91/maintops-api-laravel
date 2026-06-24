@@ -4,9 +4,8 @@ namespace App\States\MaintenanceOrders\Transitions;
 
 use App\Enums\MaintenanceOrderItemStatus;
 use App\Enums\MaintenanceOrderStatus;
-use App\Enums\MaintenanceTaskStatus;
 use App\Models\MaintenanceOrder;
-use App\Models\MaintenanceOrderItem;
+use App\States\MaintenanceOrderItems\OrderItemCancelled;
 use Illuminate\Validation\ValidationException;
 
 class CancelMaintenanceOrder extends UpdateMaintenanceOrderStatus
@@ -41,46 +40,16 @@ class CancelMaintenanceOrder extends UpdateMaintenanceOrderStatus
             ->with('maintenanceTask')
             ->get();
 
-        $this->model->items()
-            ->where('status', '!=', MaintenanceOrderItemStatus::Cancelled->value)
-            ->update([
-                'status' => MaintenanceOrderItemStatus::Cancelled->value,
+        $items
+            ->reject(fn ($item): bool => $item->status->equals(OrderItemCancelled::class))
+            ->each(fn ($item): mixed => $item->status->transitionTo(OrderItemCancelled::class, [
                 'cancelled_at' => $attributes['cancelled_at'],
-                'updated_at' => now(),
-            ]);
-
-        $this->cancelLinkedVehicleTasks($items);
+            ]));
 
         $this->model->fill($attributes);
         $this->model->{$this->field} = $this->newState;
         $this->model->save();
 
         return $this->model;
-    }
-
-    /**
-     * @param  iterable<int, MaintenanceOrderItem>  $items
-     */
-    private function cancelLinkedVehicleTasks(iterable $items): void
-    {
-        foreach ($items as $item) {
-            $task = $item->maintenanceTask;
-
-            if ($task === null || $task->vehicle_id === null || $task->status === MaintenanceTaskStatus::Cancelled) {
-                continue;
-            }
-
-            if (! in_array($task->status, [
-                MaintenanceTaskStatus::Created,
-                MaintenanceTaskStatus::Scheduled,
-                MaintenanceTaskStatus::Started,
-                MaintenanceTaskStatus::Completed,
-                MaintenanceTaskStatus::Rejected,
-            ], true)) {
-                continue;
-            }
-
-            $task->update(['status' => MaintenanceTaskStatus::Cancelled->value]);
-        }
     }
 }
