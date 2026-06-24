@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\Api\Workshops;
 
+use App\Models\User;
 use App\Models\VehicleSystem;
 use App\Models\Workshop;
 use Database\Seeders\VehicleSystemSeeder;
@@ -30,5 +31,14 @@ class WorkshopVehicleSystemRelationTest extends TestCase
             $vehicleSystems->pluck('id')->all(),
             $workshop->vehicleSystems()->pluck('vehicle_systems.id')->all(),
         );
+    }
+
+    public function test_user_has_managed_workshop(): void
+    {
+        $manager = User::factory()->create();
+        $workshop = Workshop::factory()->create(['manager_user_id' => $manager->id]);
+
+        $this->assertTrue($manager->managedWorkshop->is($workshop));
+        $this->assertTrue($workshop->manager->is($manager));
     }
 }

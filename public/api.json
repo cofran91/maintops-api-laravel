@@ -2976,6 +2976,15 @@
                         "example": true
                     },
                     {
+                        "name": "without_workshop",
+                        "in": "query",
+                        "description": "When true, returns users that are not assigned as a workshop manager.",
+                        "schema": {
+                            "type": "boolean"
+                        },
+                        "example": true
+                    },
+                    {
                         "name": "page",
                         "in": "query",
                         "description": "Requested page number.",

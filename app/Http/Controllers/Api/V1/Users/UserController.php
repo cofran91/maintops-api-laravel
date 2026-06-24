@@ -46,6 +46,7 @@ class UserController extends ApiController
     #[QueryParameter('search', description: 'Filters by partial match on name, email, phone, or document number.', type: 'string', example: 'maria')]
     #[QueryParameter('role', description: 'Filters by a visible role. Values: super_admin, admin, workshop_manager, advisor, technician.', type: 'string', example: 'technician')]
     #[QueryParameter('is_active', description: 'Filters active or inactive users.', type: 'boolean', example: true)]
+    #[QueryParameter('without_workshop', description: 'When true, returns users that are not assigned as a workshop manager.', type: 'boolean', example: true)]
     #[QueryParameter('page', description: 'Requested page number.', type: 'integer', example: 1)]
     #[QueryParameter('per_page', description: 'Records per page. Minimum 1, maximum 100.', type: 'integer', example: 15)]
     public function index(Request $request): JsonResponse

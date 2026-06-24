@@ -115,6 +115,29 @@ class UpdateWorkshopTest extends TestCase
             ]);
     }
 
+    public function test_workshop_cannot_be_reassigned_to_manager_assigned_to_another_workshop(): void
+    {
+        $actor = $this->userWithRole(SystemRole::Admin, ['email' => 'workshop.reassign.actor@example.com']);
+        $currentManager = $this->userWithRole(SystemRole::WorkshopManager, ['email' => 'workshop.current.manager@example.com']);
+        $assignedManager = $this->userWithRole(SystemRole::WorkshopManager, ['email' => 'workshop.already.assigned.manager@example.com']);
+        $vehicleSystems = $this->vehicleSystems(1);
+        $workshop = $this->workshopFor($currentManager, $vehicleSystems, [
+            'name' => 'Current Manager Workshop',
+            'code' => 'CURRENT-MANAGER-WORKSHOP',
+        ]);
+        $this->workshopFor($assignedManager, $vehicleSystems, [
+            'name' => 'Already Assigned Manager Workshop',
+            'code' => 'ALREADY-ASSIGNED-MANAGER-WORKSHOP',
+        ]);
+
+        $this->withToken($actor->createToken('feature-test')->plainTextToken)
+            ->patchJson('/api/v1/workshops/'.$workshop->id, $this->workshopUpdatePayloadFor($workshop, [
+                'manager_user_id' => $assignedManager->id,
+            ]))
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors(['manager_user_id']);
+    }
+
     #[DataProvider('nonAdminRoleProvider')]
     public function test_non_admin_roles_cannot_update_workshop(SystemRole $role): void
     {

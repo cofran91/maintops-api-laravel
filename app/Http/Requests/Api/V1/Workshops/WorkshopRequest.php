@@ -68,7 +68,7 @@ class WorkshopRequest extends FormRequest
                 'required',
                 'integer',
                 Rule::exists('users', 'id')->whereNull('deleted_at'),
-                new AssignableWorkshopManager,
+                new AssignableWorkshopManager($workshop instanceof Workshop ? $workshop : null),
             ],
             'name' => [
                 'required',

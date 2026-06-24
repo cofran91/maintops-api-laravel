@@ -16,6 +16,7 @@ final class UserFilter extends ModelFilter
         'search',
         'role',
         'is_active',
+        'without_workshop',
     ];
 
     public function setup(): void
@@ -58,6 +59,17 @@ final class UserFilter extends ModelFilter
         }
 
         $this->where('is_active', $isActive);
+    }
+
+    public function withoutWorkshop(bool|int|string $value): void
+    {
+        $withoutWorkshop = filter_var($value, FILTER_VALIDATE_BOOL, FILTER_NULL_ON_FAILURE);
+
+        if ($withoutWorkshop !== true) {
+            return;
+        }
+
+        $this->whereDoesntHave('managedWorkshop');
     }
 
     /**

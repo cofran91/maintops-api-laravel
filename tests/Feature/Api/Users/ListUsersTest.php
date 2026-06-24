@@ -3,6 +3,7 @@
 namespace Tests\Feature\Api\Users;
 
 use App\Enums\SystemRole;
+use App\Models\Workshop;
 use Database\Seeders\RolesAndAdminUserSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use PHPUnit\Framework\Attributes\DataProvider;
@@ -74,6 +75,20 @@ class ListUsersTest extends TestCase
             ->assertJsonFragment(['email' => $activeTechnician->email])
             ->assertJsonMissing(['email' => $inactiveTechnician->email])
             ->assertJsonMissing(['email' => 'hidden.advisor@example.com']);
+    }
+
+    public function test_can_filter_workshop_managers_without_workshop(): void
+    {
+        $superAdmin = $this->userWithRole(SystemRole::SuperAdmin, ['email' => 'super-admin.workshop.filter@example.com']);
+        $assignedManager = $this->userWithRole(SystemRole::WorkshopManager, ['email' => 'assigned.manager@example.com']);
+        $unassignedManager = $this->userWithRole(SystemRole::WorkshopManager, ['email' => 'unassigned.manager@example.com']);
+        Workshop::factory()->create(['manager_user_id' => $assignedManager->id]);
+
+        $this->withToken($superAdmin->createToken('feature-test')->plainTextToken)
+            ->getJson('/api/v1/users?role=workshop_manager&without_workshop=true')
+            ->assertOk()
+            ->assertJsonFragment(['email' => $unassignedManager->email])
+            ->assertJsonMissing(['email' => $assignedManager->email]);
     }
 
     public function test_workshop_manager_lists_technicians_only(): void

@@ -105,6 +105,25 @@ class CreateWorkshopTest extends TestCase
             ->assertJsonValidationErrors(['name', 'code']);
     }
 
+    public function test_workshop_manager_assigned_to_another_workshop_cannot_create_workshop(): void
+    {
+        $actor = $this->userWithRole(SystemRole::Admin, ['email' => 'workshop.assigned.manager.actor@example.com']);
+        $manager = $this->userWithRole(SystemRole::WorkshopManager, ['email' => 'workshop.assigned.manager@example.com']);
+        $vehicleSystems = $this->vehicleSystems(1);
+        $this->workshopFor($manager, $vehicleSystems, [
+            'name' => 'Assigned Manager Workshop',
+            'code' => 'ASSIGNED-MANAGER-WORKSHOP',
+        ]);
+
+        $this->withToken($actor->createToken('feature-test')->plainTextToken)
+            ->postJson('/api/v1/workshops', $this->workshopPayloadFor($manager, $vehicleSystems, [
+                'name' => 'Second Manager Workshop',
+                'code' => 'second-manager-workshop',
+            ]))
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors(['manager_user_id']);
+    }
+
     #[DataProvider('nonAdminRoleProvider')]
     public function test_non_admin_roles_cannot_create_workshop(SystemRole $role): void
     {
