@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\Api\MaintenanceOrders;
 
+use App\Enums\MaintenanceOrderItemStatus;
 use App\Enums\MaintenanceOrderStatus;
 use App\Enums\SystemRole;
 use Database\Seeders\RolesAndAdminUserSeeder;
@@ -28,7 +29,10 @@ class UpdateMaintenanceOrderTest extends TestCase
         $admin = $this->userWithRole(SystemRole::Admin, ['email' => 'admin.order.status.update@example.com']);
         $advisor = $this->userWithRole(SystemRole::Advisor, ['email' => 'advisor.order.status.update@example.com']);
         $vehicle = $this->vehicleFor($this->ownerFor(['email' => 'order.status.update.owner@example.com']));
-        $order = $this->maintenanceOrderFor($vehicle, $advisor);
+        $order = $this->maintenanceOrderFor($vehicle, $advisor, [
+            'status' => MaintenanceOrderStatus::PendingOwnerApproval->value,
+        ]);
+        $this->maintenanceOrderItemFor($order, $this->maintenanceTaskFor());
 
         $this->withToken($admin->createToken('feature-test')->plainTextToken)
             ->putJson('/api/v1/maintenance-orders/'.$order->id, [
@@ -59,13 +63,43 @@ class UpdateMaintenanceOrderTest extends TestCase
             ->assertJsonPath('data.status', MaintenanceOrderStatus::Rejected->value);
     }
 
+    public function test_approval_with_rejected_items_marks_order_as_partially_approved(): void
+    {
+        $admin = $this->userWithRole(SystemRole::Admin, ['email' => 'admin.order.partial.approve@example.com']);
+        $advisor = $this->userWithRole(SystemRole::Advisor, ['email' => 'advisor.order.partial.approve@example.com']);
+        $vehicle = $this->vehicleFor($this->ownerFor(['email' => 'order.partial.approve.owner@example.com']));
+        $order = $this->maintenanceOrderFor($vehicle, $advisor, [
+            'status' => MaintenanceOrderStatus::PendingOwnerApproval->value,
+        ]);
+        $this->maintenanceOrderItemFor($order, $this->maintenanceTaskFor());
+        $this->maintenanceOrderItemFor($order, $this->maintenanceTaskFor(), [
+            'status' => MaintenanceOrderItemStatus::Rejected->value,
+            'rejected_at' => now(),
+        ]);
+
+        $this->withToken($admin->createToken('feature-test')->plainTextToken)
+            ->putJson('/api/v1/maintenance-orders/'.$order->id, [
+                'status' => MaintenanceOrderStatus::Approved->value,
+            ])
+            ->assertOk()
+            ->assertJsonPath('data.status', MaintenanceOrderStatus::PartiallyApproved->value);
+    }
+
     public function test_assigned_workshop_manager_can_cancel_order(): void
     {
         $advisor = $this->userWithRole(SystemRole::Advisor, ['email' => 'advisor.order.manager.cancel@example.com']);
         $manager = $this->userWithRole(SystemRole::WorkshopManager, ['email' => 'manager.order.cancel@example.com']);
         $workshop = $this->workshopFor($manager);
         $vehicle = $this->vehicleFor($this->ownerFor(['email' => 'order.manager.cancel.owner@example.com']));
-        $order = $this->maintenanceOrderFor($vehicle, $advisor, ['workshop_id' => $workshop->id]);
+        $order = $this->maintenanceOrderFor($vehicle, $advisor, [
+            'workshop_id' => $workshop->id,
+            'status' => MaintenanceOrderStatus::Scheduled->value,
+            'scheduled_at' => now(),
+        ]);
+        $item = $this->maintenanceOrderItemFor($order, $this->maintenanceTaskFor(), [
+            'status' => MaintenanceOrderItemStatus::Scheduled->value,
+            'scheduled_at' => now(),
+        ]);
 
         $this->withToken($manager->createToken('feature-test')->plainTextToken)
             ->putJson('/api/v1/maintenance-orders/'.$order->id, [
@@ -73,6 +107,52 @@ class UpdateMaintenanceOrderTest extends TestCase
             ])
             ->assertOk()
             ->assertJsonPath('data.status', MaintenanceOrderStatus::Cancelled->value);
+
+        $this->assertDatabaseHas('maintenance_order_items', [
+            'id' => $item->id,
+            'status' => MaintenanceOrderItemStatus::Cancelled->value,
+        ]);
+    }
+
+    public function test_admin_can_deliver_completed_order(): void
+    {
+        $admin = $this->userWithRole(SystemRole::Admin, ['email' => 'admin.order.deliver@example.com']);
+        $advisor = $this->userWithRole(SystemRole::Advisor, ['email' => 'advisor.order.deliver@example.com']);
+        $vehicle = $this->vehicleFor($this->ownerFor(['email' => 'order.deliver.owner@example.com']));
+        $order = $this->maintenanceOrderFor($vehicle, $advisor, [
+            'status' => MaintenanceOrderStatus::Completed->value,
+            'started_at' => now()->subHours(2),
+            'finished_at' => now()->subHour(),
+        ]);
+        $this->maintenanceOrderItemFor($order, $this->maintenanceTaskFor(), [
+            'status' => MaintenanceOrderItemStatus::Completed->value,
+            'started_at' => now()->subHours(2),
+            'finished_at' => now()->subHour(),
+        ]);
+
+        $this->withToken($admin->createToken('feature-test')->plainTextToken)
+            ->putJson('/api/v1/maintenance-orders/'.$order->id, [
+                'status' => MaintenanceOrderStatus::Delivered->value,
+            ])
+            ->assertOk()
+            ->assertJsonPath('data.status', MaintenanceOrderStatus::Delivered->value);
+
+        $this->assertNotNull($order->refresh()->delivered_at);
+    }
+
+    public function test_order_status_update_rejects_invalid_state_transition(): void
+    {
+        $admin = $this->userWithRole(SystemRole::Admin, ['email' => 'admin.order.invalid.transition@example.com']);
+        $advisor = $this->userWithRole(SystemRole::Advisor, ['email' => 'advisor.order.invalid.transition@example.com']);
+        $vehicle = $this->vehicleFor($this->ownerFor(['email' => 'order.invalid.transition.owner@example.com']));
+        $order = $this->maintenanceOrderFor($vehicle, $advisor);
+
+        $this->withToken($admin->createToken('feature-test')->plainTextToken)
+            ->putJson('/api/v1/maintenance-orders/'.$order->id, [
+                'status' => MaintenanceOrderStatus::Approved->value,
+            ])
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors(['status']);
     }
 
     #[DataProvider('disallowedStatusProvider')]

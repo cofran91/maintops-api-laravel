@@ -2,7 +2,7 @@
 
 namespace App\Models;
 
-use App\Enums\MaintenanceOrderItemStatus;
+use App\States\MaintenanceOrderItems\MaintenanceOrderItemState;
 use Database\Factories\MaintenanceOrderItemFactory;
 use EloquentFilter\Filterable;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
@@ -12,6 +12,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use OwenIt\Auditing\Auditable;
 use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
+use Spatie\ModelStates\HasStates;
 
 #[Fillable([
     'maintenance_order_id',
@@ -31,7 +32,7 @@ use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
 class MaintenanceOrderItem extends Model implements AuditableContract
 {
     /** @use HasFactory<MaintenanceOrderItemFactory> */
-    use Auditable, Filterable, HasFactory, SoftDeletes;
+    use Auditable, Filterable, HasFactory, HasStates, SoftDeletes;
 
     /**
      * @return BelongsTo<MaintenanceOrder, MaintenanceOrderItem>
@@ -65,7 +66,7 @@ class MaintenanceOrderItem extends Model implements AuditableContract
         return [
             'odometer_km' => 'integer',
             'planned_duration_minutes' => 'integer',
-            'status' => MaintenanceOrderItemStatus::class,
+            'status' => MaintenanceOrderItemState::class,
             'pending_owner_approval_at' => 'datetime',
             'scheduled_at' => 'datetime',
             'scheduled_ends_at' => 'datetime',

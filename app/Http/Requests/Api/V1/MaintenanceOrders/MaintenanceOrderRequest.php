@@ -94,7 +94,7 @@ class MaintenanceOrderRequest extends FormRequest
                     MaintenanceOrderStatus::Delivered->value,
                     MaintenanceOrderStatus::Rejected->value,
                 ]),
-                new AllowedMaintenanceOrderStatus($this->actor()),
+                new AllowedMaintenanceOrderStatus($this->actor(), $this->maintenanceOrder()),
             ],
         ];
     }
@@ -104,6 +104,13 @@ class MaintenanceOrderRequest extends FormRequest
         $actor = $this->user();
 
         return $actor instanceof User ? $actor : null;
+    }
+
+    private function maintenanceOrder(): ?MaintenanceOrder
+    {
+        $maintenanceOrder = $this->route('maintenance_order');
+
+        return $maintenanceOrder instanceof MaintenanceOrder ? $maintenanceOrder : null;
     }
 
     private function isPrimaryAdvisor(User $user): bool

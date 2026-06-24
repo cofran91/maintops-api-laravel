@@ -3,6 +3,8 @@
 namespace Tests\Feature\Api\MaintenanceOrders;
 
 use App\Enums\MaintenanceOrderItemStatus;
+use App\Enums\MaintenanceOrderStatus;
+use App\Enums\MaintenanceTaskStatus;
 use App\Enums\SystemRole;
 use Database\Seeders\RolesAndAdminUserSeeder;
 use Database\Seeders\VehicleSystemSeeder;
@@ -28,8 +30,15 @@ class UpdateMaintenanceOrderItemTest extends TestCase
         $admin = $this->userWithRole(SystemRole::Admin, ['email' => 'admin.item.status.update@example.com']);
         $advisor = $this->userWithRole(SystemRole::Advisor, ['email' => 'advisor.item.status.update@example.com']);
         $vehicle = $this->vehicleFor($this->ownerFor(['email' => 'item.status.update.owner@example.com']));
-        $order = $this->maintenanceOrderFor($vehicle, $advisor);
-        $item = $this->maintenanceOrderItemFor($order, $this->maintenanceTaskFor());
+        $order = $this->maintenanceOrderFor($vehicle, $advisor, [
+            'status' => MaintenanceOrderStatus::Scheduled->value,
+            'scheduled_at' => now(),
+        ]);
+        $task = $this->maintenanceTaskFor(['vehicle_id' => $vehicle->id]);
+        $item = $this->maintenanceOrderItemFor($order, $task, [
+            'status' => MaintenanceOrderItemStatus::Scheduled->value,
+            'scheduled_at' => now(),
+        ]);
 
         $this->withToken($admin->createToken('feature-test')->plainTextToken)
             ->putJson('/api/v1/maintenance-order-items/'.$item->id, [
@@ -42,6 +51,14 @@ class UpdateMaintenanceOrderItemTest extends TestCase
         $this->assertDatabaseHas('maintenance_order_items', [
             'id' => $item->id,
             'status' => MaintenanceOrderItemStatus::InProgress->value,
+        ]);
+        $this->assertDatabaseHas('maintenance_orders', [
+            'id' => $order->id,
+            'status' => MaintenanceOrderStatus::InProgress->value,
+        ]);
+        $this->assertDatabaseHas('maintenance_tasks', [
+            'id' => $task->id,
+            'status' => MaintenanceTaskStatus::Started->value,
         ]);
     }
 
@@ -67,8 +84,16 @@ class UpdateMaintenanceOrderItemTest extends TestCase
         $manager = $this->userWithRole(SystemRole::WorkshopManager, ['email' => 'manager.item.cancel@example.com']);
         $workshop = $this->workshopFor($manager);
         $vehicle = $this->vehicleFor($this->ownerFor(['email' => 'item.manager.cancel.owner@example.com']));
-        $order = $this->maintenanceOrderFor($vehicle, $advisor, ['workshop_id' => $workshop->id]);
-        $item = $this->maintenanceOrderItemFor($order, $this->maintenanceTaskFor());
+        $order = $this->maintenanceOrderFor($vehicle, $advisor, [
+            'workshop_id' => $workshop->id,
+            'status' => MaintenanceOrderStatus::Scheduled->value,
+            'scheduled_at' => now(),
+        ]);
+        $task = $this->maintenanceTaskFor(['vehicle_id' => $vehicle->id]);
+        $item = $this->maintenanceOrderItemFor($order, $task, [
+            'status' => MaintenanceOrderItemStatus::Scheduled->value,
+            'scheduled_at' => now(),
+        ]);
 
         $this->withToken($manager->createToken('feature-test')->plainTextToken)
             ->putJson('/api/v1/maintenance-order-items/'.$item->id, [
@@ -76,6 +101,11 @@ class UpdateMaintenanceOrderItemTest extends TestCase
             ])
             ->assertOk()
             ->assertJsonPath('data.status', MaintenanceOrderItemStatus::Cancelled->value);
+
+        $this->assertDatabaseHas('maintenance_tasks', [
+            'id' => $task->id,
+            'status' => MaintenanceTaskStatus::Cancelled->value,
+        ]);
     }
 
     #[DataProvider('technicianStatusProvider')]
@@ -87,11 +117,30 @@ class UpdateMaintenanceOrderItemTest extends TestCase
         $workshop = $this->workshopFor($manager);
         $technician = $this->technicianFor($workshop, ['email' => $status->value.'.technician.item.update@example.com']);
         $vehicle = $this->vehicleFor($this->ownerFor(['email' => $status->value.'.item.tech.update.owner@example.com']));
-        $order = $this->maintenanceOrderFor($vehicle, $advisor, [
+        $orderAttributes = [
             'workshop_id' => $workshop->id,
             'technician_id' => $technician->id,
+            'status' => MaintenanceOrderStatus::Scheduled->value,
+            'scheduled_at' => now(),
+        ];
+        $itemAttributes = [
+            'status' => MaintenanceOrderItemStatus::Scheduled->value,
+            'scheduled_at' => now(),
+        ];
+
+        if ($status === MaintenanceOrderItemStatus::Completed) {
+            $orderAttributes['status'] = MaintenanceOrderStatus::InProgress->value;
+            $orderAttributes['started_at'] = now();
+            $itemAttributes['status'] = MaintenanceOrderItemStatus::InProgress->value;
+            $itemAttributes['started_at'] = now();
+        }
+
+        $order = $this->maintenanceOrderFor($vehicle, $advisor, [
+            ...$orderAttributes,
         ]);
-        $item = $this->maintenanceOrderItemFor($order, $this->maintenanceTaskFor());
+        $item = $this->maintenanceOrderItemFor($order, $this->maintenanceTaskFor(), [
+            ...$itemAttributes,
+        ]);
 
         $this->withToken($technician->createToken('feature-test')->plainTextToken)
             ->putJson('/api/v1/maintenance-order-items/'.$item->id, [
@@ -99,6 +148,39 @@ class UpdateMaintenanceOrderItemTest extends TestCase
             ])
             ->assertOk()
             ->assertJsonPath('data.status', $status->value);
+
+        if ($status === MaintenanceOrderItemStatus::Completed) {
+            $this->assertDatabaseHas('maintenance_orders', [
+                'id' => $order->id,
+                'status' => MaintenanceOrderStatus::Completed->value,
+            ]);
+        }
+    }
+
+    public function test_item_status_update_rejects_invalid_state_transition(): void
+    {
+        $advisor = $this->userWithRole(SystemRole::Advisor, ['email' => 'advisor.item.invalid.transition@example.com']);
+        $manager = $this->userWithRole(SystemRole::WorkshopManager, ['email' => 'manager.item.invalid.transition@example.com']);
+        $workshop = $this->workshopFor($manager);
+        $technician = $this->technicianFor($workshop, ['email' => 'technician.item.invalid.transition@example.com']);
+        $vehicle = $this->vehicleFor($this->ownerFor(['email' => 'item.invalid.transition.owner@example.com']));
+        $order = $this->maintenanceOrderFor($vehicle, $advisor, [
+            'workshop_id' => $workshop->id,
+            'technician_id' => $technician->id,
+            'status' => MaintenanceOrderStatus::Scheduled->value,
+            'scheduled_at' => now(),
+        ]);
+        $item = $this->maintenanceOrderItemFor($order, $this->maintenanceTaskFor(), [
+            'status' => MaintenanceOrderItemStatus::Scheduled->value,
+            'scheduled_at' => now(),
+        ]);
+
+        $this->withToken($technician->createToken('feature-test')->plainTextToken)
+            ->putJson('/api/v1/maintenance-order-items/'.$item->id, [
+                'status' => MaintenanceOrderItemStatus::Completed->value,
+            ])
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors(['status']);
     }
 
     #[DataProvider('disallowedStatusProvider')]

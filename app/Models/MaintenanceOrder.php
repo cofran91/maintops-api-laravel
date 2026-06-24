@@ -2,7 +2,7 @@
 
 namespace App\Models;
 
-use App\Enums\MaintenanceOrderStatus;
+use App\States\MaintenanceOrders\MaintenanceOrderState;
 use Database\Factories\MaintenanceOrderFactory;
 use EloquentFilter\Filterable;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
@@ -13,6 +13,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use OwenIt\Auditing\Auditable;
 use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
+use Spatie\ModelStates\HasStates;
 
 #[Fillable([
     'vehicle_id',
@@ -29,7 +30,7 @@ use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
 class MaintenanceOrder extends Model implements AuditableContract
 {
     /** @use HasFactory<MaintenanceOrderFactory> */
-    use Auditable, Filterable, HasFactory, SoftDeletes;
+    use Auditable, Filterable, HasFactory, HasStates, SoftDeletes;
 
     /**
      * @return BelongsTo<Vehicle, MaintenanceOrder>
@@ -78,7 +79,7 @@ class MaintenanceOrder extends Model implements AuditableContract
     protected function casts(): array
     {
         return [
-            'status' => MaintenanceOrderStatus::class,
+            'status' => MaintenanceOrderState::class,
             'scheduled_at' => 'datetime',
             'started_at' => 'datetime',
             'finished_at' => 'datetime',

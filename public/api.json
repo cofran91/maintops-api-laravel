@@ -5252,7 +5252,7 @@
             },
             "put": {
                 "operationId": "v1.maintenance-order-items.update",
-                "description": "Updates the item status. Full state-transition enforcement is handled later by the state-machine commit.",
+                "description": "Updates the item status through the configured state machine.",
                 "summary": "Update maintenance order item",
                 "tags": [
                     "Maintenance"

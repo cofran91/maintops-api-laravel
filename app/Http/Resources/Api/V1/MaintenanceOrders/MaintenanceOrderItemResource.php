@@ -31,7 +31,7 @@ class MaintenanceOrderItemResource extends JsonResource
                     'advisor_id' => $this->maintenanceOrder->advisor_id,
                     'workshop_id' => $this->maintenanceOrder->workshop_id,
                     'technician_id' => $this->maintenanceOrder->technician_id,
-                    'status' => $this->maintenanceOrder->status?->value,
+                    'status' => $this->maintenanceOrder->status?->getValue(),
                 ];
             }),
             'maintenance_task_id' => $this->maintenance_task_id,
@@ -70,7 +70,7 @@ class MaintenanceOrderItemResource extends JsonResource
                     'is_active' => (bool) $this->maintenancePlan->is_active,
                 ];
             }),
-            'status' => $this->status?->value,
+            'status' => $this->status?->getValue(),
             'odometer_km' => $this->odometer_km,
             'planned_duration_minutes' => $this->planned_duration_minutes,
             'pending_owner_approval_at' => $this->pending_owner_approval_at?->toISOString(),

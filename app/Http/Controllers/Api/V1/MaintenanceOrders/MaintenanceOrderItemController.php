@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api\V1\MaintenanceOrders;
 
+use App\Actions\MaintenanceOrders\UpdateMaintenanceOrderItemAction;
 use App\Enums\SystemRole;
 use App\Http\Controllers\Api\ApiController;
 use App\Http\Requests\Api\V1\MaintenanceOrders\MaintenanceOrderItemRequest;
@@ -69,18 +70,21 @@ class MaintenanceOrderItemController extends ApiController
     /**
      * Update maintenance order item.
      *
-     * Updates the item status. Full state-transition enforcement is handled later by the state-machine commit.
+     * Updates the item status through the configured state machine.
      *
      * @bodyParam status string required Target item status. Values: in_progress, completed, rejected, cancelled. Example: in_progress
      */
     public function update(
         MaintenanceOrderItemRequest $request,
-        MaintenanceOrderItem $maintenanceOrderItem
+        MaintenanceOrderItem $maintenanceOrderItem,
+        UpdateMaintenanceOrderItemAction $updateMaintenanceOrderItemAction
     ): JsonResponse {
-        $maintenanceOrderItem->update($request->validated());
+        $maintenanceOrderItem = $updateMaintenanceOrderItemAction
+            ->execute($maintenanceOrderItem, $request->validated())
+            ->load($this->relations());
 
         return $this->success(
-            data: (new MaintenanceOrderItemResource($maintenanceOrderItem->refresh()->load($this->relations())))->resolve($request),
+            data: (new MaintenanceOrderItemResource($maintenanceOrderItem))->resolve($request),
             message: 'Maintenance order item updated successfully.',
         );
     }

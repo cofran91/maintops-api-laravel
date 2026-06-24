@@ -65,7 +65,7 @@ class MaintenanceOrderResource extends JsonResource
 
                 return $this->userSummary($this->technician);
             }),
-            'status' => $this->status?->value,
+            'status' => $this->status?->getValue(),
             'scheduled_at' => $this->scheduled_at?->toISOString(),
             'started_at' => $this->started_at?->toISOString(),
             'finished_at' => $this->finished_at?->toISOString(),

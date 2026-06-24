@@ -4,7 +4,9 @@ namespace App\Rules\MaintenanceOrders;
 
 use App\Enums\MaintenanceOrderStatus;
 use App\Enums\SystemRole;
+use App\Models\MaintenanceOrder;
 use App\Models\User;
+use App\States\MaintenanceOrders\MaintenanceOrderState;
 use Closure;
 use Illuminate\Contracts\Validation\ValidationRule;
 
@@ -12,6 +14,7 @@ final class AllowedMaintenanceOrderStatus implements ValidationRule
 {
     public function __construct(
         private readonly ?User $actor,
+        private readonly ?MaintenanceOrder $maintenanceOrder = null,
     ) {}
 
     public function validate(string $attribute, mixed $value, Closure $fail): void
@@ -24,6 +27,17 @@ final class AllowedMaintenanceOrderStatus implements ValidationRule
 
         if (! in_array($value, $this->allowedStatuses(), true)) {
             $fail('The authenticated role cannot apply this order status change.');
+
+            return;
+        }
+
+        if (
+            $this->maintenanceOrder instanceof MaintenanceOrder
+            && ! $this->maintenanceOrder->status->canTransitionTo(
+                MaintenanceOrderState::resolveStateClass($status->value),
+            )
+        ) {
+            $fail('The requested order status transition is not allowed.');
         }
     }
 

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api\V1\MaintenanceOrders;
 
+use App\Actions\MaintenanceOrders\UpdateMaintenanceOrderAction;
 use App\Enums\MaintenanceOrderStatus;
 use App\Enums\SystemRole;
 use App\Http\Controllers\Api\ApiController;
@@ -14,7 +15,6 @@ use Dedoc\Scramble\Attributes\QueryParameter;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -71,13 +71,11 @@ class MaintenanceOrderController extends ApiController
      */
     public function store(MaintenanceOrderRequest $request): JsonResponse
     {
-        $maintenanceOrder = DB::transaction(function () use ($request): MaintenanceOrder {
-            return MaintenanceOrder::query()
-                ->create(array_merge($request->validated(), [
-                    'status' => MaintenanceOrderStatus::Created->value,
-                ]))
-                ->load($this->relations());
-        });
+        $maintenanceOrder = MaintenanceOrder::query()
+            ->create(array_merge($request->validated(), [
+                'status' => MaintenanceOrderStatus::Created->value,
+            ]))
+            ->load($this->relations());
 
         return $this->success(
             data: (new MaintenanceOrderResource($maintenanceOrder))->resolve($request),
@@ -106,12 +104,17 @@ class MaintenanceOrderController extends ApiController
      *
      * @bodyParam status string required Target order status. Values: approved, cancelled, delivered, rejected. Example: approved
      */
-    public function update(MaintenanceOrderRequest $request, MaintenanceOrder $maintenanceOrder): JsonResponse
-    {
-        $maintenanceOrder->update($request->validated());
+    public function update(
+        MaintenanceOrderRequest $request,
+        MaintenanceOrder $maintenanceOrder,
+        UpdateMaintenanceOrderAction $updateMaintenanceOrderAction
+    ): JsonResponse {
+        $maintenanceOrder = $updateMaintenanceOrderAction
+            ->execute($maintenanceOrder, $request->validated())
+            ->load($this->relations());
 
         return $this->success(
-            data: (new MaintenanceOrderResource($maintenanceOrder->refresh()->load($this->relations())))->resolve($request),
+            data: (new MaintenanceOrderResource($maintenanceOrder))->resolve($request),
             message: 'Maintenance order updated successfully.',
         );
     }
