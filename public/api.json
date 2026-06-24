@@ -4519,6 +4519,813 @@
                 }
             }
         },
+        "/maintenance-orders": {
+            "get": {
+                "operationId": "v1.maintenance-orders.index",
+                "description": "Returns orders with their vehicle, owner, advisor, workshop, technician and items. System admins see\nevery order, advisors see every order, workshop managers see their workshop orders, and technicians\nsee their assigned orders.",
+                "summary": "List maintenance orders",
+                "tags": [
+                    "Maintenance"
+                ],
+                "parameters": [
+                    {
+                        "name": "search",
+                        "in": "query",
+                        "description": "Filters by vehicle, owner, advisor, technician, or workshop fields.",
+                        "schema": {
+                            "type": "string"
+                        },
+                        "example": "ABC123"
+                    },
+                    {
+                        "name": "vehicle_id",
+                        "in": "query",
+                        "description": "Filters by vehicle ID.",
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "example": 10
+                    },
+                    {
+                        "name": "owner_id",
+                        "in": "query",
+                        "description": "Filters by owner ID.",
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "example": 25
+                    },
+                    {
+                        "name": "advisor_id",
+                        "in": "query",
+                        "description": "Filters by advisor user ID.",
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "example": 12
+                    },
+                    {
+                        "name": "workshop_id",
+                        "in": "query",
+                        "description": "Filters by workshop ID. Accepts null, none, or unassigned.",
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "example": 4
+                    },
+                    {
+                        "name": "without_workshop",
+                        "in": "query",
+                        "description": "When true, returns orders without workshop assignment.",
+                        "schema": {
+                            "type": "boolean"
+                        },
+                        "example": true
+                    },
+                    {
+                        "name": "technician_id",
+                        "in": "query",
+                        "description": "Filters by technician user ID. Accepts null, none, or unassigned.",
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "example": 15
+                    },
+                    {
+                        "name": "without_technician",
+                        "in": "query",
+                        "description": "When true, returns orders without technician assignment.",
+                        "schema": {
+                            "type": "boolean"
+                        },
+                        "example": true
+                    },
+                    {
+                        "name": "status",
+                        "in": "query",
+                        "description": "Filters by order status.",
+                        "schema": {
+                            "type": "string"
+                        },
+                        "example": "created"
+                    },
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "description": "Requested page number.",
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "example": 1
+                    },
+                    {
+                        "name": "per_page",
+                        "in": "query",
+                        "description": "Records per page. Minimum 1, maximum 100.",
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "example": 15
+                    },
+                    {
+                        "name": "scheduled_from",
+                        "in": "query",
+                        "description": "Filters orders scheduled on or after this date.",
+                        "schema": {
+                            "type": "object"
+                        },
+                        "example": "2026-06-01",
+                        "x-deepObject-style": "qs"
+                    },
+                    {
+                        "name": "scheduled_to",
+                        "in": "query",
+                        "description": "Filters orders scheduled on or before this date.",
+                        "schema": {
+                            "type": "object"
+                        },
+                        "example": "2026-06-30",
+                        "x-deepObject-style": "qs"
+                    },
+                    {
+                        "name": "created_from",
+                        "in": "query",
+                        "description": "Filters orders created on or after this date.",
+                        "schema": {
+                            "type": "object"
+                        },
+                        "example": "2026-06-01",
+                        "x-deepObject-style": "qs"
+                    },
+                    {
+                        "name": "created_to",
+                        "in": "query",
+                        "description": "Filters orders created on or before this date.",
+                        "schema": {
+                            "type": "object"
+                        },
+                        "example": "2026-06-30",
+                        "x-deepObject-style": "qs"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "const": "Maintenance orders retrieved."
+                                        },
+                                        "data": {
+                                            "type": "object",
+                                            "properties": {
+                                                "items": {
+                                                    "type": "string"
+                                                },
+                                                "pagination": {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "current_page": {
+                                                            "type": "integer"
+                                                        },
+                                                        "last_page": {
+                                                            "type": "integer"
+                                                        },
+                                                        "per_page": {
+                                                            "type": "integer"
+                                                        },
+                                                        "total": {
+                                                            "type": "integer"
+                                                        },
+                                                        "from": {
+                                                            "type": [
+                                                                "integer",
+                                                                "null"
+                                                            ]
+                                                        },
+                                                        "to": {
+                                                            "type": [
+                                                                "integer",
+                                                                "null"
+                                                            ]
+                                                        }
+                                                    },
+                                                    "required": [
+                                                        "current_page",
+                                                        "last_page",
+                                                        "per_page",
+                                                        "total",
+                                                        "from",
+                                                        "to"
+                                                    ]
+                                                }
+                                            },
+                                            "required": [
+                                                "items",
+                                                "pagination"
+                                            ]
+                                        },
+                                        "meta": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "success",
+                                        "message",
+                                        "data",
+                                        "meta"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "$ref": "#/components/responses/AuthorizationException"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    }
+                }
+            },
+            "post": {
+                "operationId": "v1.maintenance-orders.store",
+                "description": "Creates an order in `created` status. When `advisor_id` is omitted, the authenticated user is used.",
+                "summary": "Create maintenance order",
+                "tags": [
+                    "Maintenance"
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "vehicle_id": {
+                                        "type": "integer"
+                                    },
+                                    "advisor_id": {
+                                        "type": "integer"
+                                    }
+                                },
+                                "required": [
+                                    "vehicle_id"
+                                ]
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "const": "Maintenance order created successfully."
+                                        },
+                                        "data": {
+                                            "type": "array",
+                                            "items": {}
+                                        },
+                                        "meta": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "success",
+                                        "message",
+                                        "data",
+                                        "meta"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    },
+                    "422": {
+                        "$ref": "#/components/responses/ValidationException"
+                    },
+                    "403": {
+                        "$ref": "#/components/responses/AuthorizationException"
+                    }
+                }
+            }
+        },
+        "/maintenance-orders/{maintenanceOrder}": {
+            "get": {
+                "operationId": "v1.maintenance-orders.show",
+                "summary": "Show maintenance order",
+                "tags": [
+                    "Maintenance"
+                ],
+                "parameters": [
+                    {
+                        "name": "maintenanceOrder",
+                        "in": "path",
+                        "required": true,
+                        "description": "The maintenance order ID",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "const": "Maintenance order retrieved."
+                                        },
+                                        "data": {
+                                            "type": "array",
+                                            "items": {}
+                                        },
+                                        "meta": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "success",
+                                        "message",
+                                        "data",
+                                        "meta"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "$ref": "#/components/responses/AuthorizationException"
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/ModelNotFoundException"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    }
+                }
+            },
+            "put": {
+                "operationId": "v1.maintenance-orders.update",
+                "description": "Updates the order status. Other fields are ignored by this endpoint.",
+                "summary": "Update maintenance order",
+                "tags": [
+                    "Maintenance"
+                ],
+                "parameters": [
+                    {
+                        "name": "maintenanceOrder",
+                        "in": "path",
+                        "required": true,
+                        "description": "The maintenance order ID",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "status": {
+                                        "type": "string",
+                                        "enum": [
+                                            "approved",
+                                            "cancelled",
+                                            "delivered",
+                                            "rejected"
+                                        ]
+                                    }
+                                },
+                                "required": [
+                                    "status"
+                                ]
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "const": "Maintenance order updated successfully."
+                                        },
+                                        "data": {
+                                            "type": "array",
+                                            "items": {}
+                                        },
+                                        "meta": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "success",
+                                        "message",
+                                        "data",
+                                        "meta"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/ModelNotFoundException"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    },
+                    "422": {
+                        "$ref": "#/components/responses/ValidationException"
+                    },
+                    "403": {
+                        "$ref": "#/components/responses/AuthorizationException"
+                    }
+                }
+            }
+        },
+        "/maintenance-order-items": {
+            "get": {
+                "operationId": "v1.maintenance-order-items.index",
+                "description": "Item visibility inherits the parent order scope.",
+                "summary": "List maintenance order items",
+                "tags": [
+                    "Maintenance"
+                ],
+                "parameters": [
+                    {
+                        "name": "search",
+                        "in": "query",
+                        "description": "Filters by task, plan, or order vehicle plate.",
+                        "schema": {
+                            "type": "string"
+                        },
+                        "example": "oil"
+                    },
+                    {
+                        "name": "maintenance_order_id",
+                        "in": "query",
+                        "description": "Filters by maintenance order ID.",
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "example": 10
+                    },
+                    {
+                        "name": "maintenance_task_id",
+                        "in": "query",
+                        "description": "Filters by maintenance task ID.",
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "example": 15
+                    },
+                    {
+                        "name": "maintenance_plan_id",
+                        "in": "query",
+                        "description": "Filters by maintenance plan ID. Accepts null, none, or unassigned.",
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "example": 3
+                    },
+                    {
+                        "name": "without_plan",
+                        "in": "query",
+                        "description": "When true, returns items without a plan.",
+                        "schema": {
+                            "type": "boolean"
+                        },
+                        "example": true
+                    },
+                    {
+                        "name": "status",
+                        "in": "query",
+                        "description": "Filters by item status.",
+                        "schema": {
+                            "type": "string"
+                        },
+                        "example": "pending_owner_approval"
+                    },
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "description": "Requested page number.",
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "example": 1
+                    },
+                    {
+                        "name": "per_page",
+                        "in": "query",
+                        "description": "Records per page. Minimum 1, maximum 100.",
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "example": 15
+                    },
+                    {
+                        "name": "pending_owner_approval_from",
+                        "in": "query",
+                        "description": "Filters items sent for approval on or after this date.",
+                        "schema": {
+                            "type": "object"
+                        },
+                        "example": "2026-06-01",
+                        "x-deepObject-style": "qs"
+                    },
+                    {
+                        "name": "pending_owner_approval_to",
+                        "in": "query",
+                        "description": "Filters items sent for approval on or before this date.",
+                        "schema": {
+                            "type": "object"
+                        },
+                        "example": "2026-06-30",
+                        "x-deepObject-style": "qs"
+                    },
+                    {
+                        "name": "scheduled_from",
+                        "in": "query",
+                        "description": "Filters items scheduled on or after this date.",
+                        "schema": {
+                            "type": "object"
+                        },
+                        "example": "2026-06-01",
+                        "x-deepObject-style": "qs"
+                    },
+                    {
+                        "name": "scheduled_to",
+                        "in": "query",
+                        "description": "Filters items scheduled on or before this date.",
+                        "schema": {
+                            "type": "object"
+                        },
+                        "example": "2026-06-30",
+                        "x-deepObject-style": "qs"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "const": "Maintenance order items retrieved."
+                                        },
+                                        "data": {
+                                            "type": "object",
+                                            "properties": {
+                                                "items": {
+                                                    "type": "string"
+                                                },
+                                                "pagination": {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "current_page": {
+                                                            "type": "integer"
+                                                        },
+                                                        "last_page": {
+                                                            "type": "integer"
+                                                        },
+                                                        "per_page": {
+                                                            "type": "integer"
+                                                        },
+                                                        "total": {
+                                                            "type": "integer"
+                                                        },
+                                                        "from": {
+                                                            "type": [
+                                                                "integer",
+                                                                "null"
+                                                            ]
+                                                        },
+                                                        "to": {
+                                                            "type": [
+                                                                "integer",
+                                                                "null"
+                                                            ]
+                                                        }
+                                                    },
+                                                    "required": [
+                                                        "current_page",
+                                                        "last_page",
+                                                        "per_page",
+                                                        "total",
+                                                        "from",
+                                                        "to"
+                                                    ]
+                                                }
+                                            },
+                                            "required": [
+                                                "items",
+                                                "pagination"
+                                            ]
+                                        },
+                                        "meta": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "success",
+                                        "message",
+                                        "data",
+                                        "meta"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "$ref": "#/components/responses/AuthorizationException"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    }
+                }
+            }
+        },
+        "/maintenance-order-items/{maintenanceOrderItem}": {
+            "get": {
+                "operationId": "v1.maintenance-order-items.show",
+                "summary": "Show maintenance order item",
+                "tags": [
+                    "Maintenance"
+                ],
+                "parameters": [
+                    {
+                        "name": "maintenanceOrderItem",
+                        "in": "path",
+                        "required": true,
+                        "description": "The maintenance order item ID",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "const": "Maintenance order item retrieved."
+                                        },
+                                        "data": {
+                                            "type": "array",
+                                            "items": {}
+                                        },
+                                        "meta": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "success",
+                                        "message",
+                                        "data",
+                                        "meta"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "$ref": "#/components/responses/AuthorizationException"
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/ModelNotFoundException"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    }
+                }
+            },
+            "put": {
+                "operationId": "v1.maintenance-order-items.update",
+                "description": "Updates the item status. Full state-transition enforcement is handled later by the state-machine commit.",
+                "summary": "Update maintenance order item",
+                "tags": [
+                    "Maintenance"
+                ],
+                "parameters": [
+                    {
+                        "name": "maintenanceOrderItem",
+                        "in": "path",
+                        "required": true,
+                        "description": "The maintenance order item ID",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/MaintenanceOrderItemRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "const": "Maintenance order item updated successfully."
+                                        },
+                                        "data": {
+                                            "type": "array",
+                                            "items": {}
+                                        },
+                                        "meta": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "success",
+                                        "message",
+                                        "data",
+                                        "meta"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/ModelNotFoundException"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    },
+                    "422": {
+                        "$ref": "#/components/responses/ValidationException"
+                    },
+                    "403": {
+                        "$ref": "#/components/responses/AuthorizationException"
+                    }
+                }
+            }
+        },
         "/users": {
             "get": {
                 "operationId": "v1.users.index",
@@ -5092,6 +5899,24 @@
                     "password"
                 ],
                 "title": "LoginRequest"
+            },
+            "MaintenanceOrderItemRequest": {
+                "type": "object",
+                "properties": {
+                    "status": {
+                        "type": "string",
+                        "enum": [
+                            "in_progress",
+                            "completed",
+                            "rejected",
+                            "cancelled"
+                        ]
+                    }
+                },
+                "required": [
+                    "status"
+                ],
+                "title": "MaintenanceOrderItemRequest"
             },
             "MaintenancePlanRequest": {
                 "type": "object",

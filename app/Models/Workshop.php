@@ -57,6 +57,15 @@ class Workshop extends Model implements AuditableContract
     }
 
     /**
+     * @return HasMany<MaintenanceOrder>
+     */
+    public function maintenanceOrders(): HasMany
+    {
+        return $this->hasMany(MaintenanceOrder::class)
+            ->orderBy('maintenance_orders.id');
+    }
+
+    /**
      * @return array<string, string>
      */
     protected function casts(): array
