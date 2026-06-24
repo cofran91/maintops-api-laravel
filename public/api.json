@@ -3115,6 +3115,723 @@
                 }
             }
         },
+        "/maintenance-tasks": {
+            "get": {
+                "operationId": "v1.maintenance-tasks.index",
+                "description": "Returns reusable or vehicle-specific tasks with their vehicle system.",
+                "summary": "List maintenance tasks",
+                "tags": [
+                    "Maintenance"
+                ],
+                "parameters": [
+                    {
+                        "name": "search",
+                        "in": "query",
+                        "description": "Filters by task, vehicle, or vehicle system fields.",
+                        "schema": {
+                            "type": "string"
+                        },
+                        "example": "oil"
+                    },
+                    {
+                        "name": "name",
+                        "in": "query",
+                        "description": "Filters by partial task name.",
+                        "schema": {
+                            "type": "string"
+                        },
+                        "example": "Oil change"
+                    },
+                    {
+                        "name": "code",
+                        "in": "query",
+                        "description": "Filters by partial internal code. The value is normalized to uppercase.",
+                        "schema": {
+                            "type": "string"
+                        },
+                        "example": "OIL"
+                    },
+                    {
+                        "name": "vehicle_id",
+                        "in": "query",
+                        "description": "Filters by vehicle ID. Accepts null, none, or unassigned for reusable tasks.",
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "example": 10
+                    },
+                    {
+                        "name": "without_vehicle",
+                        "in": "query",
+                        "description": "When true, returns reusable tasks with no vehicle assignment.",
+                        "schema": {
+                            "type": "boolean"
+                        },
+                        "example": true
+                    },
+                    {
+                        "name": "vehicle_system_id",
+                        "in": "query",
+                        "description": "Filters by vehicle system ID.",
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "example": 1
+                    },
+                    {
+                        "name": "status",
+                        "in": "query",
+                        "description": "Filters by operational status. Values: created, scheduled, started, cancelled, completed, rejected.",
+                        "schema": {
+                            "type": "string"
+                        },
+                        "example": "created"
+                    },
+                    {
+                        "name": "is_active",
+                        "in": "query",
+                        "description": "Filters active or inactive tasks.",
+                        "schema": {
+                            "type": "boolean"
+                        },
+                        "example": true
+                    },
+                    {
+                        "name": "estimated_duration_from",
+                        "in": "query",
+                        "description": "Filters tasks with estimated duration greater than or equal to these minutes.",
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "example": 30
+                    },
+                    {
+                        "name": "estimated_duration_to",
+                        "in": "query",
+                        "description": "Filters tasks with estimated duration less than or equal to these minutes.",
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "example": 180
+                    },
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "description": "Requested page number.",
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "example": 1
+                    },
+                    {
+                        "name": "per_page",
+                        "in": "query",
+                        "description": "Records per page. Minimum 1, maximum 100.",
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "example": 15
+                    },
+                    {
+                        "name": "created_from",
+                        "in": "query",
+                        "description": "Filters tasks created on or after this date.",
+                        "schema": {
+                            "type": "object"
+                        },
+                        "example": "2026-06-01",
+                        "x-deepObject-style": "qs"
+                    },
+                    {
+                        "name": "created_to",
+                        "in": "query",
+                        "description": "Filters tasks created on or before this date.",
+                        "schema": {
+                            "type": "object"
+                        },
+                        "example": "2026-06-30",
+                        "x-deepObject-style": "qs"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean"
+                                        },
+                                        "message": {
+                                            "type": "string"
+                                        },
+                                        "data": {
+                                            "type": "object",
+                                            "properties": {
+                                                "items": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "object",
+                                                        "properties": {
+                                                            "id": {
+                                                                "type": "integer"
+                                                            },
+                                                            "vehicle_id": {
+                                                                "type": [
+                                                                    "integer",
+                                                                    "null"
+                                                                ]
+                                                            },
+                                                            "vehicle": {
+                                                                "type": [
+                                                                    "object",
+                                                                    "null"
+                                                                ],
+                                                                "properties": {
+                                                                    "id": {
+                                                                        "type": "integer"
+                                                                    },
+                                                                    "owner_id": {
+                                                                        "type": "integer"
+                                                                    },
+                                                                    "license_plate": {
+                                                                        "type": "string"
+                                                                    },
+                                                                    "brand": {
+                                                                        "type": [
+                                                                            "string",
+                                                                            "null"
+                                                                        ]
+                                                                    },
+                                                                    "model": {
+                                                                        "type": [
+                                                                            "string",
+                                                                            "null"
+                                                                        ]
+                                                                    },
+                                                                    "year": {
+                                                                        "type": [
+                                                                            "integer",
+                                                                            "null"
+                                                                        ]
+                                                                    },
+                                                                    "color": {
+                                                                        "type": [
+                                                                            "string",
+                                                                            "null"
+                                                                        ]
+                                                                    },
+                                                                    "odometer_km": {
+                                                                        "type": "integer"
+                                                                    }
+                                                                },
+                                                                "required": [
+                                                                    "id",
+                                                                    "owner_id",
+                                                                    "license_plate",
+                                                                    "brand",
+                                                                    "model",
+                                                                    "year",
+                                                                    "color",
+                                                                    "odometer_km"
+                                                                ]
+                                                            },
+                                                            "vehicle_system_id": {
+                                                                "type": "integer"
+                                                            },
+                                                            "vehicle_system": {
+                                                                "type": "object",
+                                                                "properties": {
+                                                                    "id": {
+                                                                        "type": "integer"
+                                                                    },
+                                                                    "code": {
+                                                                        "type": "string"
+                                                                    },
+                                                                    "name": {
+                                                                        "type": "string"
+                                                                    }
+                                                                },
+                                                                "required": [
+                                                                    "id",
+                                                                    "code",
+                                                                    "name"
+                                                                ]
+                                                            },
+                                                            "name": {
+                                                                "type": "string"
+                                                            },
+                                                            "code": {
+                                                                "type": "string"
+                                                            },
+                                                            "description": {
+                                                                "type": [
+                                                                    "string",
+                                                                    "null"
+                                                                ]
+                                                            },
+                                                            "estimated_duration_minutes": {
+                                                                "type": "integer"
+                                                            },
+                                                            "status": {
+                                                                "type": "string"
+                                                            },
+                                                            "is_active": {
+                                                                "type": "boolean"
+                                                            },
+                                                            "created_at": {
+                                                                "type": [
+                                                                    "string",
+                                                                    "null"
+                                                                ]
+                                                            },
+                                                            "updated_at": {
+                                                                "type": [
+                                                                    "string",
+                                                                    "null"
+                                                                ]
+                                                            }
+                                                        },
+                                                        "required": [
+                                                            "id",
+                                                            "vehicle_id",
+                                                            "vehicle",
+                                                            "vehicle_system_id",
+                                                            "vehicle_system",
+                                                            "name",
+                                                            "code",
+                                                            "description",
+                                                            "estimated_duration_minutes",
+                                                            "status",
+                                                            "is_active",
+                                                            "created_at",
+                                                            "updated_at"
+                                                        ]
+                                                    }
+                                                },
+                                                "pagination": {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "current_page": {
+                                                            "type": "integer"
+                                                        },
+                                                        "last_page": {
+                                                            "type": "integer"
+                                                        },
+                                                        "per_page": {
+                                                            "type": "integer"
+                                                        },
+                                                        "total": {
+                                                            "type": "integer"
+                                                        },
+                                                        "from": {
+                                                            "type": [
+                                                                "integer",
+                                                                "null"
+                                                            ]
+                                                        },
+                                                        "to": {
+                                                            "type": [
+                                                                "integer",
+                                                                "null"
+                                                            ]
+                                                        }
+                                                    },
+                                                    "required": [
+                                                        "current_page",
+                                                        "last_page",
+                                                        "per_page",
+                                                        "total",
+                                                        "from",
+                                                        "to"
+                                                    ]
+                                                }
+                                            },
+                                            "required": [
+                                                "items",
+                                                "pagination"
+                                            ]
+                                        }
+                                    },
+                                    "required": [
+                                        "success",
+                                        "message",
+                                        "data"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "$ref": "#/components/responses/AuthorizationException"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    }
+                }
+            },
+            "post": {
+                "operationId": "v1.maintenance-tasks.store",
+                "description": "Creates a reusable task for a vehicle system or a vehicle-specific task.",
+                "summary": "Create maintenance task",
+                "tags": [
+                    "Maintenance"
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/MaintenanceTaskRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean"
+                                        },
+                                        "message": {
+                                            "type": "string"
+                                        },
+                                        "data": {
+                                            "type": "object",
+                                            "properties": {
+                                                "id": {
+                                                    "type": "integer"
+                                                },
+                                                "vehicle_id": {
+                                                    "type": [
+                                                        "integer",
+                                                        "null"
+                                                    ]
+                                                },
+                                                "vehicle_system_id": {
+                                                    "type": "integer"
+                                                },
+                                                "name": {
+                                                    "type": "string"
+                                                },
+                                                "code": {
+                                                    "type": "string"
+                                                },
+                                                "estimated_duration_minutes": {
+                                                    "type": "integer"
+                                                },
+                                                "status": {
+                                                    "type": "string"
+                                                },
+                                                "is_active": {
+                                                    "type": "boolean"
+                                                }
+                                            },
+                                            "required": [
+                                                "id",
+                                                "vehicle_id",
+                                                "vehicle_system_id",
+                                                "name",
+                                                "code",
+                                                "estimated_duration_minutes",
+                                                "status",
+                                                "is_active"
+                                            ]
+                                        }
+                                    },
+                                    "required": [
+                                        "success",
+                                        "message",
+                                        "data"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    },
+                    "422": {
+                        "$ref": "#/components/responses/ValidationException"
+                    },
+                    "403": {
+                        "$ref": "#/components/responses/AuthorizationException"
+                    }
+                }
+            }
+        },
+        "/maintenance-tasks/{maintenanceTask}": {
+            "get": {
+                "operationId": "v1.maintenance-tasks.show",
+                "summary": "Show maintenance task",
+                "tags": [
+                    "Maintenance"
+                ],
+                "parameters": [
+                    {
+                        "name": "maintenanceTask",
+                        "in": "path",
+                        "required": true,
+                        "description": "The maintenance task ID",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean"
+                                        },
+                                        "message": {
+                                            "type": "string"
+                                        },
+                                        "data": {
+                                            "type": "object",
+                                            "properties": {
+                                                "id": {
+                                                    "type": "integer"
+                                                },
+                                                "vehicle_id": {
+                                                    "type": [
+                                                        "integer",
+                                                        "null"
+                                                    ]
+                                                },
+                                                "vehicle_system_id": {
+                                                    "type": "integer"
+                                                },
+                                                "name": {
+                                                    "type": "string"
+                                                },
+                                                "code": {
+                                                    "type": "string"
+                                                },
+                                                "estimated_duration_minutes": {
+                                                    "type": "integer"
+                                                },
+                                                "status": {
+                                                    "type": "string"
+                                                },
+                                                "is_active": {
+                                                    "type": "boolean"
+                                                }
+                                            },
+                                            "required": [
+                                                "id",
+                                                "vehicle_id",
+                                                "vehicle_system_id",
+                                                "name",
+                                                "code",
+                                                "estimated_duration_minutes",
+                                                "status",
+                                                "is_active"
+                                            ]
+                                        }
+                                    },
+                                    "required": [
+                                        "success",
+                                        "message",
+                                        "data"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "$ref": "#/components/responses/AuthorizationException"
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/ModelNotFoundException"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    }
+                }
+            },
+            "put": {
+                "operationId": "v1.maintenance-tasks.update",
+                "description": "Updates task catalog fields using the same required fields as create.",
+                "summary": "Update maintenance task",
+                "tags": [
+                    "Maintenance"
+                ],
+                "parameters": [
+                    {
+                        "name": "maintenanceTask",
+                        "in": "path",
+                        "required": true,
+                        "description": "The maintenance task ID",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/MaintenanceTaskRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean"
+                                        },
+                                        "message": {
+                                            "type": "string"
+                                        },
+                                        "data": {
+                                            "type": "object",
+                                            "properties": {
+                                                "id": {
+                                                    "type": "integer"
+                                                },
+                                                "vehicle_id": {
+                                                    "type": [
+                                                        "integer",
+                                                        "null"
+                                                    ]
+                                                },
+                                                "vehicle_system_id": {
+                                                    "type": "integer"
+                                                },
+                                                "name": {
+                                                    "type": "string"
+                                                },
+                                                "code": {
+                                                    "type": "string"
+                                                },
+                                                "estimated_duration_minutes": {
+                                                    "type": "integer"
+                                                },
+                                                "status": {
+                                                    "type": "string"
+                                                },
+                                                "is_active": {
+                                                    "type": "boolean"
+                                                }
+                                            },
+                                            "required": [
+                                                "id",
+                                                "vehicle_id",
+                                                "vehicle_system_id",
+                                                "name",
+                                                "code",
+                                                "estimated_duration_minutes",
+                                                "status",
+                                                "is_active"
+                                            ]
+                                        }
+                                    },
+                                    "required": [
+                                        "success",
+                                        "message",
+                                        "data"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/ModelNotFoundException"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    },
+                    "422": {
+                        "$ref": "#/components/responses/ValidationException"
+                    },
+                    "403": {
+                        "$ref": "#/components/responses/AuthorizationException"
+                    }
+                }
+            },
+            "delete": {
+                "operationId": "v1.maintenance-tasks.destroy",
+                "description": "Soft deletes a task catalog record.",
+                "summary": "Delete maintenance task",
+                "tags": [
+                    "Maintenance"
+                ],
+                "parameters": [
+                    {
+                        "name": "maintenanceTask",
+                        "in": "path",
+                        "required": true,
+                        "description": "The maintenance task ID",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "const": "Maintenance task deleted successfully."
+                                        },
+                                        "data": {
+                                            "type": "null"
+                                        },
+                                        "meta": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "success",
+                                        "message",
+                                        "data",
+                                        "meta"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "$ref": "#/components/responses/AuthorizationException"
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/ModelNotFoundException"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    }
+                }
+            }
+        },
         "/users": {
             "get": {
                 "operationId": "v1.users.index",
@@ -3688,6 +4405,54 @@
                     "password"
                 ],
                 "title": "LoginRequest"
+            },
+            "MaintenanceTaskRequest": {
+                "type": "object",
+                "properties": {
+                    "vehicle_id": {
+                        "type": [
+                            "integer",
+                            "null"
+                        ]
+                    },
+                    "vehicle_system_id": {
+                        "type": "integer"
+                    },
+                    "name": {
+                        "type": "string",
+                        "maxLength": 255
+                    },
+                    "code": {
+                        "type": "string",
+                        "maxLength": 100
+                    },
+                    "description": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "maxLength": 2000
+                    },
+                    "estimated_duration_minutes": {
+                        "type": "integer",
+                        "minimum": 1,
+                        "maximum": 10080
+                    },
+                    "is_active": {
+                        "type": "boolean"
+                    },
+                    "status": {
+                        "type": "string"
+                    }
+                },
+                "required": [
+                    "vehicle_system_id",
+                    "name",
+                    "code",
+                    "estimated_duration_minutes",
+                    "is_active"
+                ],
+                "title": "MaintenanceTaskRequest"
             },
             "OwnerRequest": {
                 "type": "object",
