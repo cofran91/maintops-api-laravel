@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use OwenIt\Auditing\Auditable;
 use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
@@ -42,6 +43,16 @@ class MaintenanceTask extends Model implements AuditableContract
     public function vehicleSystem(): BelongsTo
     {
         return $this->belongsTo(VehicleSystem::class);
+    }
+
+    /**
+     * @return BelongsToMany<MaintenancePlan>
+     */
+    public function maintenancePlans(): BelongsToMany
+    {
+        return $this->belongsToMany(MaintenancePlan::class)
+            ->withTimestamps()
+            ->orderBy('maintenance_plans.id');
     }
 
     /**
