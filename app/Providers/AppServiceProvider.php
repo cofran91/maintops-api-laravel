@@ -36,6 +36,8 @@ class AppServiceProvider extends ServiceProvider
             return match (true) {
                 Str::startsWith($uri, 'api/v1/auth') => ['Authentication'],
                 Str::startsWith($uri, 'api/v1/users') => ['User Management'],
+                Str::startsWith($uri, 'api/v1/vehicle-systems') => ['Catalogs'],
+                Str::startsWith($uri, 'api/v1/owners') => ['Catalogs'],
                 default => ['General'],
             };
         });
