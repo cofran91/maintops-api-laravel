@@ -2,36 +2,36 @@
 
 namespace App\Models;
 
-use Database\Factories\OwnerFactory;
+use Database\Factories\VehicleFactory;
 use EloquentFilter\Filterable;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use OwenIt\Auditing\Auditable;
 use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
 
 #[Fillable([
-    'name',
-    'email',
-    'is_active',
-    'phone',
-    'document_number',
-    'address',
+    'owner_id',
+    'license_plate',
+    'brand',
+    'model',
+    'year',
+    'color',
+    'odometer_km',
 ])]
-class Owner extends Model implements AuditableContract
+class Vehicle extends Model implements AuditableContract
 {
-    /** @use HasFactory<OwnerFactory> */
+    /** @use HasFactory<VehicleFactory> */
     use Auditable, Filterable, HasFactory, SoftDeletes;
 
     /**
-     * @return HasMany<Vehicle>
+     * @return BelongsTo<Owner, Vehicle>
      */
-    public function vehicles(): HasMany
+    public function owner(): BelongsTo
     {
-        return $this->hasMany(Vehicle::class)
-            ->orderBy('vehicles.id');
+        return $this->belongsTo(Owner::class);
     }
 
     /**
@@ -40,7 +40,8 @@ class Owner extends Model implements AuditableContract
     protected function casts(): array
     {
         return [
-            'is_active' => 'boolean',
+            'year' => 'integer',
+            'odometer_km' => 'integer',
         ];
     }
 }

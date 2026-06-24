@@ -959,6 +959,872 @@
                 }
             }
         },
+        "/vehicles": {
+            "get": {
+                "operationId": "v1.vehicles.index",
+                "description": "Returns vehicles ordered from newest to oldest with their owner contact.",
+                "summary": "List vehicles",
+                "tags": [
+                    "Catalogs"
+                ],
+                "parameters": [
+                    {
+                        "name": "search",
+                        "in": "query",
+                        "description": "Filters by partial match on plate, brand, model, color, or owner fields.",
+                        "schema": {
+                            "type": "string"
+                        },
+                        "example": "ABC"
+                    },
+                    {
+                        "name": "license_plate",
+                        "in": "query",
+                        "description": "Filters by partial match on license plate. The value is normalized to uppercase.",
+                        "schema": {
+                            "type": "string"
+                        },
+                        "example": "ABC123"
+                    },
+                    {
+                        "name": "brand",
+                        "in": "query",
+                        "description": "Filters by vehicle brand.",
+                        "schema": {
+                            "type": "string"
+                        },
+                        "example": "Toyota"
+                    },
+                    {
+                        "name": "model",
+                        "in": "query",
+                        "description": "Filters by vehicle model or line.",
+                        "schema": {
+                            "type": "string"
+                        },
+                        "example": "Hilux"
+                    },
+                    {
+                        "name": "year",
+                        "in": "query",
+                        "description": "Filters by vehicle year.",
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "example": 2024
+                    },
+                    {
+                        "name": "color",
+                        "in": "query",
+                        "description": "Filters by vehicle color.",
+                        "schema": {
+                            "type": "string"
+                        },
+                        "example": "White"
+                    },
+                    {
+                        "name": "owner_id",
+                        "in": "query",
+                        "description": "Filters by owner ID.",
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "example": 25
+                    },
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "description": "Requested page number.",
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "example": 1
+                    },
+                    {
+                        "name": "per_page",
+                        "in": "query",
+                        "description": "Records per page. Minimum 1, maximum 100.",
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "example": 15
+                    },
+                    {
+                        "name": "created_from",
+                        "in": "query",
+                        "description": "Filters vehicles created on or after this date.",
+                        "schema": {
+                            "type": "object"
+                        },
+                        "example": "2026-06-01",
+                        "x-deepObject-style": "qs"
+                    },
+                    {
+                        "name": "created_to",
+                        "in": "query",
+                        "description": "Filters vehicles created on or before this date.",
+                        "schema": {
+                            "type": "object"
+                        },
+                        "example": "2026-06-30",
+                        "x-deepObject-style": "qs"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean"
+                                        },
+                                        "message": {
+                                            "type": "string"
+                                        },
+                                        "data": {
+                                            "type": "object",
+                                            "properties": {
+                                                "items": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "object",
+                                                        "properties": {
+                                                            "id": {
+                                                                "type": "integer"
+                                                            },
+                                                            "owner_id": {
+                                                                "type": "integer"
+                                                            },
+                                                            "owner": {
+                                                                "type": "object",
+                                                                "properties": {
+                                                                    "id": {
+                                                                        "type": "integer"
+                                                                    },
+                                                                    "name": {
+                                                                        "type": "string"
+                                                                    },
+                                                                    "email": {
+                                                                        "type": "string"
+                                                                    },
+                                                                    "is_active": {
+                                                                        "type": "boolean"
+                                                                    },
+                                                                    "phone": {
+                                                                        "type": [
+                                                                            "string",
+                                                                            "null"
+                                                                        ]
+                                                                    },
+                                                                    "document_number": {
+                                                                        "type": [
+                                                                            "string",
+                                                                            "null"
+                                                                        ]
+                                                                    },
+                                                                    "address": {
+                                                                        "type": [
+                                                                            "string",
+                                                                            "null"
+                                                                        ]
+                                                                    }
+                                                                },
+                                                                "required": [
+                                                                    "id",
+                                                                    "name",
+                                                                    "email",
+                                                                    "is_active",
+                                                                    "phone",
+                                                                    "document_number",
+                                                                    "address"
+                                                                ]
+                                                            },
+                                                            "license_plate": {
+                                                                "type": "string"
+                                                            },
+                                                            "brand": {
+                                                                "type": [
+                                                                    "string",
+                                                                    "null"
+                                                                ]
+                                                            },
+                                                            "model": {
+                                                                "type": [
+                                                                    "string",
+                                                                    "null"
+                                                                ]
+                                                            },
+                                                            "year": {
+                                                                "type": [
+                                                                    "integer",
+                                                                    "null"
+                                                                ]
+                                                            },
+                                                            "color": {
+                                                                "type": [
+                                                                    "string",
+                                                                    "null"
+                                                                ]
+                                                            },
+                                                            "odometer_km": {
+                                                                "type": "integer"
+                                                            },
+                                                            "created_at": {
+                                                                "type": [
+                                                                    "string",
+                                                                    "null"
+                                                                ]
+                                                            },
+                                                            "updated_at": {
+                                                                "type": [
+                                                                    "string",
+                                                                    "null"
+                                                                ]
+                                                            }
+                                                        },
+                                                        "required": [
+                                                            "id",
+                                                            "owner_id",
+                                                            "owner",
+                                                            "license_plate",
+                                                            "brand",
+                                                            "model",
+                                                            "year",
+                                                            "color",
+                                                            "odometer_km",
+                                                            "created_at",
+                                                            "updated_at"
+                                                        ]
+                                                    }
+                                                },
+                                                "pagination": {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "current_page": {
+                                                            "type": "integer"
+                                                        },
+                                                        "last_page": {
+                                                            "type": "integer"
+                                                        },
+                                                        "per_page": {
+                                                            "type": "integer"
+                                                        },
+                                                        "total": {
+                                                            "type": "integer"
+                                                        },
+                                                        "from": {
+                                                            "type": [
+                                                                "integer",
+                                                                "null"
+                                                            ]
+                                                        },
+                                                        "to": {
+                                                            "type": [
+                                                                "integer",
+                                                                "null"
+                                                            ]
+                                                        }
+                                                    },
+                                                    "required": [
+                                                        "current_page",
+                                                        "last_page",
+                                                        "per_page",
+                                                        "total",
+                                                        "from",
+                                                        "to"
+                                                    ]
+                                                }
+                                            },
+                                            "required": [
+                                                "items",
+                                                "pagination"
+                                            ]
+                                        }
+                                    },
+                                    "required": [
+                                        "success",
+                                        "message",
+                                        "data"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "$ref": "#/components/responses/AuthorizationException"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    }
+                }
+            },
+            "post": {
+                "operationId": "v1.vehicles.store",
+                "description": "Creates a vehicle attached to an active owner.",
+                "summary": "Create vehicle",
+                "tags": [
+                    "Catalogs"
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/VehicleRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean"
+                                        },
+                                        "message": {
+                                            "type": "string"
+                                        },
+                                        "data": {
+                                            "type": "object",
+                                            "properties": {
+                                                "id": {
+                                                    "type": "integer"
+                                                },
+                                                "owner_id": {
+                                                    "type": "integer"
+                                                },
+                                                "owner": {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "id": {
+                                                            "type": "integer"
+                                                        },
+                                                        "name": {
+                                                            "type": "string"
+                                                        },
+                                                        "email": {
+                                                            "type": "string"
+                                                        },
+                                                        "is_active": {
+                                                            "type": "boolean"
+                                                        },
+                                                        "phone": {
+                                                            "type": [
+                                                                "string",
+                                                                "null"
+                                                            ]
+                                                        },
+                                                        "document_number": {
+                                                            "type": [
+                                                                "string",
+                                                                "null"
+                                                            ]
+                                                        },
+                                                        "address": {
+                                                            "type": [
+                                                                "string",
+                                                                "null"
+                                                            ]
+                                                        }
+                                                    },
+                                                    "required": [
+                                                        "id",
+                                                        "name",
+                                                        "email",
+                                                        "is_active",
+                                                        "phone",
+                                                        "document_number",
+                                                        "address"
+                                                    ]
+                                                },
+                                                "license_plate": {
+                                                    "type": "string"
+                                                },
+                                                "brand": {
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
+                                                },
+                                                "model": {
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
+                                                },
+                                                "year": {
+                                                    "type": [
+                                                        "integer",
+                                                        "null"
+                                                    ]
+                                                },
+                                                "color": {
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
+                                                },
+                                                "odometer_km": {
+                                                    "type": "integer"
+                                                },
+                                                "created_at": {
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
+                                                },
+                                                "updated_at": {
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
+                                                }
+                                            },
+                                            "required": [
+                                                "id",
+                                                "owner_id",
+                                                "owner",
+                                                "license_plate",
+                                                "brand",
+                                                "model",
+                                                "year",
+                                                "color",
+                                                "odometer_km",
+                                                "created_at",
+                                                "updated_at"
+                                            ]
+                                        }
+                                    },
+                                    "required": [
+                                        "success",
+                                        "message",
+                                        "data"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    },
+                    "422": {
+                        "$ref": "#/components/responses/ValidationException"
+                    },
+                    "403": {
+                        "$ref": "#/components/responses/AuthorizationException"
+                    }
+                }
+            }
+        },
+        "/vehicles/{vehicle}": {
+            "get": {
+                "operationId": "v1.vehicles.show",
+                "summary": "Show vehicle",
+                "tags": [
+                    "Catalogs"
+                ],
+                "parameters": [
+                    {
+                        "name": "vehicle",
+                        "in": "path",
+                        "required": true,
+                        "description": "The vehicle ID",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean"
+                                        },
+                                        "message": {
+                                            "type": "string"
+                                        },
+                                        "data": {
+                                            "type": "object",
+                                            "properties": {
+                                                "id": {
+                                                    "type": "integer"
+                                                },
+                                                "owner_id": {
+                                                    "type": "integer"
+                                                },
+                                                "owner": {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "id": {
+                                                            "type": "integer"
+                                                        },
+                                                        "name": {
+                                                            "type": "string"
+                                                        },
+                                                        "email": {
+                                                            "type": "string"
+                                                        },
+                                                        "is_active": {
+                                                            "type": "boolean"
+                                                        },
+                                                        "phone": {
+                                                            "type": [
+                                                                "string",
+                                                                "null"
+                                                            ]
+                                                        },
+                                                        "document_number": {
+                                                            "type": [
+                                                                "string",
+                                                                "null"
+                                                            ]
+                                                        },
+                                                        "address": {
+                                                            "type": [
+                                                                "string",
+                                                                "null"
+                                                            ]
+                                                        }
+                                                    },
+                                                    "required": [
+                                                        "id",
+                                                        "name",
+                                                        "email",
+                                                        "is_active",
+                                                        "phone",
+                                                        "document_number",
+                                                        "address"
+                                                    ]
+                                                },
+                                                "license_plate": {
+                                                    "type": "string"
+                                                },
+                                                "brand": {
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
+                                                },
+                                                "model": {
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
+                                                },
+                                                "year": {
+                                                    "type": [
+                                                        "integer",
+                                                        "null"
+                                                    ]
+                                                },
+                                                "color": {
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
+                                                },
+                                                "odometer_km": {
+                                                    "type": "integer"
+                                                },
+                                                "created_at": {
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
+                                                },
+                                                "updated_at": {
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
+                                                }
+                                            },
+                                            "required": [
+                                                "id",
+                                                "owner_id",
+                                                "owner",
+                                                "license_plate",
+                                                "brand",
+                                                "model",
+                                                "year",
+                                                "color",
+                                                "odometer_km",
+                                                "created_at",
+                                                "updated_at"
+                                            ]
+                                        }
+                                    },
+                                    "required": [
+                                        "success",
+                                        "message",
+                                        "data"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "$ref": "#/components/responses/AuthorizationException"
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/ModelNotFoundException"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    }
+                }
+            },
+            "put": {
+                "operationId": "v1.vehicles.update",
+                "description": "Updates vehicle data using the same required fields as create.",
+                "summary": "Update vehicle",
+                "tags": [
+                    "Catalogs"
+                ],
+                "parameters": [
+                    {
+                        "name": "vehicle",
+                        "in": "path",
+                        "required": true,
+                        "description": "The vehicle ID",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/VehicleRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean"
+                                        },
+                                        "message": {
+                                            "type": "string"
+                                        },
+                                        "data": {
+                                            "type": "object",
+                                            "properties": {
+                                                "id": {
+                                                    "type": "integer"
+                                                },
+                                                "owner_id": {
+                                                    "type": "integer"
+                                                },
+                                                "owner": {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "id": {
+                                                            "type": "integer"
+                                                        },
+                                                        "name": {
+                                                            "type": "string"
+                                                        },
+                                                        "email": {
+                                                            "type": "string"
+                                                        },
+                                                        "is_active": {
+                                                            "type": "boolean"
+                                                        },
+                                                        "phone": {
+                                                            "type": [
+                                                                "string",
+                                                                "null"
+                                                            ]
+                                                        },
+                                                        "document_number": {
+                                                            "type": [
+                                                                "string",
+                                                                "null"
+                                                            ]
+                                                        },
+                                                        "address": {
+                                                            "type": [
+                                                                "string",
+                                                                "null"
+                                                            ]
+                                                        }
+                                                    },
+                                                    "required": [
+                                                        "id",
+                                                        "name",
+                                                        "email",
+                                                        "is_active",
+                                                        "phone",
+                                                        "document_number",
+                                                        "address"
+                                                    ]
+                                                },
+                                                "license_plate": {
+                                                    "type": "string"
+                                                },
+                                                "brand": {
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
+                                                },
+                                                "model": {
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
+                                                },
+                                                "year": {
+                                                    "type": [
+                                                        "integer",
+                                                        "null"
+                                                    ]
+                                                },
+                                                "color": {
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
+                                                },
+                                                "odometer_km": {
+                                                    "type": "integer"
+                                                },
+                                                "created_at": {
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
+                                                },
+                                                "updated_at": {
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
+                                                }
+                                            },
+                                            "required": [
+                                                "id",
+                                                "owner_id",
+                                                "owner",
+                                                "license_plate",
+                                                "brand",
+                                                "model",
+                                                "year",
+                                                "color",
+                                                "odometer_km",
+                                                "created_at",
+                                                "updated_at"
+                                            ]
+                                        }
+                                    },
+                                    "required": [
+                                        "success",
+                                        "message",
+                                        "data"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/ModelNotFoundException"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    },
+                    "422": {
+                        "$ref": "#/components/responses/ValidationException"
+                    },
+                    "403": {
+                        "$ref": "#/components/responses/AuthorizationException"
+                    }
+                }
+            },
+            "delete": {
+                "operationId": "v1.vehicles.destroy",
+                "description": "Soft deletes a vehicle record.",
+                "summary": "Delete vehicle",
+                "tags": [
+                    "Catalogs"
+                ],
+                "parameters": [
+                    {
+                        "name": "vehicle",
+                        "in": "path",
+                        "required": true,
+                        "description": "The vehicle ID",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "const": "Vehicle deleted successfully."
+                                        },
+                                        "data": {
+                                            "type": "null"
+                                        },
+                                        "meta": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "success",
+                                        "message",
+                                        "data",
+                                        "meta"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "$ref": "#/components/responses/AuthorizationException"
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/ModelNotFoundException"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    }
+                }
+            }
+        },
         "/": {
             "get": {
                 "operationId": "v1.index",
@@ -1648,6 +2514,57 @@
                     "password_confirmation"
                 ],
                 "title": "UserRequest"
+            },
+            "VehicleRequest": {
+                "type": "object",
+                "properties": {
+                    "owner_id": {
+                        "type": "integer"
+                    },
+                    "license_plate": {
+                        "type": "string",
+                        "maxLength": 30
+                    },
+                    "brand": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "maxLength": 100
+                    },
+                    "model": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "maxLength": 100
+                    },
+                    "year": {
+                        "type": [
+                            "integer",
+                            "null"
+                        ],
+                        "minimum": 1900,
+                        "maximum": 2027
+                    },
+                    "color": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "maxLength": 80
+                    },
+                    "odometer_km": {
+                        "type": "integer",
+                        "minimum": 0
+                    }
+                },
+                "required": [
+                    "owner_id",
+                    "license_plate",
+                    "odometer_km"
+                ],
+                "title": "VehicleRequest"
             }
         },
         "responses": {
