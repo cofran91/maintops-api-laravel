@@ -130,6 +130,31 @@ Regenerate the specification after changing API routes, request validation, reso
 docker compose exec app php artisan scramble:export
 ```
 
+## Architecture Decisions
+
+The codebase keeps the default Laravel shape recognizable, but adds a few explicit boundaries where they make engineering decisions easier to inspect:
+
+- API routes are versioned under `routes/api/v1/*`, so future contract changes can be introduced without mixing versions in one file.
+- Write workflows that coordinate persistence, state changes, related records, or audit side effects live in `app/Actions/*`. This keeps multi-step use cases visible and easy to test.
+- Access rules, submitted-value constraints, and list-query scoping are kept in `app/Policies/*`, `app/Rules/*`, and `app/ModelFilters/*`. This gives each module a consistent place for authorization, validation invariants, and filtering behavior as the API grows.
+- Cross-cutting or domain support code lives in `app/Support/*` and `app/Services/*`, making reusable behavior explicit instead of hiding it inside HTTP controllers.
+- Shared domain vocabulary lives in `app/Enums/*` when repeated string values would otherwise spread across seeders, policies, requests, filters, actions, and tests.
+
+These choices are intentionally modest. The project is small, so the architecture favors readable boundaries over extra layers or premature abstractions.
+
+## Testing Architecture
+
+Feature tests are grouped by API area under `tests/Feature/Api/*`. This mirrors the production modules and makes the test suite useful as executable documentation for each workflow.
+
+- Authentication tests cover login, logout, current-user lookup, inactive users, deleted users, and invalid tokens.
+- User-management tests are split by behavior: create, list, show, update, delete, and audit side effects.
+- Data providers are used for role matrices so the same rule is exercised across `super_admin`, `admin`, `workshop_manager`, `advisor`, and `technician` without copy-paste test methods.
+- `tests/Feature/Api/Users/Concerns/InteractsWithUsers.php` centralizes test fixtures for users, roles, and request payloads. Individual tests stay focused on behavior instead of setup noise.
+- `RefreshDatabase` and `RolesAndAdminUserSeeder` keep each test isolated while still exercising the real migrations, seeders, roles, policies, and Sanctum token flow.
+- Audit tests verify business side effects explicitly, including old and new user snapshots, instead of only checking HTTP response codes.
+
+The test suite favors feature coverage because the most important behavior in this API lives at the boundary between HTTP input, authorization, database state, role assignment, and audit recording.
+
 ## Main Libraries
 
 - `laravel/sanctum`: API authentication with personal access tokens.

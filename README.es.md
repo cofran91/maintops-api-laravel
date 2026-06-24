@@ -130,6 +130,31 @@ Regenera la especificacion despues de cambiar rutas API, validaciones, resources
 docker compose exec app php artisan scramble:export
 ```
 
+## Decisiones De Arquitectura
+
+El codigo mantiene la estructura base de Laravel reconocible, pero agrega limites explicitos donde ayudan a inspeccionar decisiones de ingenieria:
+
+- Las rutas API estan versionadas bajo `routes/api/v1/*`, para que futuros cambios de contrato puedan introducirse sin mezclar versiones en un solo archivo.
+- Los workflows de escritura que coordinan persistencia, cambios de estado, registros relacionados o efectos de auditoria viven en `app/Actions/*`. Esto deja visibles los casos de uso de varios pasos y facilita probarlos.
+- Las reglas de acceso, las restricciones de valores enviados y el alcance de consultas de listado se mantienen en `app/Policies/*`, `app/Rules/*` y `app/ModelFilters/*`. Asi cada modulo tiene un lugar consistente para autorizacion, invariantes de validacion y comportamiento de filtros a medida que la API crece.
+- El soporte transversal o de dominio vive en `app/Support/*` y `app/Services/*`, haciendo explicito el comportamiento reutilizable en lugar de esconderlo dentro de controladores HTTP.
+- El vocabulario compartido de dominio vive en `app/Enums/*` cuando los valores string repetidos podrian dispersarse entre seeders, policies, requests, filters, actions y tests.
+
+Estas decisiones son deliberadamente modestas. El proyecto es pequeno, asi que la arquitectura prioriza limites legibles sobre capas extra o abstracciones prematuras.
+
+## Arquitectura De Pruebas
+
+Las pruebas feature se agrupan por area API en `tests/Feature/Api/*`. Esto replica los modulos de produccion y hace que la suite funcione como documentacion ejecutable de cada flujo.
+
+- Las pruebas de autenticacion cubren login, logout, consulta del usuario actual, usuarios inactivos, usuarios eliminados y tokens invalidos.
+- Las pruebas de gestion de usuarios estan separadas por comportamiento: crear, listar, ver, actualizar, eliminar y efectos de auditoria.
+- Los data providers cubren matrices de roles para ejercer la misma regla sobre `super_admin`, `admin`, `workshop_manager`, `advisor` y `technician` sin duplicar metodos.
+- `tests/Feature/Api/Users/Concerns/InteractsWithUsers.php` centraliza fixtures de usuarios, roles y payloads. Cada prueba individual queda enfocada en comportamiento y no en ruido de setup.
+- `RefreshDatabase` y `RolesAndAdminUserSeeder` aislan cada prueba mientras ejercitan migraciones, seeders, roles, policies y el flujo real de tokens Sanctum.
+- Las pruebas de auditoria verifican efectos de negocio explicitamente, incluyendo snapshots anteriores y nuevos de usuario, no solo codigos de respuesta HTTP.
+
+La suite prioriza cobertura feature porque el comportamiento mas importante de esta API vive en la frontera entre entrada HTTP, autorizacion, estado de base de datos, asignacion de roles y auditoria.
+
 ## Librerias Principales
 
 - `laravel/sanctum`: autenticacion API con tokens personales.
