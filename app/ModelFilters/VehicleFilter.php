@@ -3,9 +3,7 @@
 namespace App\ModelFilters;
 
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Support\Carbon;
 use Illuminate\Support\Str;
-use Throwable;
 
 final class VehicleFilter extends ModelFilter
 {
@@ -73,19 +71,23 @@ final class VehicleFilter extends ModelFilter
 
     public function createdFrom(string $value): void
     {
-        try {
-            $this->where('created_at', '>=', Carbon::parse($value)->startOfDay());
-        } catch (Throwable) {
-            //
+        $date = $this->dateFilterValue($value);
+
+        if ($date === null) {
+            return;
         }
+
+        $this->where('created_at', '>=', $date->startOfDay());
     }
 
     public function createdTo(string $value): void
     {
-        try {
-            $this->where('created_at', '<=', Carbon::parse($value)->endOfDay());
-        } catch (Throwable) {
-            //
+        $date = $this->dateFilterValue($value);
+
+        if ($date === null) {
+            return;
         }
+
+        $this->where('created_at', '<=', $date->endOfDay());
     }
 }

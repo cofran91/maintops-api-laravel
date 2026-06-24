@@ -8,6 +8,7 @@ Route::prefix('v1')->as('api.v1.')->group(function (): void {
     require __DIR__.'/api/v1/vehicle-systems.php';
     require __DIR__.'/api/v1/owners.php';
     require __DIR__.'/api/v1/vehicles.php';
+    require __DIR__.'/api/v1/workshops.php';
 
     Route::get('/', fn () => response()->json([
         'name' => 'MaintOps Laravel API',

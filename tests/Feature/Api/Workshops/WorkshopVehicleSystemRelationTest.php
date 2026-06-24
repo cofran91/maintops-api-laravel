@@ -1,0 +1,34 @@
+<?php
+
+namespace Tests\Feature\Api\Workshops;
+
+use App\Models\VehicleSystem;
+use App\Models\Workshop;
+use Database\Seeders\VehicleSystemSeeder;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Tests\TestCase;
+
+class WorkshopVehicleSystemRelationTest extends TestCase
+{
+    use RefreshDatabase;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->seed(VehicleSystemSeeder::class);
+    }
+
+    public function test_workshop_belongs_to_many_vehicle_systems(): void
+    {
+        $workshop = Workshop::factory()->create();
+        $vehicleSystems = VehicleSystem::query()->take(2)->get();
+
+        $workshop->vehicleSystems()->sync($vehicleSystems->pluck('id')->all());
+
+        $this->assertEquals(
+            $vehicleSystems->pluck('id')->all(),
+            $workshop->vehicleSystems()->pluck('vehicle_systems.id')->all(),
+        );
+    }
+}

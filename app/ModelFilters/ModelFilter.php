@@ -2,6 +2,8 @@
 
 namespace App\ModelFilters;
 
+use Carbon\CarbonImmutable;
+use DateTimeImmutable;
 use EloquentFilter\ModelFilter as BaseModelFilter;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Http\Request;
@@ -25,6 +27,25 @@ abstract class ModelFilter extends BaseModelFilter
     public static function perPage(Request $request): int
     {
         return min(max((int) $request->integer('per_page', 15), 1), 100);
+    }
+
+    protected function dateFilterValue(string $value): ?CarbonImmutable
+    {
+        $date = DateTimeImmutable::createFromFormat('!Y-m-d', $value);
+        $errors = DateTimeImmutable::getLastErrors();
+
+        if ($date === false) {
+            return null;
+        }
+
+        if (
+            is_array($errors)
+            && ($errors['warning_count'] > 0 || $errors['error_count'] > 0)
+        ) {
+            return null;
+        }
+
+        return CarbonImmutable::instance($date);
     }
 
     /**
