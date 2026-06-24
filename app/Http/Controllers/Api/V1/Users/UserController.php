@@ -35,6 +35,7 @@ class UserController extends ApiController
      *             phone: string|null,
      *             document_number: string|null,
      *             address: string|null,
+     *             workshop_id: int|null,
      *             email_verified_at: string|null,
      *             created_at: string|null,
      *             updated_at: string|null
@@ -45,8 +46,9 @@ class UserController extends ApiController
      */
     #[QueryParameter('search', description: 'Filters by partial match on name, email, phone, or document number.', type: 'string', example: 'maria')]
     #[QueryParameter('role', description: 'Filters by a visible role. Values: super_admin, admin, workshop_manager, advisor, technician.', type: 'string', example: 'technician')]
+    #[QueryParameter('workshop_id', description: 'Filters users assigned to a workshop as technicians. Accepts null, none, or unassigned.', type: 'integer', example: 5)]
     #[QueryParameter('is_active', description: 'Filters active or inactive users.', type: 'boolean', example: true)]
-    #[QueryParameter('without_workshop', description: 'When true, returns users that are not assigned as a workshop manager.', type: 'boolean', example: true)]
+    #[QueryParameter('without_workshop', description: 'When true, returns users without a workshop assignment.', type: 'boolean', example: true)]
     #[QueryParameter('page', description: 'Requested page number.', type: 'integer', example: 1)]
     #[QueryParameter('per_page', description: 'Records per page. Minimum 1, maximum 100.', type: 'integer', example: 15)]
     public function index(Request $request): JsonResponse
@@ -54,7 +56,7 @@ class UserController extends ApiController
         Gate::authorize('viewAny', User::class);
 
         $paginator = User::query()
-            ->with('roles')
+            ->with(['roles', 'workshop'])
             ->latest('id')
             ->filter($request->query())
             ->paginateFilter(UserFilter::perPage($request));
@@ -79,6 +81,7 @@ class UserController extends ApiController
      * @bodyParam phone string|null Main phone number. Example: +57 300 123 4567
      * @bodyParam document_number string|null Unique document number when provided. Example: 123456789
      * @bodyParam address string|null Contact address. Example: 10 Main Street
+     * @bodyParam workshop_id integer|null Workshop assigned to a technician. Only valid when role is technician. Example: 5
      *
      * @return JsonResponse<array{success: bool, message: string, data: array{id: int, name: string, email: string, roles: array<int, string>}}, 201>
      */
@@ -86,7 +89,7 @@ class UserController extends ApiController
     {
         $user = $createUserAction
             ->execute($request->validated())
-            ->load('roles');
+            ->load(['roles', 'workshop']);
 
         return $this->success(
             data: (new UserResource($user))->resolve($request),
@@ -107,7 +110,7 @@ class UserController extends ApiController
         Gate::authorize('view', $user);
 
         return $this->success(
-            data: (new UserResource($user->load('roles')))->resolve($request),
+            data: (new UserResource($user->load(['roles', 'workshop'])))->resolve($request),
             message: 'User retrieved.',
         );
     }
@@ -126,6 +129,7 @@ class UserController extends ApiController
      * @bodyParam phone string|null Main phone number. Example: +57 300 123 4567
      * @bodyParam document_number string|null Unique document number when provided. Example: 123456789
      * @bodyParam address string|null Contact address. Example: 10 Main Street
+     * @bodyParam workshop_id integer|null Workshop assigned to a technician. Send null to unassign. Example: 5
      *
      * @return JsonResponse<array{success: bool, message: string, data: array{id: int, name: string, email: string, roles: array<int, string>}}, 200>
      */
@@ -133,7 +137,7 @@ class UserController extends ApiController
     {
         $user = $updateUserAction
             ->execute($user, $request->validated())
-            ->load('roles');
+            ->load(['roles', 'workshop']);
 
         return $this->success(
             data: (new UserResource($user))->resolve($request),

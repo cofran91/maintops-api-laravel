@@ -90,6 +90,7 @@ class CreateWorkshopTest extends TestCase
     {
         $actor = $this->userWithRole(SystemRole::Admin, ['email' => 'workshop.unique.actor@example.com']);
         $manager = $this->userWithRole(SystemRole::WorkshopManager, ['email' => 'workshop.unique.manager@example.com']);
+        $newManager = $this->userWithRole(SystemRole::WorkshopManager, ['email' => 'workshop.unique.new.manager@example.com']);
         $vehicleSystems = $this->vehicleSystems(1);
         $this->workshopFor($manager, $vehicleSystems, [
             'name' => 'Existing Workshop',
@@ -97,12 +98,54 @@ class CreateWorkshopTest extends TestCase
         ]);
 
         $this->withToken($actor->createToken('feature-test')->plainTextToken)
-            ->postJson('/api/v1/workshops', $this->workshopPayloadFor($manager, $vehicleSystems, [
+            ->postJson('/api/v1/workshops', $this->workshopPayloadFor($newManager, $vehicleSystems, [
                 'name' => 'Existing Workshop',
                 'code' => 'existing workshop',
             ]))
             ->assertUnprocessable()
             ->assertJsonValidationErrors(['name', 'code']);
+    }
+
+    public function test_system_admin_can_create_workshop_with_technicians(): void
+    {
+        $actor = $this->userWithRole(SystemRole::Admin, ['email' => 'workshop.create.technicians.actor@example.com']);
+        $manager = $this->userWithRole(SystemRole::WorkshopManager, ['email' => 'workshop.create.technicians.manager@example.com']);
+        $firstTechnician = $this->userWithRole(SystemRole::Technician, ['email' => 'first.workshop.technician@example.com']);
+        $secondTechnician = $this->userWithRole(SystemRole::Technician, ['email' => 'second.workshop.technician@example.com']);
+
+        $createdId = $this->withToken($actor->createToken('feature-test')->plainTextToken)
+            ->postJson('/api/v1/workshops', $this->workshopPayloadFor($manager, $this->vehicleSystems(1), [
+                'technician_user_ids' => [$firstTechnician->id, $secondTechnician->id],
+            ]))
+            ->assertCreated()
+            ->assertJsonPath('data.technician_user_ids.0', $firstTechnician->id)
+            ->assertJsonPath('data.technician_user_ids.1', $secondTechnician->id)
+            ->assertJsonPath('data.technicians.0.id', $firstTechnician->id)
+            ->assertJsonPath('data.technicians.1.id', $secondTechnician->id)
+            ->json('data.id');
+
+        $this->assertDatabaseHas('users', [
+            'id' => $firstTechnician->id,
+            'workshop_id' => $createdId,
+        ]);
+        $this->assertDatabaseHas('users', [
+            'id' => $secondTechnician->id,
+            'workshop_id' => $createdId,
+        ]);
+    }
+
+    public function test_workshop_requires_assignable_technicians(): void
+    {
+        $actor = $this->userWithRole(SystemRole::Admin, ['email' => 'workshop.invalid.technicians.actor@example.com']);
+        $manager = $this->userWithRole(SystemRole::WorkshopManager, ['email' => 'workshop.invalid.technicians.manager@example.com']);
+        $advisor = $this->userWithRole(SystemRole::Advisor, ['email' => 'workshop.invalid.technician.advisor@example.com']);
+
+        $this->withToken($actor->createToken('feature-test')->plainTextToken)
+            ->postJson('/api/v1/workshops', $this->workshopPayloadFor($manager, $this->vehicleSystems(1), [
+                'technician_user_ids' => [$advisor->id],
+            ]))
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors(['technician_user_ids.0']);
     }
 
     public function test_workshop_manager_assigned_to_another_workshop_cannot_create_workshop(): void

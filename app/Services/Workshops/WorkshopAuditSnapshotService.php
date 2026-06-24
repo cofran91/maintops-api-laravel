@@ -17,6 +17,10 @@ final class WorkshopAuditSnapshotService
                 ->orderBy('vehicle_systems.id')
                 ->pluck('vehicle_systems.id')
                 ->all(),
+            'technician_user_ids' => $workshop->technicians()
+                ->orderBy('users.id')
+                ->pluck('users.id')
+                ->all(),
         ];
     }
 }

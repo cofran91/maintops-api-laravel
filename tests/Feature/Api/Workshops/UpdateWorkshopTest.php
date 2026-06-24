@@ -84,6 +84,7 @@ class UpdateWorkshopTest extends TestCase
                 'code',
                 'weekly_schedule',
                 'vehicle_system_ids',
+                'technician_user_ids',
                 'is_active',
             ]);
     }
@@ -113,6 +114,66 @@ class UpdateWorkshopTest extends TestCase
                 'weekly_schedule.monday.closes_at',
                 'vehicle_system_ids',
             ]);
+    }
+
+    public function test_system_admin_can_replace_workshop_technicians(): void
+    {
+        $actor = $this->userWithRole(SystemRole::Admin, ['email' => 'workshop.replace.technicians.actor@example.com']);
+        $manager = $this->userWithRole(SystemRole::WorkshopManager, ['email' => 'workshop.replace.technicians.manager@example.com']);
+        $workshop = $this->workshopFor($manager, $this->vehicleSystems(1), [
+            'name' => 'Technician Replace Workshop',
+            'code' => 'TECHNICIAN-REPLACE-WORKSHOP',
+        ]);
+        $oldTechnician = $this->userWithRole(SystemRole::Technician, [
+            'email' => 'old.workshop.technician@example.com',
+            'workshop_id' => $workshop->id,
+        ]);
+        $newTechnician = $this->userWithRole(SystemRole::Technician, [
+            'email' => 'new.workshop.technician@example.com',
+        ]);
+
+        $this->withToken($actor->createToken('feature-test')->plainTextToken)
+            ->patchJson('/api/v1/workshops/'.$workshop->id, $this->workshopUpdatePayloadFor($workshop, [
+                'technician_user_ids' => [$newTechnician->id],
+            ]))
+            ->assertOk()
+            ->assertJsonPath('data.technician_user_ids.0', $newTechnician->id)
+            ->assertJsonPath('data.technicians.0.id', $newTechnician->id);
+
+        $this->assertDatabaseHas('users', [
+            'id' => $oldTechnician->id,
+            'workshop_id' => null,
+        ]);
+        $this->assertDatabaseHas('users', [
+            'id' => $newTechnician->id,
+            'workshop_id' => $workshop->id,
+        ]);
+    }
+
+    public function test_workshop_cannot_assign_technician_from_another_workshop(): void
+    {
+        $actor = $this->userWithRole(SystemRole::Admin, ['email' => 'workshop.foreign.technician.actor@example.com']);
+        $northManager = $this->userWithRole(SystemRole::WorkshopManager, ['email' => 'north.foreign.technician.manager@example.com']);
+        $southManager = $this->userWithRole(SystemRole::WorkshopManager, ['email' => 'south.foreign.technician.manager@example.com']);
+        $northWorkshop = $this->workshopFor($northManager, $this->vehicleSystems(1), [
+            'name' => 'North Technician Workshop',
+            'code' => 'NORTH-TECHNICIAN-WORKSHOP',
+        ]);
+        $southWorkshop = $this->workshopFor($southManager, $this->vehicleSystems(1), [
+            'name' => 'South Technician Workshop',
+            'code' => 'SOUTH-TECHNICIAN-WORKSHOP',
+        ]);
+        $technician = $this->userWithRole(SystemRole::Technician, [
+            'email' => 'foreign.workshop.technician@example.com',
+            'workshop_id' => $northWorkshop->id,
+        ]);
+
+        $this->withToken($actor->createToken('feature-test')->plainTextToken)
+            ->patchJson('/api/v1/workshops/'.$southWorkshop->id, $this->workshopUpdatePayloadFor($southWorkshop, [
+                'technician_user_ids' => [$technician->id],
+            ]))
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors(['technician_user_ids.0']);
     }
 
     public function test_workshop_cannot_be_reassigned_to_manager_assigned_to_another_workshop(): void

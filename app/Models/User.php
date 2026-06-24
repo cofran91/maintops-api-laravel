@@ -8,6 +8,7 @@ use EloquentFilter\Filterable;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -25,6 +26,7 @@ use Spatie\Permission\Traits\HasRoles;
     'phone',
     'document_number',
     'address',
+    'workshop_id',
 ])]
 #[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable implements AuditableContract
@@ -48,6 +50,14 @@ class User extends Authenticatable implements AuditableContract
     public function managedWorkshop(): HasOne
     {
         return $this->hasOne(Workshop::class, 'manager_user_id');
+    }
+
+    /**
+     * @return BelongsTo<Workshop, User>
+     */
+    public function workshop(): BelongsTo
+    {
+        return $this->belongsTo(Workshop::class);
     }
 
     /**

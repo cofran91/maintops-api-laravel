@@ -36,6 +36,7 @@ trait InteractsWithUsers
             'phone' => '+57 300 123 45'.str_pad((string) $index, 2, '0', STR_PAD_LEFT),
             'document_number' => 'DOC-'.$role->value.'-'.$index,
             'address' => 'Street '.$index.' #10-20',
+            'workshop_id' => null,
         ], $attributes);
     }
 
@@ -55,6 +56,7 @@ trait InteractsWithUsers
             'phone' => $user->phone,
             'document_number' => $user->document_number,
             'address' => $user->address,
+            'workshop_id' => $user->workshop_id,
         ], $attributes);
     }
 }

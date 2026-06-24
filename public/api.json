@@ -2098,6 +2098,48 @@
                                                                     ]
                                                                 }
                                                             },
+                                                            "technician_user_ids": {
+                                                                "type": "array",
+                                                                "items": {
+                                                                    "type": "integer"
+                                                                }
+                                                            },
+                                                            "technicians": {
+                                                                "type": "array",
+                                                                "items": {
+                                                                    "type": "object",
+                                                                    "properties": {
+                                                                        "id": {
+                                                                            "type": "integer"
+                                                                        },
+                                                                        "name": {
+                                                                            "type": "string"
+                                                                        },
+                                                                        "email": {
+                                                                            "type": "string"
+                                                                        },
+                                                                        "roles": {
+                                                                            "type": "array",
+                                                                            "items": {
+                                                                                "type": "string"
+                                                                            }
+                                                                        },
+                                                                        "workshop_id": {
+                                                                            "type": [
+                                                                                "integer",
+                                                                                "null"
+                                                                            ]
+                                                                        }
+                                                                    },
+                                                                    "required": [
+                                                                        "id",
+                                                                        "name",
+                                                                        "email",
+                                                                        "roles",
+                                                                        "workshop_id"
+                                                                    ]
+                                                                }
+                                                            },
                                                             "is_active": {
                                                                 "type": "boolean"
                                                             },
@@ -2127,6 +2169,8 @@
                                                             "weekly_schedule",
                                                             "vehicle_system_ids",
                                                             "vehicle_systems",
+                                                            "technician_user_ids",
+                                                            "technicians",
                                                             "is_active",
                                                             "created_at",
                                                             "updated_at"
@@ -2350,6 +2394,48 @@
                                                         ]
                                                     }
                                                 },
+                                                "technician_user_ids": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "integer"
+                                                    }
+                                                },
+                                                "technicians": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "object",
+                                                        "properties": {
+                                                            "id": {
+                                                                "type": "integer"
+                                                            },
+                                                            "name": {
+                                                                "type": "string"
+                                                            },
+                                                            "email": {
+                                                                "type": "string"
+                                                            },
+                                                            "roles": {
+                                                                "type": "array",
+                                                                "items": {
+                                                                    "type": "string"
+                                                                }
+                                                            },
+                                                            "workshop_id": {
+                                                                "type": [
+                                                                    "integer",
+                                                                    "null"
+                                                                ]
+                                                            }
+                                                        },
+                                                        "required": [
+                                                            "id",
+                                                            "name",
+                                                            "email",
+                                                            "roles",
+                                                            "workshop_id"
+                                                        ]
+                                                    }
+                                                },
                                                 "is_active": {
                                                     "type": "boolean"
                                                 },
@@ -2379,6 +2465,8 @@
                                                 "weekly_schedule",
                                                 "vehicle_system_ids",
                                                 "vehicle_systems",
+                                                "technician_user_ids",
+                                                "technicians",
                                                 "is_active",
                                                 "created_at",
                                                 "updated_at"
@@ -2563,6 +2651,48 @@
                                                         ]
                                                     }
                                                 },
+                                                "technician_user_ids": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "integer"
+                                                    }
+                                                },
+                                                "technicians": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "object",
+                                                        "properties": {
+                                                            "id": {
+                                                                "type": "integer"
+                                                            },
+                                                            "name": {
+                                                                "type": "string"
+                                                            },
+                                                            "email": {
+                                                                "type": "string"
+                                                            },
+                                                            "roles": {
+                                                                "type": "array",
+                                                                "items": {
+                                                                    "type": "string"
+                                                                }
+                                                            },
+                                                            "workshop_id": {
+                                                                "type": [
+                                                                    "integer",
+                                                                    "null"
+                                                                ]
+                                                            }
+                                                        },
+                                                        "required": [
+                                                            "id",
+                                                            "name",
+                                                            "email",
+                                                            "roles",
+                                                            "workshop_id"
+                                                        ]
+                                                    }
+                                                },
                                                 "is_active": {
                                                     "type": "boolean"
                                                 },
@@ -2592,6 +2722,8 @@
                                                 "weekly_schedule",
                                                 "vehicle_system_ids",
                                                 "vehicle_systems",
+                                                "technician_user_ids",
+                                                "technicians",
                                                 "is_active",
                                                 "created_at",
                                                 "updated_at"
@@ -2785,6 +2917,48 @@
                                                         ]
                                                     }
                                                 },
+                                                "technician_user_ids": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "integer"
+                                                    }
+                                                },
+                                                "technicians": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "object",
+                                                        "properties": {
+                                                            "id": {
+                                                                "type": "integer"
+                                                            },
+                                                            "name": {
+                                                                "type": "string"
+                                                            },
+                                                            "email": {
+                                                                "type": "string"
+                                                            },
+                                                            "roles": {
+                                                                "type": "array",
+                                                                "items": {
+                                                                    "type": "string"
+                                                                }
+                                                            },
+                                                            "workshop_id": {
+                                                                "type": [
+                                                                    "integer",
+                                                                    "null"
+                                                                ]
+                                                            }
+                                                        },
+                                                        "required": [
+                                                            "id",
+                                                            "name",
+                                                            "email",
+                                                            "roles",
+                                                            "workshop_id"
+                                                        ]
+                                                    }
+                                                },
                                                 "is_active": {
                                                     "type": "boolean"
                                                 },
@@ -2814,6 +2988,8 @@
                                                 "weekly_schedule",
                                                 "vehicle_system_ids",
                                                 "vehicle_systems",
+                                                "technician_user_ids",
+                                                "technicians",
                                                 "is_active",
                                                 "created_at",
                                                 "updated_at"
@@ -2967,6 +3143,15 @@
                         "example": "technician"
                     },
                     {
+                        "name": "workshop_id",
+                        "in": "query",
+                        "description": "Filters users assigned to a workshop as technicians. Accepts null, none, or unassigned.",
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "example": 5
+                    },
+                    {
                         "name": "is_active",
                         "in": "query",
                         "description": "Filters active or inactive users.",
@@ -2978,7 +3163,7 @@
                     {
                         "name": "without_workshop",
                         "in": "query",
-                        "description": "When true, returns users that are not assigned as a workshop manager.",
+                        "description": "When true, returns users without a workshop assignment.",
                         "schema": {
                             "type": "boolean"
                         },
@@ -3061,6 +3246,12 @@
                                                                     "null"
                                                                 ]
                                                             },
+                                                            "workshop_id": {
+                                                                "type": [
+                                                                    "integer",
+                                                                    "null"
+                                                                ]
+                                                            },
                                                             "email_verified_at": {
                                                                 "type": [
                                                                     "string",
@@ -3089,6 +3280,7 @@
                                                             "phone",
                                                             "document_number",
                                                             "address",
+                                                            "workshop_id",
                                                             "email_verified_at",
                                                             "created_at",
                                                             "updated_at"
@@ -3590,6 +3782,12 @@
                         ],
                         "maxLength": 500
                     },
+                    "workshop_id": {
+                        "type": [
+                            "integer",
+                            "null"
+                        ]
+                    },
                     "password_confirmation": {
                         "type": "string"
                     }
@@ -3726,6 +3924,12 @@
                             "type": "integer"
                         },
                         "minItems": 1
+                    },
+                    "technician_user_ids": {
+                        "type": "array",
+                        "items": {
+                            "type": "integer"
+                        }
                     }
                 },
                 "required": [
@@ -3734,7 +3938,8 @@
                     "code",
                     "is_active",
                     "weekly_schedule",
-                    "vehicle_system_ids"
+                    "vehicle_system_ids",
+                    "technician_user_ids"
                 ],
                 "title": "WorkshopRequest"
             }

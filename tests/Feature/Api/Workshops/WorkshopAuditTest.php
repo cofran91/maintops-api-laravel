@@ -29,10 +29,13 @@ class WorkshopAuditTest extends TestCase
         $actor = $this->userWithRole(SystemRole::SuperAdmin, ['email' => 'workshop.creator.audit@example.com']);
         $manager = $this->userWithRole(SystemRole::WorkshopManager, ['email' => 'workshop.audit.manager@example.com']);
         $vehicleSystems = $this->vehicleSystems(2);
+        $technician = $this->userWithRole(SystemRole::Technician, ['email' => 'workshop.audit.technician@example.com']);
         Audit::query()->delete();
 
         $createdId = $this->withToken($actor->createToken('feature-test')->plainTextToken)
-            ->postJson('/api/v1/workshops', $this->workshopPayloadFor($manager, $vehicleSystems))
+            ->postJson('/api/v1/workshops', $this->workshopPayloadFor($manager, $vehicleSystems, [
+                'technician_user_ids' => [$technician->id],
+            ]))
             ->assertCreated()
             ->json('data.id');
 
@@ -48,6 +51,7 @@ class WorkshopAuditTest extends TestCase
             array_map(static fn ($vehicleSystem): int => $vehicleSystem->id, $vehicleSystems),
             $audit->new_values['vehicle_system_ids'],
         );
+        $this->assertSame([$technician->id], $audit->new_values['technician_user_ids']);
         $this->assertSame(
             1,
             Audit::query()
@@ -66,12 +70,20 @@ class WorkshopAuditTest extends TestCase
             'name' => 'Audited Workshop',
             'code' => 'AUDITED-WORKSHOP',
         ]);
+        $oldTechnician = $this->userWithRole(SystemRole::Technician, [
+            'email' => 'old.audit.technician@example.com',
+            'workshop_id' => $workshop->id,
+        ]);
+        $newTechnician = $this->userWithRole(SystemRole::Technician, [
+            'email' => 'new.audit.technician@example.com',
+        ]);
         Audit::query()->delete();
 
         $this->withToken($actor->createToken('feature-test')->plainTextToken)
             ->patchJson('/api/v1/workshops/'.$workshop->id, $this->workshopUpdatePayloadFor($workshop, [
                 'name' => 'Audited Updated Workshop',
                 'vehicle_system_ids' => [$electrical->id],
+                'technician_user_ids' => [$newTechnician->id],
             ]))
             ->assertOk();
 
@@ -85,6 +97,8 @@ class WorkshopAuditTest extends TestCase
         $this->assertSame('Audited Updated Workshop', $audit->new_values['attributes']['name']);
         $this->assertSame([$engine->id, $brakes->id], $audit->old_values['vehicle_system_ids']);
         $this->assertSame([$electrical->id], $audit->new_values['vehicle_system_ids']);
+        $this->assertSame([$oldTechnician->id], $audit->old_values['technician_user_ids']);
+        $this->assertSame([$newTechnician->id], $audit->new_values['technician_user_ids']);
         $this->assertSame(
             1,
             Audit::query()

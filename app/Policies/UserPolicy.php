@@ -35,8 +35,9 @@ final class UserPolicy
     }
 
     /**
-     * System admins can inspect every user; workshop managers can inspect
-     * technicians only. Advisors and technicians do not have user visibility.
+     * System admins can inspect every user; workshop managers can inspect only
+     * technicians assigned to the workshop they manage. Advisors and technicians
+     * do not have user visibility.
      */
     private function canViewUser(User $actor, User $target): bool
     {
@@ -44,8 +45,15 @@ final class UserPolicy
             return true;
         }
 
-        if ($actor->hasRole(SystemRole::WorkshopManager->value)) {
-            return $target->hasRole(SystemRole::Technician->value);
+        if (
+            $actor->hasRole(SystemRole::WorkshopManager->value)
+            && $target->hasRole(SystemRole::Technician->value)
+            && $target->workshop_id !== null
+        ) {
+            return $actor
+                ->managedWorkshop()
+                ->whereKey($target->workshop_id)
+                ->exists();
         }
 
         return false;
@@ -53,7 +61,7 @@ final class UserPolicy
 
     /**
      * Only active system admins can mutate users. Workshop managers can view
-     * technician records, but cannot create, update, delete, or restore users.
+     * assigned technician records, but cannot create, update, or delete users.
      */
     private function canManageUser(User $actor, User $target): bool
     {

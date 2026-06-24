@@ -27,6 +27,20 @@ class UserResource extends JsonResource
             'phone' => $this->phone,
             'document_number' => $this->document_number,
             'address' => $this->address,
+            'workshop_id' => $this->workshop_id,
+            'workshop' => $this->whenLoaded('workshop', function (): ?array {
+                if ($this->workshop === null) {
+                    return null;
+                }
+
+                return [
+                    'id' => $this->workshop->id,
+                    'name' => $this->workshop->name,
+                    'code' => $this->workshop->code,
+                    'city' => $this->workshop->city,
+                    'is_active' => (bool) $this->workshop->is_active,
+                ];
+            }),
             'email_verified_at' => $this->email_verified_at?->toISOString(),
             'created_at' => $this->created_at?->toISOString(),
             'updated_at' => $this->updated_at?->toISOString(),

@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use OwenIt\Auditing\Auditable;
 use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
@@ -44,6 +45,15 @@ class Workshop extends Model implements AuditableContract
     {
         return $this->belongsToMany(VehicleSystem::class)
             ->withTimestamps();
+    }
+
+    /**
+     * @return HasMany<User>
+     */
+    public function technicians(): HasMany
+    {
+        return $this->hasMany(User::class, 'workshop_id')
+            ->orderBy('users.id');
     }
 
     /**

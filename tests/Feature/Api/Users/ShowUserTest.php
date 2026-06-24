@@ -3,6 +3,7 @@
 namespace Tests\Feature\Api\Users;
 
 use App\Enums\SystemRole;
+use App\Models\Workshop;
 use Database\Seeders\RolesAndAdminUserSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use PHPUnit\Framework\Attributes\DataProvider;
@@ -32,10 +33,20 @@ class ShowUserTest extends TestCase
             ->assertJsonPath('data.id', $target->id);
     }
 
-    public function test_workshop_manager_can_show_technician_only(): void
+    public function test_workshop_manager_can_show_only_own_workshop_technician(): void
     {
         $workshopManager = $this->userWithRole(SystemRole::WorkshopManager, ['email' => 'workshop.manager.show@example.com']);
-        $technician = $this->userWithRole(SystemRole::Technician, ['email' => 'technician.show.target@example.com']);
+        $workshop = Workshop::factory()->create(['manager_user_id' => $workshopManager->id]);
+        $anotherWorkshop = Workshop::factory()->create();
+        $technician = $this->userWithRole(SystemRole::Technician, [
+            'email' => 'technician.show.target@example.com',
+            'workshop_id' => $workshop->id,
+        ]);
+        $otherWorkshopTechnician = $this->userWithRole(SystemRole::Technician, [
+            'email' => 'technician.other.workshop.show.target@example.com',
+            'workshop_id' => $anotherWorkshop->id,
+        ]);
+        $unassignedTechnician = $this->userWithRole(SystemRole::Technician, ['email' => 'technician.unassigned.show.target@example.com']);
         $advisor = $this->userWithRole(SystemRole::Advisor, ['email' => 'advisor.show.target@example.com']);
         $token = $workshopManager->createToken('feature-test')->plainTextToken;
 
@@ -43,6 +54,14 @@ class ShowUserTest extends TestCase
             ->getJson('/api/v1/users/'.$technician->id)
             ->assertOk()
             ->assertJsonPath('data.id', $technician->id);
+
+        $this->withToken($token)
+            ->getJson('/api/v1/users/'.$otherWorkshopTechnician->id)
+            ->assertForbidden();
+
+        $this->withToken($token)
+            ->getJson('/api/v1/users/'.$unassignedTechnician->id)
+            ->assertForbidden();
 
         $this->withToken($token)
             ->getJson('/api/v1/users/'.$advisor->id)

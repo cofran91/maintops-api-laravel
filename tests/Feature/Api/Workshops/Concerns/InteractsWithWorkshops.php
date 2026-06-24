@@ -31,6 +31,7 @@ trait InteractsWithWorkshops
                 static fn (VehicleSystem $vehicleSystem): int => $vehicleSystem->id,
                 $vehicleSystems,
             ),
+            'technician_user_ids' => [],
             'is_active' => true,
         ], $attributes);
     }
@@ -51,6 +52,7 @@ trait InteractsWithWorkshops
             'email' => $workshop->email,
             'weekly_schedule' => $workshop->weekly_schedule,
             'vehicle_system_ids' => $workshop->vehicleSystems()->pluck('vehicle_systems.id')->all(),
+            'technician_user_ids' => $workshop->technicians()->pluck('users.id')->all(),
             'is_active' => (bool) $workshop->is_active,
         ], $attributes);
     }

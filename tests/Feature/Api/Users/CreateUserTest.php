@@ -3,6 +3,7 @@
 namespace Tests\Feature\Api\Users;
 
 use App\Enums\SystemRole;
+use App\Models\Workshop;
 use Database\Seeders\RolesAndAdminUserSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use PHPUnit\Framework\Attributes\DataProvider;
@@ -62,6 +63,42 @@ class CreateUserTest extends TestCase
     public function test_guest_cannot_create_user(): void
     {
         $this->postJson('/api/v1/users', $this->payloadFor(SystemRole::Technician))->assertUnauthorized();
+    }
+
+    public function test_system_admin_can_create_technician_assigned_to_workshop(): void
+    {
+        $actor = $this->userWithRole(SystemRole::Admin, ['email' => 'admin.technician.workshop@example.com']);
+        $workshop = Workshop::factory()->create();
+
+        $createdId = $this->withToken($actor->createToken('feature-test')->plainTextToken)
+            ->postJson('/api/v1/users', $this->payloadFor(SystemRole::Technician, attributes: [
+                'email' => 'assigned.technician@example.com',
+                'document_number' => 'ASSIGNED-TECHNICIAN',
+                'workshop_id' => $workshop->id,
+            ]))
+            ->assertCreated()
+            ->assertJsonPath('data.workshop_id', $workshop->id)
+            ->json('data.id');
+
+        $this->assertDatabaseHas('users', [
+            'id' => $createdId,
+            'workshop_id' => $workshop->id,
+        ]);
+    }
+
+    public function test_only_technicians_can_be_assigned_to_workshop(): void
+    {
+        $actor = $this->userWithRole(SystemRole::Admin, ['email' => 'admin.non.technician.workshop@example.com']);
+        $workshop = Workshop::factory()->create();
+
+        $this->withToken($actor->createToken('feature-test')->plainTextToken)
+            ->postJson('/api/v1/users', $this->payloadFor(SystemRole::Advisor, attributes: [
+                'email' => 'advisor.with.workshop@example.com',
+                'document_number' => 'ADVISOR-WORKSHOP',
+                'workshop_id' => $workshop->id,
+            ]))
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors(['workshop_id']);
     }
 
     /**

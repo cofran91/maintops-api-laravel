@@ -2,6 +2,7 @@
 
 namespace App\Actions\Workshops;
 
+use App\Models\User;
 use App\Models\Workshop;
 use App\Services\Workshops\WorkshopAuditSnapshotService;
 use App\Services\Workshops\WorkshopScheduleService;
@@ -26,12 +27,15 @@ final class UpdateWorkshopAction
             $oldValues = $this->snapshotService->snapshot($workshop);
             /** @var array<int, int> $vehicleSystemIds */
             $vehicleSystemIds = $attributes['vehicle_system_ids'];
+            /** @var array<int, int> $technicianUserIds */
+            $technicianUserIds = $attributes['technician_user_ids'];
             $attributes['weekly_schedule'] = $this->scheduleService->normalize($attributes['weekly_schedule']);
 
             /** @var Workshop $updatedWorkshop */
-            $updatedWorkshop = Workshop::withoutAuditing(function () use ($workshop, $attributes, $vehicleSystemIds): Workshop {
-                $workshop->update(Arr::except($attributes, ['vehicle_system_ids']));
+            $updatedWorkshop = Workshop::withoutAuditing(function () use ($workshop, $attributes, $vehicleSystemIds, $technicianUserIds): Workshop {
+                $workshop->update(Arr::except($attributes, ['vehicle_system_ids', 'technician_user_ids']));
                 $workshop->vehicleSystems()->sync($vehicleSystemIds);
+                $this->syncTechnicians($workshop, $technicianUserIds);
 
                 return $workshop->refresh();
             });
@@ -45,5 +49,24 @@ final class UpdateWorkshopAction
 
             return $updatedWorkshop;
         });
+    }
+
+    /**
+     * @param  array<int, int>  $technicianUserIds
+     */
+    private function syncTechnicians(Workshop $workshop, array $technicianUserIds): void
+    {
+        $currentTechnicians = User::query()
+            ->where('workshop_id', $workshop->getKey());
+
+        if ($technicianUserIds !== []) {
+            $currentTechnicians->whereNotIn('id', $technicianUserIds);
+        }
+
+        $currentTechnicians->update(['workshop_id' => null]);
+
+        User::query()
+            ->whereKey($technicianUserIds)
+            ->update(['workshop_id' => $workshop->getKey()]);
     }
 }

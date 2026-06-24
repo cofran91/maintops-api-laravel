@@ -5,6 +5,7 @@ namespace App\Http\Requests\Api\V1\Users;
 use App\Enums\SystemRole;
 use App\Models\User;
 use App\Rules\Users\AssignableUserRole;
+use App\Rules\Users\AssignableUserWorkshop;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
@@ -36,6 +37,10 @@ class UserRequest extends FormRequest
             $this->merge([
                 'email' => Str::lower((string) $this->input('email')),
             ]);
+        }
+
+        if (! $this->has('workshop_id') || $this->input('workshop_id') === '') {
+            $this->merge(['workshop_id' => null]);
         }
 
     }
@@ -77,6 +82,15 @@ class UserRequest extends FormRequest
                 Rule::unique('users', 'document_number')->ignore($targetId),
             ],
             'address' => ['nullable', 'string', 'max:500'],
+            'workshop_id' => [
+                'nullable',
+                'integer',
+                Rule::exists('workshops', 'id')->whereNull('deleted_at'),
+                new AssignableUserWorkshop(
+                    $this->user(),
+                    is_string($this->input('role')) ? $this->input('role') : '',
+                ),
+            ],
         ];
     }
 }

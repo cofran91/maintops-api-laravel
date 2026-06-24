@@ -91,17 +91,78 @@ class ListUsersTest extends TestCase
             ->assertJsonMissing(['email' => $assignedManager->email]);
     }
 
-    public function test_workshop_manager_lists_technicians_only(): void
+    public function test_can_filter_technicians_by_workshop(): void
+    {
+        $superAdmin = $this->userWithRole(SystemRole::SuperAdmin, ['email' => 'super-admin.technician.workshop.filter@example.com']);
+        $workshop = Workshop::factory()->create();
+        $assignedTechnician = $this->userWithRole(SystemRole::Technician, [
+            'email' => 'assigned.technician.filter@example.com',
+            'workshop_id' => $workshop->id,
+        ]);
+        $this->userWithRole(SystemRole::Technician, ['email' => 'unassigned.technician.filter@example.com']);
+
+        $this->withToken($superAdmin->createToken('feature-test')->plainTextToken)
+            ->getJson('/api/v1/users?role=technician&workshop_id='.$workshop->id)
+            ->assertOk()
+            ->assertJsonFragment(['email' => $assignedTechnician->email])
+            ->assertJsonMissing(['email' => 'unassigned.technician.filter@example.com']);
+    }
+
+    public function test_can_filter_technicians_without_workshop(): void
+    {
+        $superAdmin = $this->userWithRole(SystemRole::SuperAdmin, ['email' => 'super-admin.technician.without.workshop@example.com']);
+        $workshop = Workshop::factory()->create();
+        $this->userWithRole(SystemRole::Technician, [
+            'email' => 'assigned.without.workshop.filter@example.com',
+            'workshop_id' => $workshop->id,
+        ]);
+        $unassignedTechnician = $this->userWithRole(SystemRole::Technician, [
+            'email' => 'unassigned.without.workshop.filter@example.com',
+        ]);
+
+        $this->withToken($superAdmin->createToken('feature-test')->plainTextToken)
+            ->getJson('/api/v1/users?role=technician&without_workshop=true')
+            ->assertOk()
+            ->assertJsonFragment(['email' => $unassignedTechnician->email])
+            ->assertJsonMissing(['email' => 'assigned.without.workshop.filter@example.com']);
+    }
+
+    public function test_workshop_manager_lists_only_own_workshop_technicians(): void
     {
         $workshopManager = $this->userWithRole(SystemRole::WorkshopManager, ['email' => 'workshop.manager.viewer@example.com']);
+        $workshop = Workshop::factory()->create(['manager_user_id' => $workshopManager->id]);
+        $anotherWorkshop = Workshop::factory()->create();
         $this->userWithRole(SystemRole::Advisor, ['email' => 'hidden-advisor@example.com']);
-        $this->userWithRole(SystemRole::Technician, ['email' => 'visible-tech@example.com']);
+        $ownTechnician = $this->userWithRole(SystemRole::Technician, [
+            'email' => 'visible-own-tech@example.com',
+            'workshop_id' => $workshop->id,
+        ]);
+        $this->userWithRole(SystemRole::Technician, [
+            'email' => 'hidden-other-workshop-tech@example.com',
+            'workshop_id' => $anotherWorkshop->id,
+        ]);
+        $this->userWithRole(SystemRole::Technician, ['email' => 'hidden-unassigned-tech@example.com']);
 
         $this->withToken($workshopManager->createToken('feature-test')->plainTextToken)
             ->getJson('/api/v1/users')
             ->assertOk()
-            ->assertJsonFragment(['email' => 'visible-tech@example.com'])
+            ->assertJsonCount(1, 'data.items')
+            ->assertJsonFragment(['email' => $ownTechnician->email])
+            ->assertJsonMissing(['email' => 'hidden-other-workshop-tech@example.com'])
+            ->assertJsonMissing(['email' => 'hidden-unassigned-tech@example.com'])
             ->assertJsonMissing(['email' => 'hidden-advisor@example.com']);
+    }
+
+    public function test_workshop_manager_without_workshop_lists_no_users(): void
+    {
+        $workshopManager = $this->userWithRole(SystemRole::WorkshopManager, ['email' => 'workshop.manager.without.workshop@example.com']);
+        $this->userWithRole(SystemRole::Technician, ['email' => 'hidden-tech-without-manager-workshop@example.com']);
+
+        $this->withToken($workshopManager->createToken('feature-test')->plainTextToken)
+            ->getJson('/api/v1/users')
+            ->assertOk()
+            ->assertJsonCount(0, 'data.items')
+            ->assertJsonMissing(['email' => 'hidden-tech-without-manager-workshop@example.com']);
     }
 
     #[DataProvider('nonListingRoleProvider')]

@@ -15,6 +15,7 @@ final class UserFilter extends ModelFilter
     protected array $allowedFilters = [
         'search',
         'role',
+        'workshop_id',
         'is_active',
         'without_workshop',
     ];
@@ -22,6 +23,7 @@ final class UserFilter extends ModelFilter
     public function setup(): void
     {
         $this->whereHasVisibleRoles();
+        $this->whereMatchesManagedWorkshop();
     }
 
     public function search(string $value): void
@@ -61,6 +63,25 @@ final class UserFilter extends ModelFilter
         $this->where('is_active', $isActive);
     }
 
+    public function workshopId(int|string $value): void
+    {
+        $normalizedValue = strtolower(trim((string) $value));
+
+        if (in_array($normalizedValue, ['null', 'none', 'unassigned'], true)) {
+            $this->whereNull('workshop_id');
+
+            return;
+        }
+
+        $workshopId = filter_var($value, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
+
+        if ($workshopId === false) {
+            return;
+        }
+
+        $this->where('workshop_id', $workshopId);
+    }
+
     public function withoutWorkshop(bool|int|string $value): void
     {
         $withoutWorkshop = filter_var($value, FILTER_VALIDATE_BOOL, FILTER_NULL_ON_FAILURE);
@@ -69,7 +90,9 @@ final class UserFilter extends ModelFilter
             return;
         }
 
-        $this->whereDoesntHave('managedWorkshop');
+        $this
+            ->whereNull('workshop_id')
+            ->whereDoesntHave('managedWorkshop');
     }
 
     /**
@@ -91,6 +114,37 @@ final class UserFilter extends ModelFilter
         $this->whereHas('roles', function (Builder $query) use ($visibleRoles): void {
             $query->whereIn('name', $visibleRoles);
         });
+    }
+
+    /**
+     * Limits workshop managers to the technicians assigned to their workshop.
+     *
+     * System admins keep the broader role-based visibility resolved above.
+     */
+    private function whereMatchesManagedWorkshop(): void
+    {
+        $user = request()->user();
+
+        if (
+            ! $user instanceof User
+            || $user->hasRole([
+                SystemRole::SuperAdmin->value,
+                SystemRole::Admin->value,
+            ])
+            || ! $user->hasRole(SystemRole::WorkshopManager->value)
+        ) {
+            return;
+        }
+
+        $managedWorkshopId = $user->managedWorkshop()->value('id');
+
+        if ($managedWorkshopId === null) {
+            $this->whereRaw('1 = 0');
+
+            return;
+        }
+
+        $this->where('workshop_id', $managedWorkshopId);
     }
 
     /**

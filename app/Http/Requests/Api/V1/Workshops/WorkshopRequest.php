@@ -4,6 +4,7 @@ namespace App\Http\Requests\Api\V1\Workshops;
 
 use App\Models\Workshop;
 use App\Rules\Workshops\AssignableWorkshopManager;
+use App\Rules\Workshops\AssignableWorkshopTechnician;
 use App\Rules\Workshops\ValidWorkshopSchedule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Str;
@@ -53,6 +54,10 @@ class WorkshopRequest extends FormRequest
 
             $this->merge(['weekly_schedule' => $normalizedSchedule]);
         }
+
+        if ($this->has('technician_user_ids') && in_array($this->input('technician_user_ids'), [null, ''], true)) {
+            $this->merge(['technician_user_ids' => []]);
+        }
     }
 
     /**
@@ -96,6 +101,14 @@ class WorkshopRequest extends FormRequest
                 'integer',
                 'distinct',
                 Rule::exists('vehicle_systems', 'id'),
+            ],
+            'technician_user_ids' => ['present', 'array'],
+            'technician_user_ids.*' => [
+                'required',
+                'integer',
+                'distinct',
+                Rule::exists('users', 'id')->whereNull('deleted_at'),
+                new AssignableWorkshopTechnician($workshopId),
             ],
             'is_active' => ['required', 'boolean'],
         ];

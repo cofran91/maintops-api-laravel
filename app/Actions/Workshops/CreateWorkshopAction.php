@@ -2,6 +2,7 @@
 
 namespace App\Actions\Workshops;
 
+use App\Models\User;
 use App\Models\Workshop;
 use App\Services\Workshops\WorkshopAuditSnapshotService;
 use App\Services\Workshops\WorkshopScheduleService;
@@ -25,12 +26,17 @@ final class CreateWorkshopAction
         return DB::transaction(function () use ($attributes): Workshop {
             /** @var array<int, int> $vehicleSystemIds */
             $vehicleSystemIds = $attributes['vehicle_system_ids'];
+            /** @var array<int, int> $technicianUserIds */
+            $technicianUserIds = $attributes['technician_user_ids'];
             $attributes['weekly_schedule'] = $this->scheduleService->normalize($attributes['weekly_schedule']);
 
             /** @var Workshop $workshop */
-            $workshop = Workshop::withoutAuditing(function () use ($attributes, $vehicleSystemIds): Workshop {
-                $workshop = Workshop::query()->create(Arr::except($attributes, ['vehicle_system_ids']));
+            $workshop = Workshop::withoutAuditing(function () use ($attributes, $vehicleSystemIds, $technicianUserIds): Workshop {
+                $workshop = Workshop::query()->create(Arr::except($attributes, ['vehicle_system_ids', 'technician_user_ids']));
                 $workshop->vehicleSystems()->sync($vehicleSystemIds);
+                User::query()
+                    ->whereKey($technicianUserIds)
+                    ->update(['workshop_id' => $workshop->getKey()]);
 
                 return $workshop->refresh();
             });

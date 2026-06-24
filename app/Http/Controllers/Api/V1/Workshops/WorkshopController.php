@@ -39,6 +39,8 @@ class WorkshopController extends ApiController
      *             weekly_schedule: array<string, array{opens_at: string, closes_at: string}>,
      *             vehicle_system_ids: array<int, int>,
      *             vehicle_systems: array<int, array{id: int, code: string, name: string, created_at: string|null, updated_at: string|null}>,
+     *             technician_user_ids: array<int, int>,
+     *             technicians: array<int, array{id: int, name: string, email: string, roles: array<int, string>, workshop_id: int|null}>,
      *             is_active: bool,
      *             created_at: string|null,
      *             updated_at: string|null
@@ -65,7 +67,7 @@ class WorkshopController extends ApiController
         Gate::authorize('viewAny', Workshop::class);
 
         $paginator = Workshop::query()
-            ->with(['manager.roles', 'vehicleSystems'])
+            ->with(['manager.roles', 'vehicleSystems', 'technicians.roles'])
             ->latest('id')
             ->filter($request->query())
             ->paginateFilter(WorkshopFilter::perPage($request));
@@ -90,6 +92,7 @@ class WorkshopController extends ApiController
      * @bodyParam email string|null Operational workshop email. Example: north@maint.test
      * @bodyParam weekly_schedule object required Weekly schedule by day. Example: {"monday":{"opens_at":"08:00","closes_at":"17:00"}}
      * @bodyParam vehicle_system_ids integer[] required Vehicle system IDs served by the workshop. Example: [1,2,3]
+     * @bodyParam technician_user_ids integer[] required Active technician user IDs assigned to the workshop. Send an empty array when none. Example: [15,16]
      * @bodyParam is_active boolean required Whether the workshop is available for operations. Example: true
      *
      * @return JsonResponse<array{
@@ -108,6 +111,8 @@ class WorkshopController extends ApiController
      *         weekly_schedule: array<string, array{opens_at: string, closes_at: string}>,
      *         vehicle_system_ids: array<int, int>,
      *         vehicle_systems: array<int, array{id: int, code: string, name: string, created_at: string|null, updated_at: string|null}>,
+     *         technician_user_ids: array<int, int>,
+     *         technicians: array<int, array{id: int, name: string, email: string, roles: array<int, string>, workshop_id: int|null}>,
      *         is_active: bool,
      *         created_at: string|null,
      *         updated_at: string|null
@@ -118,7 +123,7 @@ class WorkshopController extends ApiController
     {
         $workshop = $createWorkshopAction
             ->execute($request->validated())
-            ->load(['manager.roles', 'vehicleSystems']);
+            ->load(['manager.roles', 'vehicleSystems', 'technicians.roles']);
 
         return $this->success(
             data: (new WorkshopResource($workshop))->resolve($request),
@@ -146,6 +151,8 @@ class WorkshopController extends ApiController
      *         weekly_schedule: array<string, array{opens_at: string, closes_at: string}>,
      *         vehicle_system_ids: array<int, int>,
      *         vehicle_systems: array<int, array{id: int, code: string, name: string, created_at: string|null, updated_at: string|null}>,
+     *         technician_user_ids: array<int, int>,
+     *         technicians: array<int, array{id: int, name: string, email: string, roles: array<int, string>, workshop_id: int|null}>,
      *         is_active: bool,
      *         created_at: string|null,
      *         updated_at: string|null
@@ -157,7 +164,7 @@ class WorkshopController extends ApiController
         Gate::authorize('view', $workshop);
 
         return $this->success(
-            data: (new WorkshopResource($workshop->load(['manager.roles', 'vehicleSystems'])))->resolve($request),
+            data: (new WorkshopResource($workshop->load(['manager.roles', 'vehicleSystems', 'technicians.roles'])))->resolve($request),
             message: 'Workshop retrieved.',
         );
     }
@@ -176,6 +183,7 @@ class WorkshopController extends ApiController
      * @bodyParam email string|null Operational workshop email. Example: north@maint.test
      * @bodyParam weekly_schedule object required Weekly schedule by day. Example: {"monday":{"opens_at":"08:00","closes_at":"17:00"}}
      * @bodyParam vehicle_system_ids integer[] required Vehicle system IDs served by the workshop. Example: [1,2,3]
+     * @bodyParam technician_user_ids integer[] required Replaces the active technician user IDs assigned to the workshop. Send an empty array when none. Example: [15,16]
      * @bodyParam is_active boolean required Whether the workshop is available for operations. Example: true
      *
      * @return JsonResponse<array{
@@ -194,6 +202,8 @@ class WorkshopController extends ApiController
      *         weekly_schedule: array<string, array{opens_at: string, closes_at: string}>,
      *         vehicle_system_ids: array<int, int>,
      *         vehicle_systems: array<int, array{id: int, code: string, name: string, created_at: string|null, updated_at: string|null}>,
+     *         technician_user_ids: array<int, int>,
+     *         technicians: array<int, array{id: int, name: string, email: string, roles: array<int, string>, workshop_id: int|null}>,
      *         is_active: bool,
      *         created_at: string|null,
      *         updated_at: string|null
@@ -207,7 +217,7 @@ class WorkshopController extends ApiController
     ): JsonResponse {
         $workshop = $updateWorkshopAction
             ->execute($workshop, $request->validated())
-            ->load(['manager.roles', 'vehicleSystems']);
+            ->load(['manager.roles', 'vehicleSystems', 'technicians.roles']);
 
         return $this->success(
             data: (new WorkshopResource($workshop))->resolve($request),

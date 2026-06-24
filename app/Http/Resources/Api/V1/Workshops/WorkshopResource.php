@@ -2,6 +2,7 @@
 
 namespace App\Http\Resources\Api\V1\Workshops;
 
+use App\Http\Resources\Api\V1\Users\UserResource;
 use App\Http\Resources\Api\V1\VehicleSystems\VehicleSystemResource;
 use App\Models\Workshop;
 use Illuminate\Http\Request;
@@ -40,6 +41,11 @@ class WorkshopResource extends JsonResource
                 fn (): array => $this->vehicleSystems->pluck('id')->values()->all(),
             ),
             'vehicle_systems' => VehicleSystemResource::collection($this->whenLoaded('vehicleSystems')),
+            'technician_user_ids' => $this->whenLoaded(
+                'technicians',
+                fn (): array => $this->technicians->pluck('id')->values()->all(),
+            ),
+            'technicians' => UserResource::collection($this->whenLoaded('technicians')),
             'is_active' => (bool) $this->is_active,
             'created_at' => $this->created_at?->toISOString(),
             'updated_at' => $this->updated_at?->toISOString(),

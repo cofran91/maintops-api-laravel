@@ -41,4 +41,13 @@ class WorkshopVehicleSystemRelationTest extends TestCase
         $this->assertTrue($manager->managedWorkshop->is($workshop));
         $this->assertTrue($workshop->manager->is($manager));
     }
+
+    public function test_workshop_has_technicians(): void
+    {
+        $workshop = Workshop::factory()->create();
+        $technician = User::factory()->create(['workshop_id' => $workshop->id]);
+
+        $this->assertTrue($technician->workshop->is($workshop));
+        $this->assertTrue($workshop->technicians->first()->is($technician));
+    }
 }

@@ -4,6 +4,7 @@ namespace Tests\Feature\Api\Users;
 
 use App\Enums\SystemRole;
 use App\Models\User;
+use App\Models\Workshop;
 use Database\Seeders\RolesAndAdminUserSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
@@ -88,6 +89,65 @@ class UpdateUserTest extends TestCase
             ])
             ->assertUnprocessable()
             ->assertJsonValidationErrors(['email', 'password', 'role', 'is_active']);
+    }
+
+    public function test_system_admin_can_update_technician_workshop(): void
+    {
+        $actor = $this->userWithRole(SystemRole::Admin, ['email' => 'admin.update.technician.workshop@example.com']);
+        $oldWorkshop = Workshop::factory()->create();
+        $newWorkshop = Workshop::factory()->create();
+        $technician = $this->userWithRole(SystemRole::Technician, [
+            'email' => 'technician.workshop.update@example.com',
+            'workshop_id' => $oldWorkshop->id,
+        ]);
+
+        $this->withToken($actor->createToken('feature-test')->plainTextToken)
+            ->patchJson('/api/v1/users/'.$technician->id, $this->updatePayloadFor($technician, SystemRole::Technician, [
+                'workshop_id' => $newWorkshop->id,
+            ]))
+            ->assertOk()
+            ->assertJsonPath('data.workshop_id', $newWorkshop->id);
+
+        $this->assertDatabaseHas('users', [
+            'id' => $technician->id,
+            'workshop_id' => $newWorkshop->id,
+        ]);
+    }
+
+    public function test_system_admin_can_unassign_technician_workshop(): void
+    {
+        $actor = $this->userWithRole(SystemRole::Admin, ['email' => 'admin.unassign.technician.workshop@example.com']);
+        $workshop = Workshop::factory()->create();
+        $technician = $this->userWithRole(SystemRole::Technician, [
+            'email' => 'technician.workshop.unassign@example.com',
+            'workshop_id' => $workshop->id,
+        ]);
+
+        $this->withToken($actor->createToken('feature-test')->plainTextToken)
+            ->patchJson('/api/v1/users/'.$technician->id, $this->updatePayloadFor($technician, SystemRole::Technician, [
+                'workshop_id' => null,
+            ]))
+            ->assertOk()
+            ->assertJsonPath('data.workshop_id', null);
+
+        $this->assertDatabaseHas('users', [
+            'id' => $technician->id,
+            'workshop_id' => null,
+        ]);
+    }
+
+    public function test_non_technician_user_cannot_keep_workshop_assignment(): void
+    {
+        $actor = $this->userWithRole(SystemRole::Admin, ['email' => 'admin.reject.non.tech.workshop@example.com']);
+        $workshop = Workshop::factory()->create();
+        $advisor = $this->userWithRole(SystemRole::Advisor, ['email' => 'advisor.workshop.update@example.com']);
+
+        $this->withToken($actor->createToken('feature-test')->plainTextToken)
+            ->patchJson('/api/v1/users/'.$advisor->id, $this->updatePayloadFor($advisor, SystemRole::Advisor, [
+                'workshop_id' => $workshop->id,
+            ]))
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors(['workshop_id']);
     }
 
     #[DataProvider('nonManagingRoleProvider')]

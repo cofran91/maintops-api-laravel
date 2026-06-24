@@ -32,6 +32,10 @@ class ShowWorkshopTest extends TestCase
             'name' => 'Visible Workshop',
             'code' => 'VISIBLE-WORKSHOP',
         ]);
+        $technician = $this->userWithRole(SystemRole::Technician, [
+            'email' => $role->value.'.visible.workshop.technician@example.com',
+            'workshop_id' => $workshop->id,
+        ]);
 
         $this->withToken($actor->createToken('feature-test')->plainTextToken)
             ->getJson('/api/v1/workshops/'.$workshop->id)
@@ -39,6 +43,8 @@ class ShowWorkshopTest extends TestCase
             ->assertJsonPath('message', 'Workshop retrieved.')
             ->assertJsonPath('data.id', $workshop->id)
             ->assertJsonPath('data.manager.id', $manager->id)
+            ->assertJsonPath('data.technician_user_ids.0', $technician->id)
+            ->assertJsonPath('data.technicians.0.email', $technician->email)
             ->assertJsonCount(2, 'data.vehicle_system_ids');
     }
 
