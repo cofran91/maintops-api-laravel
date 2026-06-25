@@ -65,7 +65,7 @@ Los permisos exactos se hacen cumplir con policies y reglas de request. Las prue
 
 ## Automatizacion
 
-Dos comandos programados corren cada dos minutos:
+Dos comandos de dominio corren cada dos minutos:
 
 ```text
 maintenance-orders:generate-items
@@ -81,6 +81,14 @@ docker compose exec app php artisan maintenance-orders:schedule-approved
 
 Estos comandos son parte del flujo de dominio: generan trabajo recomendado y convierten trabajo aprobado en una agenda concreta de taller.
 
+La recuperacion de eventos operativos corre cada minuto:
+
+```text
+operational-events:dispatch
+```
+
+Ese comando reencola eventos de outbox no publicados para que fallos temporales de Redis o de la cola no dejen las integraciones atrasadas permanentemente.
+
 ## Por Que Docker Directo En Lugar De Laravel Sail
 
 Laravel Sail es util cuando un proyecto acepta depender del runtime publicado en `vendor/laravel/sail`. Este proyecto no usa Sail porque el entorno de desarrollo debe arrancar desde un clon limpio de GitHub usando solo Docker, sin PHP ni Composer locales, y sin depender de archivos generados dentro de `vendor`.
@@ -88,7 +96,7 @@ Laravel Sail es util cuando un proyecto acepta depender del runtime publicado en
 Este repositorio controla su runtime con `Dockerfile` y `compose.yaml`:
 
 - `Dockerfile` instala PHP, las extensiones requeridas y Composer dentro de la imagen de la aplicacion.
-- `compose.yaml` levanta la API, MySQL, Redis y Mailpit con nombres de servicio estables.
+- `compose.yaml` levanta la API, worker de cola, scheduler, MySQL, Redis y Mailpit con nombres de servicio estables.
 - `docker/init-development.sh` prepara `.env`, dependencias, `APP_KEY`, migraciones y datos semilla desde el contenedor.
 
 Por esa razon, `laravel/sail` no esta instalado en este repositorio.
@@ -231,6 +239,22 @@ La API expone una auditoria de solo lectura para usuarios `super_admin`. Esta pe
 
 La implementacion mantiene el registro de auditoria cerca de los workflows que representan el evento de negocio. Los cambios simples de modelo pueden seguir auditados por el paquete de auditoria, mientras que los cambios agregados que tocan relaciones o snapshots derivados se registran mediante actions y servicios explicitos.
 
+## Eventos Operativos
+
+MaintOps registra cambios relevantes del ciclo de vida de ordenes e items en un outbox transaccional antes de publicarlos en Redis Streams. Laravel sigue siendo la fuente de verdad: la fila del evento se crea en MySQL dentro de la misma transaccion del cambio de negocio, y el job de publicacion se encola solo despues de que la transaccion confirma.
+
+El outbox guarda metadata del evento, informacion del agregado, actor, payload, targets, contador de reintentos, ultimo error y `published_at`. Si Redis no esta disponible, el evento queda sin publicar en MySQL y puede reintentarse con el worker de cola o con el comando programado `operational-events:dispatch`.
+
+Redis Streams se eligio sobre Redis Pub/Sub porque estos eventos son datos de integracion, no mensajes en vivo descartables. Pub/Sub solo entrega a suscriptores conectados en ese momento. Streams conserva un log ordenado que otros servicios pueden leer despues, reprocesar tras una caida y consumir con su propia posicion. Por eso encaja mejor para el gateway realtime y futuras integraciones de analitica.
+
+El nombre del stream es configurable con `OPERATIONS_EVENT_STREAM` y por defecto es:
+
+```text
+ops:events
+```
+
+La conexion Redis usada para streams no tiene prefijo de keys de Laravel, porque el stream es un contrato entre servicios. Los servicios externos deben leer exactamente el nombre configurado.
+
 ## Decisiones De Arquitectura
 
 El codigo mantiene la estructura base de Laravel reconocible, pero agrega limites explicitos donde ayudan a inspeccionar decisiones de ingenieria:
@@ -240,6 +264,7 @@ El codigo mantiene la estructura base de Laravel reconocible, pero agrega limite
 - Los workflows operativos programados viven en `app/Console/Commands/*` porque son parte del proceso de negocio: los items se generan desde planes y las ordenes aprobadas se asignan a talleres.
 - La logica de lectura del dashboard vive en `app/Services/Dashboard/*`, separando la agregacion de los controladores HTTP mientras Laravel sigue siendo la fuente transaccional de verdad.
 - Las maquinas de estado en `app/States/*` protegen los ciclos de vida de ordenes, items y tareas especificas de vehiculo. Los cambios de estado relacionados se anidan en la transicion que representa el evento de negocio.
+- Los eventos operativos de integracion usan `app/Services/OperationalEvents/*`, `app/Jobs/*` y una tabla outbox para que la entrega externa no debilite la transaccion de base de datos.
 - Las reglas de acceso, las restricciones de valores enviados y el alcance de consultas de listado se mantienen en `app/Policies/*`, `app/Rules/*` y `app/ModelFilters/*`. Asi cada modulo tiene un lugar consistente para autorizacion, invariantes de validacion y comportamiento de filtros a medida que la API crece.
 - El soporte transversal o de dominio vive en `app/Support/*` y `app/Services/*`, haciendo explicito el comportamiento reutilizable en lugar de esconderlo dentro de controladores HTTP.
 - Las herramientas internas se protegen separadas del flujo de tokens API: Scramble docs y Telescope usan una sesion web restringida a usuarios activos `super_admin`.
@@ -287,6 +312,7 @@ APP_PORT=8000
 API_VERSION=1.0.0
 FORWARD_DB_PORT=3306
 FORWARD_REDIS_PORT=6379
+OPERATIONS_EVENT_STREAM=ops:events
 FORWARD_MAILPIT_SMTP_PORT=1025
 FORWARD_MAILPIT_DASHBOARD_PORT=8025
 ```

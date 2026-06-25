@@ -5,6 +5,7 @@ namespace Tests\Feature\OperationalEvents;
 use App\Enums\MaintenanceOrderItemStatus;
 use App\Enums\MaintenanceOrderStatus;
 use App\Enums\SystemRole;
+use App\Jobs\PublishOperationalEventJob;
 use App\Models\MaintenanceOrder;
 use App\Models\OperationalEventOutbox;
 use App\States\MaintenanceOrders\OrderPendingOwnerApproval;
@@ -12,6 +13,7 @@ use Database\Seeders\RolesAndAdminUserSeeder;
 use Database\Seeders\VehicleSystemSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Queue;
 use RuntimeException;
 use Tests\Feature\Api\MaintenanceOrders\Concerns\InteractsWithMaintenanceOrders;
 use Tests\TestCase;
@@ -30,6 +32,8 @@ class RecordsOperationalEventsTest extends TestCase
 
     public function test_order_creation_records_transactional_outbox_event(): void
     {
+        Queue::fake();
+
         $admin = $this->userWithRole(SystemRole::Admin, ['email' => 'events.create.admin@example.com']);
         $advisor = $this->userWithRole(SystemRole::Advisor, ['email' => 'events.create.advisor@example.com']);
         $vehicle = $this->vehicleFor($this->ownerFor(['email' => 'events.create.owner@example.com']));
@@ -50,6 +54,11 @@ class RecordsOperationalEventsTest extends TestCase
         $this->assertSame($vehicle->id, $event->payload['data']['vehicle_id']);
         $this->assertNull($event->published_at);
         $this->assertSame(0, $event->attempts);
+
+        Queue::assertPushed(
+            PublishOperationalEventJob::class,
+            fn (PublishOperationalEventJob $job): bool => $job->outboxId === $event->id,
+        );
     }
 
     public function test_outbox_is_rolled_back_with_failed_operational_transaction(): void

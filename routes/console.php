@@ -15,3 +15,7 @@ Schedule::command('maintenance-orders:generate-items')
 Schedule::command('maintenance-orders:schedule-approved')
     ->everyTwoMinutes()
     ->withoutOverlapping();
+
+Schedule::command('operational-events:dispatch --limit=100')
+    ->everyMinute()
+    ->withoutOverlapping();

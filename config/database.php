@@ -179,6 +179,25 @@ return [
             'backoff_cap' => env('REDIS_BACKOFF_CAP', 1000),
         ],
 
+        /*
+         * This connection deliberately has no prefix. Redis Streams are a
+         * cross-service contract, so consumers must read the exact configured
+         * stream name instead of Laravel's application-prefixed key.
+         */
+        'streams' => [
+            'url' => env('OPERATIONS_EVENT_REDIS_URL', env('REDIS_URL')),
+            'host' => env('OPERATIONS_EVENT_REDIS_HOST', env('REDIS_HOST', '127.0.0.1')),
+            'username' => env('OPERATIONS_EVENT_REDIS_USERNAME', env('REDIS_USERNAME')),
+            'password' => env('OPERATIONS_EVENT_REDIS_PASSWORD', env('REDIS_PASSWORD')),
+            'port' => env('OPERATIONS_EVENT_REDIS_PORT', env('REDIS_PORT', '6379')),
+            'database' => env('OPERATIONS_EVENT_REDIS_DB', env('REDIS_DB', '0')),
+            'prefix' => '',
+            'max_retries' => env('REDIS_MAX_RETRIES', 3),
+            'backoff_algorithm' => env('REDIS_BACKOFF_ALGORITHM', 'decorrelated_jitter'),
+            'backoff_base' => env('REDIS_BACKOFF_BASE', 100),
+            'backoff_cap' => env('REDIS_BACKOFF_CAP', 1000),
+        ],
+
     ],
 
 ];

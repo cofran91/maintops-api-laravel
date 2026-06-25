@@ -21,6 +21,44 @@ services:
         networks:
             - maintops-api
 
+    queue:
+        build:
+            context: .
+        image: maintops-api-laravel/app
+        volumes:
+            - .:/var/www/html
+            - maintops-api-vendor:/var/www/html/vendor
+        depends_on:
+            mysql:
+                condition: service_healthy
+            redis:
+                condition: service_healthy
+            mailpit:
+                condition: service_started
+        command: >
+            sh -c "composer install --no-interaction --prefer-dist &&
+            php artisan queue:work --tries=5 --timeout=90 --sleep=1"
+        networks:
+            - maintops-api
+
+    scheduler:
+        build:
+            context: .
+        image: maintops-api-laravel/app
+        volumes:
+            - .:/var/www/html
+            - maintops-api-vendor:/var/www/html/vendor
+        depends_on:
+            mysql:
+                condition: service_healthy
+            redis:
+                condition: service_healthy
+        command: >
+            sh -c "composer install --no-interaction --prefer-dist &&
+            php artisan schedule:work"
+        networks:
+            - maintops-api
+
     mysql:
         image: mysql:8.4
         ports:

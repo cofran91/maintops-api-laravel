@@ -2,6 +2,7 @@
 
 namespace App\Services\OperationalEvents;
 
+use App\Jobs\PublishOperationalEventJob;
 use App\Models\MaintenanceOrder;
 use App\Models\MaintenanceOrderItem;
 use App\Models\OperationalEventOutbox;
@@ -112,7 +113,7 @@ final class OperationalEventRecorder
         array $payload,
         array $targets,
     ): OperationalEventOutbox {
-        return OperationalEventOutbox::query()->create([
+        $outbox = OperationalEventOutbox::query()->create([
             'event_id' => (string) Str::uuid(),
             'event_type' => $eventType,
             'aggregate_type' => $aggregateType,
@@ -122,6 +123,10 @@ final class OperationalEventRecorder
             'targets' => $targets,
             'occurred_at' => now(),
         ]);
+
+        PublishOperationalEventJob::dispatch($outbox->getKey())->afterCommit();
+
+        return $outbox;
     }
 
     /**
