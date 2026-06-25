@@ -65,6 +65,7 @@ class PublishesOperationalEventsTest extends TestCase
 
         $outbox->refresh();
         $payload = json_decode($streamFields['payload'], true, flags: JSON_THROW_ON_ERROR);
+        $targets = json_decode($streamFields['targets'], true, flags: JSON_THROW_ON_ERROR);
 
         $this->assertNotNull($outbox->published_at);
         $this->assertSame(0, $outbox->attempts);
@@ -75,6 +76,47 @@ class PublishesOperationalEventsTest extends TestCase
         $this->assertSame(45, $payload['actor']['user_id']);
         $this->assertSame(10, $payload['targets']['workshop_id']);
         $this->assertSame(123, $payload['data']['maintenance_order_id']);
+        $this->assertSame(['11', '12', '45'], $targets['user_ids']);
+        $this->assertSame(['10'], $targets['workshop_ids']);
+        $this->assertSame([], $targets['roles']);
+    }
+
+    public function test_job_publishes_role_targets_for_administrative_events(): void
+    {
+        config(['operations.events.stream' => 'test:ops:events']);
+
+        $outbox = $this->outboxEvent([
+            'event_type' => 'user.created.v1',
+            'aggregate_type' => 'user',
+            'aggregate_id' => 99,
+            'targets' => [
+                'roles' => ['admin', 'super_admin'],
+            ],
+        ]);
+
+        $streamFields = null;
+        $client = Mockery::mock();
+        $client->shouldReceive('xAdd')
+            ->once()
+            ->withArgs(function (string $stream, string $id, array $fields) use (&$streamFields): bool {
+                $streamFields = $fields;
+
+                return $stream === 'test:ops:events'
+                    && $id === '*'
+                    && $fields['event_type'] === 'user.created.v1';
+            });
+
+        $connection = Mockery::mock();
+        $connection->shouldReceive('client')->once()->andReturn($client);
+        Redis::shouldReceive('connection')->once()->with('streams')->andReturn($connection);
+
+        (new PublishOperationalEventJob($outbox->id))->handle();
+
+        $targets = json_decode($streamFields['targets'], true, flags: JSON_THROW_ON_ERROR);
+
+        $this->assertSame(['admin', 'super_admin'], $targets['roles']);
+        $this->assertSame([], $targets['user_ids']);
+        $this->assertSame([], $targets['workshop_ids']);
     }
 
     public function test_job_tracks_failed_publication_attempts(): void

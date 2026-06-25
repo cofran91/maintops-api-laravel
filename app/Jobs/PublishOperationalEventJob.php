@@ -78,6 +78,10 @@ final class PublishOperationalEventJob implements ShouldQueue
                     'aggregate_type' => $outbox->aggregate_type,
                     'aggregate_id' => (string) $outbox->aggregate_id,
                     'occurred_at' => $outbox->occurred_at->toISOString(),
+                    'targets' => json_encode(
+                        $this->streamTargets($outbox->targets ?? []),
+                        JSON_THROW_ON_ERROR,
+                    ),
                     'payload' => json_encode($payload, JSON_THROW_ON_ERROR),
                 ],
             );
@@ -93,5 +97,58 @@ final class PublishOperationalEventJob implements ShouldQueue
 
             throw $exception;
         }
+    }
+
+    /**
+     * @param  array<string, mixed>  $targets
+     * @return array{roles: array<int, string>, user_ids: array<int, string>, workshop_ids: array<int, string>}
+     */
+    private function streamTargets(array $targets): array
+    {
+        return [
+            'roles' => $this->identifierList($targets['roles'] ?? []),
+            'user_ids' => $this->identifierList([
+                ...$this->arrayValue($targets['user_ids'] ?? []),
+                $targets['workshop_manager_id'] ?? null,
+                $targets['technician_id'] ?? null,
+                $targets['advisor_id'] ?? null,
+            ]),
+            'workshop_ids' => $this->identifierList([
+                ...$this->arrayValue($targets['workshop_ids'] ?? []),
+                $targets['workshop_id'] ?? null,
+            ]),
+        ];
+    }
+
+    /**
+     * @param  mixed  $value
+     * @return array<int, mixed>
+     */
+    private function arrayValue(mixed $value): array
+    {
+        return is_array($value) ? array_values($value) : [];
+    }
+
+    /**
+     * @param  array<int, mixed>  $values
+     * @return array<int, string>
+     */
+    private function identifierList(array $values): array
+    {
+        $identifiers = [];
+
+        foreach ($values as $value) {
+            if ($value === null || $value === '') {
+                continue;
+            }
+
+            $identifier = (string) $value;
+
+            if (! in_array($identifier, $identifiers, true)) {
+                $identifiers[] = $identifier;
+            }
+        }
+
+        return $identifiers;
     }
 }
