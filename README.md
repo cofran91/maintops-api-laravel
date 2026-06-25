@@ -255,6 +255,12 @@ ops:events
 
 The Redis connection used for streams has no Laravel key prefix, because the stream is a cross-service contract. External services should read exactly the configured stream name.
 
+## Analytics Initial Sync
+
+Analytics does not read the Laravel database directly. Laravel exposes an internal, service-key protected initial sync snapshot so the analytics service can build its own read model before it starts consuming Redis Streams.
+
+The snapshot is cursor-paginated and includes operational projection data for workshops, technicians, maintenance tasks, maintenance orders, and maintenance order items. Contact details, documents, credentials, and other owner/user PII are intentionally excluded. The service key is configured with `OPERATIONS_ANALYTICS_SERVICE_KEY`.
+
 ## Realtime Gateway Tokens
 
 MaintOps can issue short-lived signed tokens for the realtime gateway after the user is authenticated with Sanctum. The token is intentionally small: it carries the user id, roles, workshop scope, audience, issued-at time, expiration time, and a unique token id. The realtime gateway can validate that signature and derive Socket.IO rooms without connecting to MySQL or knowing Laravel's session/token internals.

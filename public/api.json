@@ -3,7 +3,7 @@
     "info": {
         "title": "MaintOps Laravel API Documentation",
         "version": "1.0.0",
-        "description": "Versioned API for MaintOps.\n\nAuthentication:\n- Login returns a Laravel Sanctum personal access token.\n- Protected endpoints require the Authorization: Bearer {token} header.\n- Logout revokes the token used by the current request.\n- Authenticated users can request a short-lived signed token for the realtime gateway.\n\nRoles:\n- The API uses Spatie Laravel Permission for role-based access control.\n- Initial roles: super_admin, admin, workshop_manager, advisor, technician.\n- The development seed creates admin@maint.test with the super_admin role.\n\nDocumentation:\n- The OpenAPI specification is exported to public/api.json with php artisan scramble:export.\n- /docs serves the exported file, so the documentation UI does not regenerate the spec on each request.\n- /docs and /docs/api.json require a web login from an active super_admin user."
+        "description": "Versioned API for MaintOps.\n\nAuthentication:\n- Login returns a Laravel Sanctum personal access token.\n- Protected endpoints require the Authorization: Bearer {token} header.\n- Logout revokes the token used by the current request.\n- Authenticated users can request a short-lived signed token for the realtime gateway.\n\nRoles:\n- The API uses Spatie Laravel Permission for role-based access control.\n- Initial roles: super_admin, admin, workshop_manager, advisor, technician.\n- The development seed creates admin@maint.test with the super_admin role.\n\nDocumentation:\n- The OpenAPI specification is exported to public/api.json with php artisan scramble:export.\n- /docs serves the exported file, so the documentation UI does not regenerate the spec on each request.\n- /docs and /docs/api.json require a web login from an active super_admin user.\n- Internal analytics initial sync endpoints use X-Operations-Service-Key and are intended for service-to-service reads."
     },
     "servers": [
         {
@@ -3548,6 +3548,101 @@
                                     "required": [
                                         "name",
                                         "version"
+                                    ]
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/internal/analytics/initial-sync/{resource}": {
+            "get": {
+                "operationId": "v1.internal.analytics.initial-sync",
+                "description": "Returns cursor-paginated operational snapshots for Analytics to build its\nread model before it starts consuming Redis Streams. Contact data,\ndocuments and tokens are intentionally excluded.",
+                "summary": "Internal analytics initial sync snapshot",
+                "tags": [
+                    "Integrations"
+                ],
+                "parameters": [
+                    {
+                        "name": "resource",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "limit",
+                        "in": "query",
+                        "schema": {
+                            "type": "integer",
+                            "default": 100
+                        }
+                    },
+                    {
+                        "name": "cursor",
+                        "in": "query",
+                        "schema": {
+                            "type": "integer",
+                            "default": 0
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean"
+                                        },
+                                        "message": {
+                                            "type": "string"
+                                        },
+                                        "data": {
+                                            "type": "object",
+                                            "properties": {
+                                                "items": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "object",
+                                                        "additionalProperties": {}
+                                                    }
+                                                },
+                                                "meta": {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "resource": {
+                                                            "type": "string"
+                                                        },
+                                                        "next_cursor": {
+                                                            "type": [
+                                                                "integer",
+                                                                "null"
+                                                            ]
+                                                        }
+                                                    },
+                                                    "required": [
+                                                        "resource",
+                                                        "next_cursor"
+                                                    ]
+                                                }
+                                            },
+                                            "required": [
+                                                "items",
+                                                "meta"
+                                            ]
+                                        }
+                                    },
+                                    "required": [
+                                        "success",
+                                        "message",
+                                        "data"
                                     ]
                                 }
                             }

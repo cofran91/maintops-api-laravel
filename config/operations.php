@@ -10,4 +10,8 @@ return [
         'token_ttl_seconds' => (int) env('REALTIME_TOKEN_TTL_SECONDS', 300),
         'token_audience' => env('REALTIME_TOKEN_AUDIENCE', 'realtime'),
     ],
+
+    'analytics' => [
+        'service_key' => env('OPERATIONS_ANALYTICS_SERVICE_KEY'),
+    ],
 ];

@@ -14,6 +14,7 @@ Route::prefix('v1')->as('api.v1.')->group(function (): void {
     require __DIR__.'/api/v1/maintenance-plans.php';
     require __DIR__.'/api/v1/maintenance-orders.php';
     require __DIR__.'/api/v1/dashboard.php';
+    require __DIR__.'/api/v1/integrations.php';
 
     Route::get('/', fn () => response()->json([
         'name' => 'MaintOps Laravel API',

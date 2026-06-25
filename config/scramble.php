@@ -29,6 +29,7 @@ Documentation:
 - The OpenAPI specification is exported to public/api.json with php artisan scramble:export.
 - /docs serves the exported file, so the documentation UI does not regenerate the spec on each request.
 - /docs and /docs/api.json require a web login from an active super_admin user.
+- Internal analytics initial sync endpoints use X-Operations-Service-Key and are intended for service-to-service reads.
 DESCRIPTION,
     ],
 

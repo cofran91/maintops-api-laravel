@@ -2,19 +2,18 @@
 
 namespace App\Providers;
 
-use App\Models\Audit;
 use App\Models\MaintenanceOrder;
 use App\Models\MaintenanceOrderItem;
 use App\Observers\MaintenanceOrderItemObserver;
 use App\Observers\MaintenanceOrderObserver;
-use App\Policies\AuditPolicy;
 use Dedoc\Scramble\Scramble;
 use Dedoc\Scramble\Support\Generator\OpenApi;
 use Dedoc\Scramble\Support\Generator\Operation;
 use Dedoc\Scramble\Support\Generator\SecurityScheme;
 use Dedoc\Scramble\Support\RouteInfo;
+use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Routing\Route;
-use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Str;
 
@@ -27,9 +26,11 @@ class AppServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
-        Gate::policy(Audit::class, AuditPolicy::class);
         MaintenanceOrder::observe(MaintenanceOrderObserver::class);
         MaintenanceOrderItem::observe(MaintenanceOrderItemObserver::class);
+
+        RateLimiter::for('analytics-initial-sync', fn ($request): Limit => Limit::perMinute(30)
+            ->by((string) $request->ip()));
 
         Scramble::routes(fn (Route $route): bool => str_starts_with($route->uri, 'api/v1'));
 
@@ -57,6 +58,7 @@ class AppServiceProvider extends ServiceProvider
                 Str::startsWith($uri, 'api/v1/maintenance-orders') => ['Maintenance'],
                 Str::startsWith($uri, 'api/v1/maintenance-order-items') => ['Maintenance'],
                 Str::startsWith($uri, 'api/v1/dashboard') => ['Dashboard'],
+                Str::startsWith($uri, 'api/v1/internal/analytics') => ['Integrations'],
                 default => ['General'],
             };
         });
