@@ -3,6 +3,10 @@
 namespace App\Providers;
 
 use App\Models\Audit;
+use App\Models\MaintenanceOrder;
+use App\Models\MaintenanceOrderItem;
+use App\Observers\MaintenanceOrderItemObserver;
+use App\Observers\MaintenanceOrderObserver;
 use App\Policies\AuditPolicy;
 use Dedoc\Scramble\Scramble;
 use Dedoc\Scramble\Support\Generator\OpenApi;
@@ -24,6 +28,8 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         Gate::policy(Audit::class, AuditPolicy::class);
+        MaintenanceOrder::observe(MaintenanceOrderObserver::class);
+        MaintenanceOrderItem::observe(MaintenanceOrderItemObserver::class);
 
         Scramble::routes(fn (Route $route): bool => str_starts_with($route->uri, 'api/v1'));
 
