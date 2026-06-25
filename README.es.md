@@ -174,9 +174,9 @@ Ver logs:
 docker compose logs -f
 ```
 
-## Autenticacion Inicial
+## Datos Demo
 
-El script `docker/init-development.sh` ejecuta migraciones y seeders. Crea los roles base del sistema y un usuario `super_admin` para desarrollo:
+El script `docker/init-development.sh` ejecuta migraciones y seeders. Crea los roles base del sistema, un usuario `super_admin` para desarrollo y un dataset demo de portafolio:
 
 ```text
 super_admin
@@ -186,12 +186,28 @@ advisor
 technician
 ```
 
-Credenciales de desarrollo:
+Todos los usuarios sembrados usan la misma contrasena demo:
 
 ```text
-email: admin@maint.test
 password: password
 ```
+
+Cuentas utiles:
+
+```text
+super_admin:      admin@maint.test
+admin:            admin.demo@maint.test
+workshop_manager: manager.north@maint.test
+workshop_manager: manager.south@maint.test
+advisor:          advisor.north@maint.test
+advisor:          advisor.south@maint.test
+technician:       technician.engine@maint.test
+technician:       technician.brakes@maint.test
+technician:       technician.electrical@maint.test
+technician:       technician.suspension@maint.test
+```
+
+El dataset demo incluye propietarios, vehiculos, talleres, tecnicos, sistemas de vehiculo, planes de mantenimiento, tareas reutilizables, tareas especificas de vehiculo y ordenes de mantenimiento en los principales estados del ciclo de vida. Es pequeno a proposito, pero suficiente para revisar alcance por rol, programacion, transiciones de estado, auditoria y futuros dashboards o analitica sin inventar registros manualmente.
 
 ## Documentacion De La API
 

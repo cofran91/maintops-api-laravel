@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use Database\Seeders\PortfolioDemo\PortfolioDemoSeeder;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
@@ -16,5 +17,6 @@ class DatabaseSeeder extends Seeder
     {
         $this->call(RolesAndAdminUserSeeder::class);
         $this->call(VehicleSystemSeeder::class);
+        $this->call(PortfolioDemoSeeder::class);
     }
 }
