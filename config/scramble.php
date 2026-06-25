@@ -1,6 +1,6 @@
 <?php
 
-use Dedoc\Scramble\Http\Middleware\RestrictedDocsAccess;
+use App\Http\Middleware\EnsureSuperAdminWebSession;
 
 return [
     'api_path' => 'api/v1',
@@ -27,6 +27,7 @@ Roles:
 Documentation:
 - The OpenAPI specification is exported to public/api.json with php artisan scramble:export.
 - /docs serves the exported file, so the documentation UI does not regenerate the spec on each request.
+- /docs and /docs/api.json require a web login from an active super_admin user.
 DESCRIPTION,
     ],
 
@@ -50,7 +51,7 @@ DESCRIPTION,
 
     'middleware' => [
         'web',
-        RestrictedDocsAccess::class,
+        EnsureSuperAdminWebSession::class,
     ],
 
     'extensions' => [],

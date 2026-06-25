@@ -2,8 +2,10 @@
 
 namespace App\Models;
 
+use EloquentFilter\Filterable;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\MorphTo;
 
 #[Fillable([
     'user_type',
@@ -20,6 +22,24 @@ use Illuminate\Database\Eloquent\Model;
 ])]
 class Audit extends Model
 {
+    use Filterable;
+
+    /**
+     * @return MorphTo<Model, $this>
+     */
+    public function user(): MorphTo
+    {
+        return $this->morphTo();
+    }
+
+    /**
+     * @return MorphTo<Model, $this>
+     */
+    public function auditable(): MorphTo
+    {
+        return $this->morphTo();
+    }
+
     /**
      * @return array<string, string>
      */

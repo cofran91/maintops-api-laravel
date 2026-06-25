@@ -2,12 +2,15 @@
 
 namespace App\Providers;
 
+use App\Models\Audit;
+use App\Policies\AuditPolicy;
 use Dedoc\Scramble\Scramble;
 use Dedoc\Scramble\Support\Generator\OpenApi;
 use Dedoc\Scramble\Support\Generator\Operation;
 use Dedoc\Scramble\Support\Generator\SecurityScheme;
 use Dedoc\Scramble\Support\RouteInfo;
 use Illuminate\Routing\Route;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Str;
 
@@ -20,6 +23,8 @@ class AppServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
+        Gate::policy(Audit::class, AuditPolicy::class);
+
         Scramble::routes(fn (Route $route): bool => str_starts_with($route->uri, 'api/v1'));
 
         Scramble::configure()
@@ -35,6 +40,7 @@ class AppServiceProvider extends ServiceProvider
 
             return match (true) {
                 Str::startsWith($uri, 'api/v1/auth') => ['Authentication'],
+                Str::startsWith($uri, 'api/v1/audits') => ['Audit'],
                 Str::startsWith($uri, 'api/v1/users') => ['User Management'],
                 Str::startsWith($uri, 'api/v1/vehicle-systems') => ['Catalogs'],
                 Str::startsWith($uri, 'api/v1/owners') => ['Catalogs'],

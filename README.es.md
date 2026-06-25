@@ -4,6 +4,79 @@ API Laravel para MaintOps, configurada para ejecutarse con Docker Compose direct
 
 La documentacion principal en ingles esta en [README.md](README.md).
 
+## Proposito De La Plataforma
+
+MaintOps modela la operacion de servicio de una empresa de mantenimiento de vehiculos. Se concentra en el flujo donde un cliente contacta a un asesor, reporta un problema o solicita mantenimiento, aprueba el trabajo recomendado y luego lleva el vehiculo a un taller asignado.
+
+La API esta disenada alrededor de las decisiones operativas de ese flujo:
+
+- Los asesores pueden registrar tareas especificas del vehiculo cuando el cliente reporta una falla concreta.
+- Los planes de mantenimiento recomiendan actividades adicionales cuando un vehiculo cumple tiempo o kilometraje.
+- El propietario puede aceptar todo el trabajo recomendado, aceptar solo una parte o rechazar la orden.
+- El trabajo aprobado se programa en talleres y tecnicos segun sistemas atendidos, horarios del taller, disponibilidad del tecnico y duracion de las actividades.
+- Los tecnicos avanzan sobre actividades asignadas mientras los estados de ordenes y tareas se mantienen sincronizados con maquinas de estado.
+- Los usuarios administradores gestionan excepciones operativas como cancelaciones.
+
+El proyecto esta pensado como backend de portafolio: prioriza reglas de dominio, flujos por rol, programacion automatica, transiciones de estado, cobertura de pruebas, documentacion API generada y una experiencia de desarrollo solo con Docker.
+
+## Manual Operativo
+
+Usa la documentacion generada por Scramble en `/docs` para el contrato HTTP exacto. Las notas de abajo explican el flujo de negocio para que una persona pueda entender que probar y por que.
+
+1. Preparar el catalogo operativo.
+   Los sistemas de vehiculo sembrados definen areas de servicio que un taller puede atender, como motor, frenos, electrico, refrigeracion y llantas. Los talleres se configuran con manager, tecnicos, sistemas atendidos, ciudad y horario semanal.
+
+2. Registrar clientes y vehiculos.
+   Los propietarios representan clientes. Los vehiculos pertenecen a propietarios y guardan datos operativos como placa y kilometraje. El kilometraje importa porque los planes de mantenimiento pueden vencerse por distancia recorrida.
+
+3. Crear tareas y planes de mantenimiento.
+   Las tareas reutilizables representan actividades de catalogo, como cambio de aceite o inspeccion de frenos. Las tareas especificas de vehiculo representan una falla reportada sobre un vehiculo concreto. Los planes agrupan tareas reutilizables y definen intervalos recomendados por dias y/o kilometros.
+
+4. Crear una orden.
+   Un asesor crea una orden de mantenimiento para un vehiculo. Si el cliente reporto una falla especifica, el asesor puede crear una tarea ligada al vehiculo antes de que la orden sea procesada. La orden tambien puede iniciar sin tareas manuales, usando solo recomendaciones de planes.
+
+5. Generar items propuestos.
+   El comando `maintenance-orders:generate-items` revisa ordenes creadas. Agrega items pendientes desde planes vencidos y desde tareas activas especificas del vehiculo que no hayan sido incluidas ya en otra orden de ese vehiculo. Si se generan items, la orden pasa a aprobacion del propietario.
+
+6. Registrar la aprobacion del propietario.
+   El asesor contacta al propietario con el trabajo recomendado. Los items aceptados quedan disponibles para programacion. Los items rechazados se mantienen como historial de decision. Si todos los items se rechazan, la orden queda rechazada; si solo algunos se rechazan, queda parcialmente aprobada.
+
+7. Programar el trabajo aprobado.
+   El comando `maintenance-orders:schedule-approved` asigna taller, tecnico y horarios de items. La busqueda prioriza el dia: para el dia actual revisa talleres elegibles y sus tecnicos antes de pasar al dia siguiente. Si un tecnico puede empezar el vehiculo hoy y terminar items restantes el siguiente dia laboral, esa division es valida. Si un tecnico no tiene espacio para el primer item hoy, el programador intenta otro tecnico y luego otros talleres antes de revisar manana.
+
+8. Ejecutar el trabajo.
+   Los tecnicos trabajan sobre items programados. Iniciar un item puede mover la orden a en progreso. Completar todos los items abiertos puede completar la orden. El estado de una tarea especifica de vehiculo se mueve con su item asociado, no desde el endpoint de tareas.
+
+9. Cerrar o cancelar.
+   Las ordenes completadas pueden entregarse. El trabajo programado o en progreso puede cancelarse segun las reglas de estado. Las cancelaciones y rechazos se propagan por las maquinas de estado de items para mantener consistentes las tareas especificas del vehiculo.
+
+## Roles En Resumen
+
+- `super_admin` y `admin`: gestionan catalogos, usuarios, talleres, propietarios, vehiculos, planes, tareas, ordenes y transiciones excepcionales.
+- `advisor`: crea registros operativos de cara al cliente, como tareas especificas de vehiculo y ordenes de mantenimiento, y gestiona transiciones relacionadas con aprobacion.
+- `workshop_manager`: trabaja dentro del alcance de su taller asignado y puede ejecutar transiciones permitidas del lado del taller.
+- `technician`: ve trabajo operativo asignado y actualiza estados ejecutables de items.
+
+Los permisos exactos se hacen cumplir con policies y reglas de request. Las pruebas feature son la mejor referencia ejecutable de los limites por rol.
+
+## Automatizacion
+
+Dos comandos programados corren cada dos minutos:
+
+```text
+maintenance-orders:generate-items
+maintenance-orders:schedule-approved
+```
+
+Tambien pueden ejecutarse manualmente:
+
+```bash
+docker compose exec app php artisan maintenance-orders:generate-items
+docker compose exec app php artisan maintenance-orders:schedule-approved
+```
+
+Estos comandos son parte del flujo de dominio: generan trabajo recomendado y convierten trabajo aprobado en una agenda concreta de taller.
+
 ## Por Que Docker Directo En Lugar De Laravel Sail
 
 Laravel Sail es util cuando un proyecto acepta depender del runtime publicado en `vendor/laravel/sail`. Este proyecto no usa Sail porque el entorno de desarrollo debe arrancar desde un clon limpio de GitHub usando solo Docker, sin PHP ni Composer locales, y sin depender de archivos generados dentro de `vendor`.
@@ -124,11 +197,19 @@ password: password
 
 Scramble genera la especificacion OpenAPI desde rutas, requests, resources y bloques PHPDoc. La UI de documentacion no regenera la especificacion en cada visita. En su lugar, `/docs` sirve el archivo preexportado `public/api.json` y `/docs/api.json` expone ese mismo archivo como JSON.
 
+La UI de documentacion, el JSON OpenAPI y Telescope estan protegidos por el login de herramientas internas en `/admin/login`. Solo usuarios activos con rol `super_admin` pueden acceder a esas herramientas internas. La autenticacion API sigue usando tokens Sanctum; el area de herramientas internas usa una sesion web normal solo para documentacion y observabilidad.
+
 Regenera la especificacion despues de cambiar rutas API, validaciones, resources o PHPDocs de controladores:
 
 ```bash
 docker compose exec app php artisan scramble:export
 ```
+
+## Auditoria
+
+La API expone una auditoria de solo lectura para usuarios `super_admin`. Esta pensada para revision operativa, no para consumo publico: los registros incluyen actor, modelo auditado, nombre del evento, snapshots anteriores y nuevos, URL de la solicitud, direccion IP, user agent, tags y fechas.
+
+La implementacion mantiene el registro de auditoria cerca de los workflows que representan el evento de negocio. Los cambios simples de modelo pueden seguir auditados por el paquete de auditoria, mientras que los cambios agregados que tocan relaciones o snapshots derivados se registran mediante actions y servicios explicitos.
 
 ## Decisiones De Arquitectura
 
@@ -136,22 +217,28 @@ El codigo mantiene la estructura base de Laravel reconocible, pero agrega limite
 
 - Las rutas API estan versionadas bajo `routes/api/v1/*`, para que futuros cambios de contrato puedan introducirse sin mezclar versiones en un solo archivo.
 - Los workflows de escritura que coordinan persistencia, cambios de estado, registros relacionados o efectos de auditoria viven en `app/Actions/*`. Esto deja visibles los casos de uso de varios pasos y facilita probarlos.
+- Los workflows operativos programados viven en `app/Console/Commands/*` porque son parte del proceso de negocio: los items se generan desde planes y las ordenes aprobadas se asignan a talleres.
+- Las maquinas de estado en `app/States/*` protegen los ciclos de vida de ordenes, items y tareas especificas de vehiculo. Los cambios de estado relacionados se anidan en la transicion que representa el evento de negocio.
 - Las reglas de acceso, las restricciones de valores enviados y el alcance de consultas de listado se mantienen en `app/Policies/*`, `app/Rules/*` y `app/ModelFilters/*`. Asi cada modulo tiene un lugar consistente para autorizacion, invariantes de validacion y comportamiento de filtros a medida que la API crece.
 - El soporte transversal o de dominio vive en `app/Support/*` y `app/Services/*`, haciendo explicito el comportamiento reutilizable en lugar de esconderlo dentro de controladores HTTP.
+- Las herramientas internas se protegen separadas del flujo de tokens API: Scramble docs y Telescope usan una sesion web restringida a usuarios activos `super_admin`.
 - El vocabulario compartido de dominio vive en `app/Enums/*` cuando los valores string repetidos podrian dispersarse entre seeders, policies, requests, filters, actions y tests.
 
 Estas decisiones son deliberadamente modestas. El proyecto es pequeno, asi que la arquitectura prioriza limites legibles sobre capas extra o abstracciones prematuras.
 
 ## Arquitectura De Pruebas
 
-Las pruebas feature se agrupan por area API en `tests/Feature/Api/*`. Esto replica los modulos de produccion y hace que la suite funcione como documentacion ejecutable de cada flujo.
+Las pruebas feature se agrupan por area API en `tests/Feature/Api/*`, y las pruebas de comandos operativos viven en `tests/Feature/Console/*`. Esto replica los modulos de produccion y hace que la suite funcione como documentacion ejecutable de cada flujo.
 
 - Las pruebas de autenticacion cubren login, logout, consulta del usuario actual, usuarios inactivos, usuarios eliminados y tokens invalidos.
-- Las pruebas de gestion de usuarios estan separadas por comportamiento: crear, listar, ver, actualizar, eliminar y efectos de auditoria.
+- Las pruebas de dominio estan separadas por comportamiento: crear, listar, ver, actualizar, eliminar, relaciones, efectos de auditoria y transiciones de estado.
 - Los data providers cubren matrices de roles para ejercer la misma regla sobre `super_admin`, `admin`, `workshop_manager`, `advisor` y `technician` sin duplicar metodos.
-- `tests/Feature/Api/Users/Concerns/InteractsWithUsers.php` centraliza fixtures de usuarios, roles y payloads. Cada prueba individual queda enfocada en comportamiento y no en ruido de setup.
+- Los test concerns centralizan fixtures de usuarios, roles, talleres, propietarios, vehiculos, tareas, planes y ordenes. Cada prueba individual queda enfocada en comportamiento y no en ruido de setup.
 - `RefreshDatabase` y `RolesAndAdminUserSeeder` aislan cada prueba mientras ejercitan migraciones, seeders, roles, policies y el flujo real de tokens Sanctum.
-- Las pruebas de auditoria verifican efectos de negocio explicitamente, incluyendo snapshots anteriores y nuevos de usuario, no solo codigos de respuesta HTTP.
+- Las pruebas de maquinas de estado verifican transiciones validas e invalidas, restricciones por rol y sincronizacion de estados entre ordenes, items y tareas especificas de vehiculo.
+- Las pruebas de consola verifican el flujo automatizado de recomendacion y programacion, incluyendo seleccion por dia de taller/tecnico.
+- Las pruebas de auditoria verifican efectos de negocio explicitamente, incluyendo snapshots anteriores y nuevos, no solo codigos de respuesta HTTP.
+- Las pruebas de acceso web verifican que documentacion interna y observabilidad requieran sesion `super_admin`.
 
 La suite prioriza cobertura feature porque el comportamiento mas importante de esta API vive en la frontera entre entrada HTTP, autorizacion, estado de base de datos, asignacion de roles y auditoria.
 
