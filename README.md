@@ -255,6 +255,14 @@ ops:events
 
 The Redis connection used for streams has no Laravel key prefix, because the stream is a cross-service contract. External services should read exactly the configured stream name.
 
+## Realtime Gateway Tokens
+
+MaintOps can issue short-lived signed tokens for the realtime gateway after the user is authenticated with Sanctum. The token is intentionally small: it carries the user id, roles, workshop scope, audience, issued-at time, expiration time, and a unique token id. The realtime gateway can validate that signature and derive Socket.IO rooms without connecting to MySQL or knowing Laravel's session/token internals.
+
+The signing contract is configured with `REALTIME_TOKEN_SECRET`, `REALTIME_TOKEN_TTL_SECONDS`, and `REALTIME_TOKEN_AUDIENCE`. Use a secret dedicated to realtime tokens instead of sharing `APP_KEY` with another service.
+
+This is enough for the portfolio stack because Laravel remains the identity source and Node only validates a short-lived credential. A production deployment could harden the same boundary further with public/private key signatures, internal service credentials, mTLS, or another explicit trust contract between Laravel, Realtime, and Analytics.
+
 ## Architecture Decisions
 
 The codebase keeps the default Laravel shape recognizable, but adds a few explicit boundaries where they make engineering decisions easier to inspect:

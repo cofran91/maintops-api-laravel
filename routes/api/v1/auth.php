@@ -3,6 +3,7 @@
 use App\Http\Controllers\Api\V1\Auth\LoginController;
 use App\Http\Controllers\Api\V1\Auth\LogoutController;
 use App\Http\Controllers\Api\V1\Auth\MeController;
+use App\Http\Controllers\Api\V1\Auth\RealtimeTokenController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('auth')->as('auth.')->group(function (): void {
@@ -10,6 +11,7 @@ Route::prefix('auth')->as('auth.')->group(function (): void {
 
     Route::middleware('auth:sanctum')->group(function (): void {
         Route::get('me', MeController::class)->name('me');
+        Route::post('realtime-token', RealtimeTokenController::class)->name('realtime-token');
         Route::post('logout', LogoutController::class)->name('logout');
     });
 });
