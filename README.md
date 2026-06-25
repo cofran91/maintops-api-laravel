@@ -261,13 +261,15 @@ Analytics does not read the Laravel database directly. Laravel exposes an intern
 
 The snapshot is cursor-paginated and includes operational projection data for workshops, technicians, maintenance tasks, maintenance orders, and maintenance order items. Contact details, documents, credentials, and other owner/user PII are intentionally excluded. The service key is configured with `OPERATIONS_ANALYTICS_SERVICE_KEY`.
 
-## Realtime Gateway Tokens
+## External Service Tokens
 
-MaintOps can issue short-lived signed tokens for the realtime gateway after the user is authenticated with Sanctum. The token is intentionally small: it carries the user id, roles, workshop scope, audience, issued-at time, expiration time, and a unique token id. The realtime gateway can validate that signature and derive Socket.IO rooms without connecting to MySQL or knowing Laravel's session/token internals.
+MaintOps can issue short-lived signed tokens for external services after the user is authenticated with Sanctum. The token is intentionally small: it carries the user id, roles, workshop scope, audience, issued-at time, expiration time, and a unique token id. Realtime and Analytics can validate that signature without connecting to MySQL or knowing Laravel's session/token internals.
 
-The signing contract is configured with `REALTIME_TOKEN_SECRET`, `REALTIME_TOKEN_TTL_SECONDS`, and `REALTIME_TOKEN_AUDIENCE`. Use a secret dedicated to realtime tokens instead of sharing `APP_KEY` with another service.
+Use `POST /api/v1/auth/service-token` with an `audience` value of `realtime` or `analytics`. Analytics tokens are restricted to `super_admin` and `admin` users.
 
-This is enough for the portfolio stack because Laravel remains the identity source and Node only validates a short-lived credential. A production deployment could harden the same boundary further with public/private key signatures, internal service credentials, mTLS, or another explicit trust contract between Laravel, Realtime, and Analytics.
+The signing contract is configured with `SERVICE_TOKEN_SECRET`, `SERVICE_TOKEN_TTL_SECONDS`, and `SERVICE_TOKEN_ISSUER`. Use a secret dedicated to external service tokens instead of sharing `APP_KEY` with another service.
+
+This is enough for the portfolio stack because Laravel remains the identity source and external services only validate a short-lived credential. A production deployment could harden the same boundary further with public/private key signatures, internal service credentials, mTLS, or another explicit trust contract between Laravel, Realtime, and Analytics.
 
 ## Architecture Decisions
 

@@ -261,13 +261,15 @@ Analytics no lee directamente la base de datos de Laravel. Laravel expone un sna
 
 El snapshot es paginado por cursor e incluye datos de proyeccion operativa para talleres, tecnicos, tareas de mantenimiento, ordenes e items de ordenes. Los datos de contacto, documentos, credenciales y otros datos personales de owners/usuarios se excluyen intencionalmente. La service key se configura con `OPERATIONS_ANALYTICS_SERVICE_KEY`.
 
-## Tokens Del Gateway Realtime
+## Tokens De Servicios Externos
 
-MaintOps puede emitir tokens firmados de vida corta para el gateway realtime despues de que el usuario se autentica con Sanctum. El token es intencionalmente pequeno: lleva el id del usuario, roles, alcance de taller, audiencia, fecha de emision, expiracion y un id unico del token. El gateway realtime puede validar esa firma y derivar rooms de Socket.IO sin conectarse a MySQL ni conocer los detalles internos de sesiones o tokens de Laravel.
+MaintOps puede emitir tokens firmados de vida corta para servicios externos despues de que el usuario se autentica con Sanctum. El token es intencionalmente pequeno: lleva el id del usuario, roles, alcance de taller, audiencia, fecha de emision, expiracion y un id unico del token. Realtime y Analytics pueden validar esa firma sin conectarse a MySQL ni conocer los detalles internos de sesiones o tokens de Laravel.
 
-El contrato de firma se configura con `REALTIME_TOKEN_SECRET`, `REALTIME_TOKEN_TTL_SECONDS` y `REALTIME_TOKEN_AUDIENCE`. Usa un secreto dedicado para tokens realtime en vez de compartir `APP_KEY` con otro servicio.
+Usa `POST /api/v1/auth/service-token` con un valor `audience` de `realtime` o `analytics`. Los tokens Analytics estan restringidos a usuarios `super_admin` y `admin`.
 
-Esto es suficiente para el stack de portafolio porque Laravel sigue siendo la fuente de identidad y Node solo valida una credencial de corta duracion. Un despliegue productivo podria endurecer mas este limite con firmas de llave publica/privada, credenciales internas de servicio, mTLS u otro contrato explicito de confianza entre Laravel, Realtime y Analytics.
+El contrato de firma se configura con `SERVICE_TOKEN_SECRET`, `SERVICE_TOKEN_TTL_SECONDS` y `SERVICE_TOKEN_ISSUER`. Usa un secreto dedicado para tokens de servicios externos en vez de compartir `APP_KEY` con otro servicio.
+
+Esto es suficiente para el stack de portafolio porque Laravel sigue siendo la fuente de identidad y los servicios externos solo validan una credencial de corta duracion. Un despliegue productivo podria endurecer mas este limite con firmas de llave publica/privada, credenciales internas de servicio, mTLS u otro contrato explicito de confianza entre Laravel, Realtime y Analytics.
 
 ## Decisiones De Arquitectura
 

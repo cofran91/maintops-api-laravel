@@ -11,7 +11,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\TestCase;
 
-class RealtimeTokenTest extends TestCase
+class ServiceTokenTest extends TestCase
 {
     use RefreshDatabase;
 
@@ -22,9 +22,9 @@ class RealtimeTokenTest extends TestCase
         parent::setUp();
 
         config([
-            'operations.realtime.token_secret' => 'testing-realtime-token-secret',
-            'operations.realtime.token_ttl_seconds' => 120,
-            'operations.realtime.token_audience' => 'realtime',
+            'operations.service_tokens.secret' => 'testing-service-token-secret-12345',
+            'operations.service_tokens.ttl_seconds' => 120,
+            'operations.service_tokens.issuer' => 'http://maintops.test',
         ]);
 
         $this->seed(RolesAndAdminUserSeeder::class);
@@ -38,18 +38,16 @@ class RealtimeTokenTest extends TestCase
         parent::tearDown();
     }
 
-    public function test_authenticated_user_can_issue_realtime_token(): void
+    public function test_authenticated_user_can_issue_realtime_service_token(): void
     {
         $now = CarbonImmutable::parse('2026-06-25 12:00:00');
         CarbonImmutable::setTestNow($now);
 
-        $plainTextToken = $this->admin->createToken('feature-test')->plainTextToken;
-
-        $response = $this->withToken($plainTextToken)
-            ->postJson('/api/v1/auth/realtime-token')
+        $response = $this->withToken($this->admin->createToken('feature-test')->plainTextToken)
+            ->postJson('/api/v1/auth/service-token', ['audience' => 'realtime'])
             ->assertOk()
             ->assertJsonPath('success', true)
-            ->assertJsonPath('message', 'Realtime token issued.')
+            ->assertJsonPath('message', 'Service token issued.')
             ->assertJsonPath('data.token_type', 'Bearer')
             ->assertJsonPath('data.expires_in', 120)
             ->assertJsonPath('data.audience', 'realtime')
@@ -63,11 +61,9 @@ class RealtimeTokenTest extends TestCase
                 ],
             ]);
 
-        $token = $response->json('data.token');
-        $this->assertSignedToken($token);
+        $payload = $this->decodePayload($response->json('data.token'));
 
-        $payload = $this->decodePayload($token);
-
+        $this->assertSignedToken($response->json('data.token'));
         $this->assertSame((string) $this->admin->id, $payload['sub']);
         $this->assertSame('realtime', $payload['aud']);
         $this->assertSame([SystemRole::SuperAdmin->value], $payload['roles']);
@@ -75,10 +71,24 @@ class RealtimeTokenTest extends TestCase
         $this->assertSame($now->getTimestamp(), $payload['iat']);
         $this->assertSame($now->addSeconds(120)->getTimestamp(), $payload['exp']);
         $this->assertIsString($payload['jti']);
+        $this->assertSame('http://maintops.test', $payload['iss']);
+    }
+
+    public function test_administrator_can_issue_analytics_service_token(): void
+    {
+        $response = $this->withToken($this->admin->createToken('feature-test')->plainTextToken)
+            ->postJson('/api/v1/auth/service-token', ['audience' => 'analytics'])
+            ->assertOk()
+            ->assertJsonPath('data.audience', 'analytics');
+
+        $payload = $this->decodePayload($response->json('data.token'));
+
+        $this->assertSame('analytics', $payload['aud']);
+        $this->assertSame((string) $this->admin->id, $payload['sub']);
     }
 
     #[DataProvider('workshopScopeProvider')]
-    public function test_realtime_token_includes_user_workshop_scope(string $role, string $scopeSource): void
+    public function test_realtime_service_token_includes_user_workshop_scope(string $role, string $scopeSource): void
     {
         $user = User::factory()->create();
         $user->assignRole($role);
@@ -91,10 +101,8 @@ class RealtimeTokenTest extends TestCase
             $user->forceFill(['workshop_id' => $workshop->id])->save();
         }
 
-        $plainTextToken = $user->createToken('feature-test')->plainTextToken;
-
-        $response = $this->withToken($plainTextToken)
-            ->postJson('/api/v1/auth/realtime-token')
+        $response = $this->withToken($user->createToken('feature-test')->plainTextToken)
+            ->postJson('/api/v1/auth/service-token', ['audience' => 'realtime'])
             ->assertOk();
 
         $payload = $this->decodePayload($response->json('data.token'));
@@ -104,9 +112,28 @@ class RealtimeTokenTest extends TestCase
         $this->assertSame($workshop->id, $payload['workshop_id']);
     }
 
-    public function test_guest_cannot_issue_realtime_token(): void
+    public function test_technician_cannot_issue_analytics_service_token(): void
     {
-        $this->postJson('/api/v1/auth/realtime-token')
+        $technician = User::factory()->create();
+        $technician->assignRole(SystemRole::Technician->value);
+
+        $this->withToken($technician->createToken('feature-test')->plainTextToken)
+            ->postJson('/api/v1/auth/service-token', ['audience' => 'analytics'])
+            ->assertForbidden()
+            ->assertJsonPath('message', 'Not authorized to issue Analytics tokens.');
+    }
+
+    public function test_invalid_audience_is_rejected(): void
+    {
+        $this->withToken($this->admin->createToken('feature-test')->plainTextToken)
+            ->postJson('/api/v1/auth/service-token', ['audience' => 'notifications'])
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors(['audience']);
+    }
+
+    public function test_guest_cannot_issue_service_token(): void
+    {
+        $this->postJson('/api/v1/auth/service-token', ['audience' => 'realtime'])
             ->assertUnauthorized();
     }
 
@@ -135,7 +162,7 @@ class RealtimeTokenTest extends TestCase
 
         $unsignedToken = $parts[0].'.'.$parts[1];
         $expectedSignature = $this->base64UrlEncode(
-            hash_hmac('sha256', $unsignedToken, 'testing-realtime-token-secret', true),
+            hash_hmac('sha256', $unsignedToken, 'testing-service-token-secret-12345', true),
         );
 
         $this->assertSame($expectedSignature, $parts[2]);

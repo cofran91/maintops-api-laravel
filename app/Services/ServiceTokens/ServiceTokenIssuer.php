@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Services\Realtime;
+namespace App\Services\ServiceTokens;
 
 use App\Models\User;
 use Carbon\CarbonImmutable;
@@ -8,22 +8,21 @@ use Illuminate\Support\Str;
 use JsonException;
 use RuntimeException;
 
-class RealtimeTokenIssuer
+class ServiceTokenIssuer
 {
     /**
      * @return array{token: string, token_type: string, expires_in: int, expires_at: string, audience: string}
      *
      * @throws JsonException
      */
-    public function issueFor(User $user): array
+    public function issueFor(User $user, string $audience): array
     {
         $issuedAt = CarbonImmutable::now();
-        $ttl = max(1, (int) config('operations.realtime.token_ttl_seconds', 300));
+        $ttl = max(1, (int) config('operations.service_tokens.ttl_seconds', 300));
         $expiresAt = $issuedAt->addSeconds($ttl);
-        $audience = (string) config('operations.realtime.token_audience', 'realtime');
 
         $payload = [
-            'iss' => (string) config('app.url'),
+            'iss' => (string) config('operations.service_tokens.issuer', config('app.url')),
             'aud' => $audience,
             'sub' => (string) $user->getKey(),
             'jti' => (string) Str::uuid(),
@@ -60,10 +59,10 @@ class RealtimeTokenIssuer
      */
     private function sign(array $payload): string
     {
-        $secret = (string) config('operations.realtime.token_secret', '');
+        $secret = (string) config('operations.service_tokens.secret', '');
 
-        if ($secret === '') {
-            throw new RuntimeException('Realtime token secret is not configured.');
+        if (strlen($secret) < 32) {
+            throw new RuntimeException('Service token secret must contain at least 32 characters.');
         }
 
         $unsignedToken = implode('.', [

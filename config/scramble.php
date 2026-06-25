@@ -18,7 +18,7 @@ Authentication:
 - Login returns a Laravel Sanctum personal access token.
 - Protected endpoints require the Authorization: Bearer {token} header.
 - Logout revokes the token used by the current request.
-- Authenticated users can request a short-lived signed token for the realtime gateway.
+- Authenticated users can request a short-lived signed service token for Realtime or Analytics.
 
 Roles:
 - The API uses Spatie Laravel Permission for role-based access control.
