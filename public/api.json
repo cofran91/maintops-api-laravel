@@ -3407,6 +3407,56 @@
                 }
             }
         },
+        "/dashboard": {
+            "get": {
+                "operationId": "v1.dashboard",
+                "description": "Returns transactional dashboard data from Laravel: order counts by status, operational metrics,\ntoday's schedules, and upcoming schedules. The response is scoped with the same role visibility\nused by maintenance orders.",
+                "summary": "Show scoped operational dashboard",
+                "tags": [
+                    "Dashboard"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "const": "Dashboard retrieved."
+                                        },
+                                        "data": {
+                                            "type": "array",
+                                            "items": {}
+                                        },
+                                        "meta": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "success",
+                                        "message",
+                                        "data",
+                                        "meta"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "$ref": "#/components/responses/AuthorizationException"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    }
+                }
+            }
+        },
         "/": {
             "get": {
                 "operationId": "v1.index",

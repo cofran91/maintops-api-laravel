@@ -16,6 +16,7 @@ La API esta disenada alrededor de las decisiones operativas de ese flujo:
 - El trabajo aprobado se programa en talleres y tecnicos segun sistemas atendidos, horarios del taller, disponibilidad del tecnico y duracion de las actividades.
 - Los tecnicos avanzan sobre actividades asignadas mientras los estados de ordenes y tareas se mantienen sincronizados con maquinas de estado.
 - Los usuarios administradores gestionan excepciones operativas como cancelaciones.
+- Los dashboards operativos resumen carga actual, presion de agenda, aprobaciones pendientes y actividad filtrada por rol desde los datos transaccionales de Laravel.
 
 El proyecto esta pensado como backend de portafolio: prioriza reglas de dominio, flujos por rol, programacion automatica, transiciones de estado, cobertura de pruebas, documentacion API generada y una experiencia de desarrollo solo con Docker.
 
@@ -47,7 +48,10 @@ Usa la documentacion generada por Scramble en `/docs` para el contrato HTTP exac
 8. Ejecutar el trabajo.
    Los tecnicos trabajan sobre items programados. Iniciar un item puede mover la orden a en progreso. Completar todos los items abiertos puede completar la orden. El estado de una tarea especifica de vehiculo se mueve con su item asociado, no desde el endpoint de tareas.
 
-9. Cerrar o cancelar.
+9. Revisar la operacion.
+   El dashboard alimenta tarjetas con conteos de ordenes por estado, agenda del dia, proximas ordenes, trabajo pendiente de aprobacion o programacion, actividades activas y actividades programadas vencidas. Respeta el alcance por rol, asi que managers y tecnicos solo ven el trabajo que pueden operar.
+
+10. Cerrar o cancelar.
    Las ordenes completadas pueden entregarse. El trabajo programado o en progreso puede cancelarse segun las reglas de estado. Las cancelaciones y rechazos se propagan por las maquinas de estado de items para mantener consistentes las tareas especificas del vehiculo.
 
 ## Roles En Resumen
@@ -207,7 +211,7 @@ technician:       technician.electrical@maint.test
 technician:       technician.suspension@maint.test
 ```
 
-El dataset demo incluye propietarios, vehiculos, talleres, tecnicos, sistemas de vehiculo, planes de mantenimiento, tareas reutilizables, tareas especificas de vehiculo y ordenes de mantenimiento en los principales estados del ciclo de vida. Es pequeno a proposito, pero suficiente para revisar alcance por rol, programacion, transiciones de estado, auditoria y futuros dashboards o analitica sin inventar registros manualmente.
+El dataset demo incluye propietarios, vehiculos, talleres, tecnicos, sistemas de vehiculo, planes de mantenimiento, tareas reutilizables, tareas especificas de vehiculo y ordenes de mantenimiento en los principales estados del ciclo de vida. Es pequeno a proposito, pero suficiente para revisar alcance por rol, programacion, transiciones de estado, auditoria, el dashboard y analitica futura sin inventar registros manualmente.
 
 ## Documentacion De La API
 
@@ -234,6 +238,7 @@ El codigo mantiene la estructura base de Laravel reconocible, pero agrega limite
 - Las rutas API estan versionadas bajo `routes/api/v1/*`, para que futuros cambios de contrato puedan introducirse sin mezclar versiones en un solo archivo.
 - Los workflows de escritura que coordinan persistencia, cambios de estado, registros relacionados o efectos de auditoria viven en `app/Actions/*`. Esto deja visibles los casos de uso de varios pasos y facilita probarlos.
 - Los workflows operativos programados viven en `app/Console/Commands/*` porque son parte del proceso de negocio: los items se generan desde planes y las ordenes aprobadas se asignan a talleres.
+- La logica de lectura del dashboard vive en `app/Services/Dashboard/*`, separando la agregacion de los controladores HTTP mientras Laravel sigue siendo la fuente transaccional de verdad.
 - Las maquinas de estado en `app/States/*` protegen los ciclos de vida de ordenes, items y tareas especificas de vehiculo. Los cambios de estado relacionados se anidan en la transicion que representa el evento de negocio.
 - Las reglas de acceso, las restricciones de valores enviados y el alcance de consultas de listado se mantienen en `app/Policies/*`, `app/Rules/*` y `app/ModelFilters/*`. Asi cada modulo tiene un lugar consistente para autorizacion, invariantes de validacion y comportamiento de filtros a medida que la API crece.
 - El soporte transversal o de dominio vive en `app/Support/*` y `app/Services/*`, haciendo explicito el comportamiento reutilizable en lugar de esconderlo dentro de controladores HTTP.
@@ -253,6 +258,7 @@ Las pruebas feature se agrupan por area API en `tests/Feature/Api/*`, y las prue
 - `RefreshDatabase` y `RolesAndAdminUserSeeder` aislan cada prueba mientras ejercitan migraciones, seeders, roles, policies y el flujo real de tokens Sanctum.
 - Las pruebas de maquinas de estado verifican transiciones validas e invalidas, restricciones por rol y sincronizacion de estados entre ordenes, items y tareas especificas de vehiculo.
 - Las pruebas de consola verifican el flujo automatizado de recomendacion y programacion, incluyendo seleccion por dia de taller/tecnico.
+- Las pruebas de dashboard verifican datos operativos filtrados por rol para administradores, managers de taller, tecnicos e invitados.
 - Las pruebas de auditoria verifican efectos de negocio explicitamente, incluyendo snapshots anteriores y nuevos, no solo codigos de respuesta HTTP.
 - Las pruebas de acceso web verifican que documentacion interna y observabilidad requieran sesion `super_admin`.
 

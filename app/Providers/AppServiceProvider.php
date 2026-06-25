@@ -50,6 +50,7 @@ class AppServiceProvider extends ServiceProvider
                 Str::startsWith($uri, 'api/v1/maintenance-plans') => ['Maintenance'],
                 Str::startsWith($uri, 'api/v1/maintenance-orders') => ['Maintenance'],
                 Str::startsWith($uri, 'api/v1/maintenance-order-items') => ['Maintenance'],
+                Str::startsWith($uri, 'api/v1/dashboard') => ['Dashboard'],
                 default => ['General'],
             };
         });

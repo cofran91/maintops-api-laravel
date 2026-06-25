@@ -16,6 +16,7 @@ The API is designed around the operational decisions behind that workflow:
 - Approved work is scheduled into workshops and technicians based on supported vehicle systems, workshop working hours, technician availability, and item duration.
 - Technicians move through assigned activities while order and task states stay synchronized through state machines.
 - Admin users can manage operational exceptions such as cancellations.
+- Operational dashboards summarize current workload, schedule pressure, pending approvals, and role-scoped activity directly from Laravel's transactional data.
 
 The project is intended as a portfolio backend: it emphasizes domain rules, role-based workflows, automated scheduling, state transitions, test coverage, generated API documentation, and a Docker-only developer experience.
 
@@ -47,7 +48,10 @@ Use the generated Scramble documentation at `/docs` for the exact HTTP contract.
 8. Execute the work.
    Technicians work through scheduled items. Starting an item can move the order to in progress. Completing all open items can complete the order. Vehicle-specific task status moves with the associated item, not from the task endpoint.
 
-9. Close or cancel.
+9. Review the operation.
+   The dashboard supports cards for order status counts, current-day schedules, upcoming schedules, pending approval or scheduling work, active activities, and overdue scheduled activities. It is scoped by role, so managers and technicians see only the work they are allowed to operate.
+
+10. Close or cancel.
    Completed orders can be delivered. Scheduled or in-progress work can be cancelled according to the state rules. Cancellations and rejections propagate through item state machines so linked vehicle tasks remain consistent.
 
 ## Roles At A Glance
@@ -207,7 +211,7 @@ technician:       technician.electrical@maint.test
 technician:       technician.suspension@maint.test
 ```
 
-The demo dataset includes owners, vehicles, workshops, technicians, vehicle systems, maintenance plans, reusable tasks, vehicle-specific tasks, and maintenance orders across the main lifecycle states. It is intentionally small but complete enough to review role scoping, scheduling behavior, state transitions, audit records, and future dashboard or analytics work without inventing records manually.
+The demo dataset includes owners, vehicles, workshops, technicians, vehicle systems, maintenance plans, reusable tasks, vehicle-specific tasks, and maintenance orders across the main lifecycle states. It is intentionally small but complete enough to review role scoping, scheduling behavior, state transitions, audit records, the dashboard, and future analytics work without inventing records manually.
 
 ## API Documentation
 
@@ -234,6 +238,7 @@ The codebase keeps the default Laravel shape recognizable, but adds a few explic
 - API routes are versioned under `routes/api/v1/*`, so future contract changes can be introduced without mixing versions in one file.
 - Write workflows that coordinate persistence, state changes, related records, or audit side effects live in `app/Actions/*`. This keeps multi-step use cases visible and easy to test.
 - Scheduled operational workflows live in `app/Console/Commands/*` because they are part of the business process: order items are generated from plans and approved orders are assigned to workshops.
+- Dashboard read logic lives in `app/Services/Dashboard/*`, keeping aggregation separate from HTTP controllers while still using Laravel as the transactional source of truth.
 - State machines in `app/States/*` protect order, item, and vehicle-specific task lifecycles. Related state changes are nested in the transition that owns the business event.
 - Access rules, submitted-value constraints, and list-query scoping are kept in `app/Policies/*`, `app/Rules/*`, and `app/ModelFilters/*`. This gives each module a consistent place for authorization, validation invariants, and filtering behavior as the API grows.
 - Cross-cutting or domain support code lives in `app/Support/*` and `app/Services/*`, making reusable behavior explicit instead of hiding it inside HTTP controllers.
@@ -253,6 +258,7 @@ Feature tests are grouped by API area under `tests/Feature/Api/*`, and operation
 - `RefreshDatabase` and `RolesAndAdminUserSeeder` keep each test isolated while still exercising the real migrations, seeders, roles, policies, and Sanctum token flow.
 - State-machine tests verify valid and invalid transitions, role restrictions, and synchronized status changes between orders, items, and linked vehicle tasks.
 - Console tests verify the automated recommendation and scheduling flow, including day-first workshop/technician selection.
+- Dashboard tests verify role-scoped operational data for administrators, workshop managers, technicians, and guests.
 - Audit tests verify business side effects explicitly, including old and new snapshots, instead of only checking HTTP response codes.
 - Web access tests verify that internal documentation and observability pages require a `super_admin` session.
 
