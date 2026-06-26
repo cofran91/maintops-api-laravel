@@ -1,164 +1,232 @@
 # MaintOps Laravel API
 
-Laravel API for MaintOps, configured to run with direct Docker Compose. You do not need PHP, Composer, MySQL, Redis, or Mailpit installed on the host machine.
+Spanish documentation: [README.es.md](README.es.md).
 
-Spanish documentation is available in [README.es.md](README.es.md).
+MaintOps Laravel API is the transactional backend for a vehicle maintenance operations platform. It owns authentication, authorization, business workflows, state transitions, scheduling automation, audit records, operational events, internal integration contracts, and email delivery.
 
-## Platform Purpose
+The project is designed as part of the full MaintOps portfolio stack. It can run on its own for backend review, but the complete product experience uses:
 
-MaintOps models the service operation of a vehicle maintenance company. It focuses on the workflow where customers contact an advisor, report a problem or request maintenance, approve recommended work, and then take the vehicle to an assigned workshop.
+- `maintops-web-vue` for the browser console.
+- `maintops-realtime-node` for live operational updates.
+- `maintops-analytics-fastapi` for read-only analytics.
+- `maintops-stack` for the reproducible local environment that runs all services together.
 
-The API is designed around the operational decisions behind that workflow:
+## What This Project Demonstrates
 
-- Advisors can register vehicle-specific tasks when a customer reports a concrete issue.
-- Maintenance plans recommend additional activities when a vehicle is due by time or odometer.
-- Owners can accept all recommended work, accept only part of it, or reject the order.
-- Approved work is scheduled into workshops and technicians based on supported vehicle systems, workshop working hours, technician availability, and item duration.
-- Technicians move through assigned activities while order and task states stay synchronized through state machines.
-- Admin users can manage operational exceptions such as cancellations.
-- Operational dashboards summarize current workload, schedule pressure, pending approvals, and role-scoped activity directly from Laravel's transactional data.
+- Laravel API design with versioned routes, request validation, resources, policies, and feature tests.
+- Domain modeling for owners, vehicles, workshops, technicians, vehicle systems, tasks, plans, maintenance orders, and order items.
+- Role-based access control with operational scopes for administrators, advisors, workshop managers, and technicians.
+- State machines for maintenance orders, order items, and vehicle-specific tasks.
+- Automated operational workflows that generate recommended order items and schedule approved work.
+- Transactional outbox pattern for cross-service operational events.
+- Redis Streams integration without weakening Laravel's database transaction.
+- Service-token issuing for Realtime and Analytics without exposing Sanctum internals to external services.
+- Auditing, generated API documentation, internal observability, queued email, and Docker-only development.
 
-The project is intended as a portfolio backend: it emphasizes domain rules, role-based workflows, automated scheduling, state transitions, test coverage, generated API documentation, and a Docker-only developer experience.
+## Technical Stack
 
-## Operating Manual
+| Tool | Purpose |
+| --- | --- |
+| Laravel 13 | Main HTTP API, console commands, queue workers, scheduler, policies, resources, and tests. |
+| PHP 8.3 | Runtime used by the Docker image and CI-style validation commands. |
+| Laravel Sanctum | API authentication for browser and API clients. |
+| Spatie Laravel Permission | Role and permission management. |
+| Spatie Laravel Model States | Explicit state machines for operational lifecycles. |
+| OwenIt Laravel Auditing | Audit trail for model and workflow changes. |
+| EloquentFilter | Declarative filtering for paginated list endpoints. |
+| Dedoc Scramble | OpenAPI generation from Laravel routes, requests, resources, and PHPDoc. |
+| Laravel Telescope | Local observability for requests, queries, jobs, logs, events, and mail activity. |
+| MySQL | Transactional source of truth. |
+| Redis Streams | Cross-service operational event transport. |
+| Mailpit | Local email sandbox for password recovery and owner-facing operational emails. |
 
-Use the generated Scramble documentation at `/docs` for the exact HTTP contract. The notes below explain the business flow so a reviewer can understand what to try and why.
+## MaintOps Ecosystem Role
 
-1. Prepare the operational catalog.
-   Seeded vehicle systems define the service areas a workshop can support, such as engine, brakes, electrical, cooling, and tires. Workshops are configured with a manager, technicians, supported systems, city, and weekly working hours.
+Laravel is the source of truth for identity, authorization, transactional data, and business decisions.
 
-2. Register customers and vehicles.
-   Owners represent customers. Vehicles belong to owners and keep operational data such as license plate and odometer. The odometer is important because maintenance plans can become due by mileage.
+- The Vue console authenticates against Laravel and calls the versioned API.
+- The Realtime gateway receives short-lived Laravel-issued service tokens and consumes Laravel events from Redis Streams.
+- The Analytics API receives short-lived Laravel-issued service tokens, imports Laravel snapshots through an internal service-key endpoint, and keeps its own read model updated from the same Redis Stream.
+- Mailpit captures emails locally so password recovery and owner notifications can be reviewed without external SMTP credentials.
 
-3. Create maintenance tasks and plans.
-   Reusable tasks represent catalog activities, such as an oil change or brake inspection. Vehicle-specific tasks represent a customer-reported issue on a concrete vehicle. Maintenance plans group reusable tasks and define recommended intervals by days and/or kilometers.
+External services do not connect to Laravel's MySQL database and do not reuse Sanctum tokens directly. They validate explicit service tokens or service keys created for their integration boundary.
 
-4. Create an order.
-   An advisor creates a maintenance order for a vehicle. If the customer reported a specific issue, the advisor can create a vehicle-specific task before the order is processed. The order can also start without manual tasks, relying only on plan recommendations.
+## Project Structure
 
-5. Generate proposed order items.
-   The `maintenance-orders:generate-items` command reviews created orders. It adds pending items from due maintenance plans and from active vehicle-specific tasks that have not already been included in another order for that vehicle. If items are generated, the order moves to owner approval.
+The codebase keeps Laravel's default shape recognizable and adds explicit boundaries where the domain benefits from them:
 
-6. Capture owner approval.
-   The advisor contacts the owner with the recommended work. Accepted items remain available for scheduling. Rejected items are kept as part of the decision history. If every item is rejected, the order is rejected; if only some are rejected, the order becomes partially approved.
+```text
+app/
+  Actions/          Multi-step write workflows and aggregate updates.
+  Console/Commands/ Scheduled operational automation.
+  Enums/            Shared domain vocabulary for roles, statuses, and system codes.
+  Http/Controllers/ Versioned API controllers and internal web-tool controllers.
+  Http/Requests/    Request validation and submitted-value constraints.
+  Http/Resources/   API response serialization.
+  Jobs/             Queued event publication and mail delivery.
+  Mail/             Owner-facing operational email templates.
+  ModelFilters/     Query filtering for list endpoints.
+  Models/           Eloquent models for transactional data.
+  Notifications/    Password recovery notification delivery.
+  Policies/         Authorization rules for API resources.
+  Rules/            Reusable domain validation rules.
+  Services/         Cross-cutting and integration services.
+  States/           State machines for orders, order items, and vehicle tasks.
+  Support/          Shared helpers such as explicit audit recording.
+routes/
+  api.php           Version prefix and route module loading.
+  api/v1/           Versioned API route files by domain area.
+  console.php       Scheduler definitions.
+database/
+  migrations/       Transactional schema.
+  seeders/          Roles, base data, and portfolio demo data.
+tests/
+  Feature/          API, console, operational event, and internal-tool tests.
+```
 
-7. Schedule approved work.
-   The `maintenance-orders:schedule-approved` command assigns a workshop, technician, and item times. Scheduling is day-first: for the current day it checks eligible workshops and their technicians before moving to the next day. If a technician can start the vehicle today and finish remaining items the next workday, that split is valid. If a technician has no space for the first item today, the scheduler tries another technician and then other workshops before checking tomorrow.
+Controllers stay thin. Business decisions that coordinate persistence, state changes, audit side effects, or integration events live in actions, state classes, services, console commands, and jobs so those decisions are easy to inspect and test.
 
-8. Execute the work.
-   Technicians work through scheduled items. Starting an item can move the order to in progress. Completing all open items can complete the order. Vehicle-specific task status moves with the associated item, not from the task endpoint.
+## Domain Model And Roles
 
-9. Review the operation.
-   The dashboard supports cards for order status counts, current-day schedules, upcoming schedules, pending approval or scheduling work, active activities, and overdue scheduled activities. It is scoped by role, so managers and technicians see only the work they are allowed to operate.
+MaintOps models the service operation of a vehicle maintenance company:
 
-10. Close or cancel.
-   Completed orders can be delivered. Scheduled or in-progress work can be cancelled according to the state rules. Cancellations and rejections propagate through item state machines so linked vehicle tasks remain consistent.
+- Owners represent customers.
+- Vehicles belong to owners and keep operational data such as license plate and odometer.
+- Vehicle systems describe workshop capabilities such as engine, brakes, electrical, cooling, and tires.
+- Workshops have managers, technicians, supported systems, city, address, and weekly working hours.
+- Maintenance tasks can be reusable catalog tasks or vehicle-specific customer-reported issues.
+- Maintenance plans group reusable tasks and define recommended intervals by days and/or kilometers.
+- Maintenance orders group work requested for a vehicle.
+- Maintenance order items represent individual activities that can be approved, scheduled, started, completed, rejected, or cancelled.
 
-11. Inspect operational emails.
-   When an order is scheduled or completed, Laravel queues a customer-facing email for the vehicle owner. Scheduled emails tell the owner when to bring the vehicle to the assigned workshop and address; completed emails tell the owner when and where the vehicle is ready for pickup. In the Docker sandbox, those emails are captured by Mailpit at `http://localhost:8025`. The demo inbox is intentionally visible, so do not enter real personal or customer data while testing.
-
-## Review Checklist
-
-When reviewing the demo, the most useful surfaces are:
-
-- API contract: open `/docs` with a `super_admin` session and inspect the Scramble-generated endpoints.
-- Observability: open `/telescope` with a `super_admin` session and inspect requests, jobs, logs, queries, events, and mail/log activity.
-- Mail sandbox: open Mailpit at `http://localhost:8025` after scheduling or completing a maintenance order and confirm the owner-facing operational email was captured.
-- Queue behavior: keep the `queue`, `queue-events`, and `queue-mail` services running, because default jobs, event publication, and email delivery are processed on separate queues.
-- Data safety: use only demo data. Mailpit is a sandbox inbox and emails may be visible to anyone with access to the demo URL.
-
-## Roles At A Glance
+Main roles:
 
 - `super_admin` and `admin`: manage catalogs, users, workshops, owners, vehicles, plans, tasks, orders, and exceptional transitions.
-- `advisor`: creates customer-facing operational records such as vehicle-specific tasks and maintenance orders, then manages approval-oriented transitions.
-- `workshop_manager`: works inside the assigned workshop scope and can act on allowed workshop-side order or item transitions.
+- `advisor`: creates customer-facing operational records and manages approval-oriented transitions.
+- `workshop_manager`: operates inside an assigned workshop scope.
 - `technician`: sees assigned operational work and updates executable item states.
 
-Exact permissions are enforced by policies and request rules. The feature tests are the best executable reference for role boundaries.
+Exact permissions are enforced by policies, request rules, and tests.
 
-## Automation
+## Operational Workflow
 
-Two domain commands run every two minutes:
+1. Prepare the catalog with vehicle systems, workshops, users, reusable tasks, and maintenance plans.
+2. Register owners and vehicles.
+3. Create a maintenance order for a vehicle, optionally with vehicle-specific customer-reported tasks.
+4. Run `maintenance-orders:generate-items` to add due plan tasks and active vehicle-specific tasks to created orders.
+5. Capture owner approval. Accepted items remain available for scheduling; rejected items remain part of the decision history.
+6. Run `maintenance-orders:schedule-approved` to assign workshop, technician, and planned times based on capability, working hours, availability, and item duration.
+7. Technicians start and complete scheduled items. Related order and task states move through state machines.
+8. Completed orders can be delivered. Scheduled or in-progress work can be cancelled according to state rules.
+9. Dashboard and audit endpoints expose role-scoped operational visibility.
+
+Two domain commands run every two minutes through the scheduler:
 
 ```text
 maintenance-orders:generate-items
 maintenance-orders:schedule-approved
 ```
 
-They can also be run manually:
-
-```bash
-docker compose exec app php artisan maintenance-orders:generate-items
-docker compose exec app php artisan maintenance-orders:schedule-approved
-```
-
-These commands are intentionally part of the domain flow instead of background decoration: they generate recommended work and turn approved work into a concrete workshop schedule.
-
 Operational event recovery runs every minute:
 
 ```text
-operational-events:dispatch
+operational-events:dispatch --limit=100
 ```
 
-That command re-enqueues unpublished outbox events so temporary Redis or queue failures do not leave integrations permanently behind.
+## Operational Events
 
-Operational maintenance emails are sent by Laravel from queued jobs. When a maintenance order is scheduled or completed, the API queues an email only for the vehicle owner with the scheduled drop-off or pickup details. Password reset emails are also queued and point to `FRONTEND_PASSWORD_RESET_URL`. Advisors, technicians, and workshop managers rely on in-platform notifications for their operational updates. Node, Realtime, and Analytics do not send email.
+MaintOps records relevant order and item lifecycle changes in a transactional outbox before publishing them to Redis Streams. The event row is created in MySQL inside the same transaction as the business change, and the publication job is queued only after the transaction commits.
 
-Queues are separated by job type:
+Redis Streams are used instead of Redis Pub/Sub because these events are integration data, not disposable live messages. Streams keep an ordered log that Realtime and Analytics can consume with independent consumer groups, recover after downtime, and process at their own pace.
+
+The stream name is configurable with `OPERATIONS_EVENT_STREAM`. In the full stack, all services use:
 
 ```text
-default
-events
-mail
+maintops:events
 ```
 
-The standalone Compose file runs one worker for each queue. This keeps slow SMTP work from delaying Redis Stream publication.
+If Redis is unavailable, the event remains unpublished in MySQL and can be retried by the queue worker or by the scheduled recovery command.
 
-Local and sandbox environments use Mailpit by default. Mailpit captures outbound emails and exposes them in a browser inbox without delivering anything to the internet.
+## Analytics Integration
 
-## Why Direct Docker Instead Of Laravel Sail
+Analytics does not read the Laravel database directly. Laravel exposes an internal, service-key protected initial sync endpoint:
 
-Laravel Sail is useful when a project accepts the runtime shipped through `vendor/laravel/sail`. This project does not use Sail because the development environment must boot from a clean GitHub clone with Docker only, without local PHP or Composer, and without depending on generated files inside `vendor`.
+```text
+GET /api/v1/internal/analytics/initial-sync/{resource}
+```
 
-This repository owns its runtime through `Dockerfile` and `compose.yaml`:
+The snapshot is cursor-paginated and includes projection data for workshops, technicians, maintenance tasks, maintenance orders, and maintenance order items. Contact details, documents, credentials, and other owner/user PII are intentionally excluded.
 
-- `Dockerfile` installs PHP, required extensions, and Composer inside the application image.
-- `compose.yaml` starts the API, dedicated queue workers, scheduler, MySQL, Redis, and Mailpit with stable service names.
-- `docker/init-development.sh` prepares `.env`, dependencies, `APP_KEY`, migrations, and seed data from inside the container.
+The shared service key is configured with `OPERATIONS_ANALYTICS_SERVICE_KEY`.
 
-For that reason, `laravel/sail` is not installed in this repository.
+## External Service Tokens
 
-## Requirements
+Authenticated users can request short-lived service tokens for external services:
 
-- Docker Desktop or Docker Engine with Docker Compose.
+```text
+POST /api/v1/auth/service-token
+```
+
+Supported audiences:
+
+- `realtime`: used by the Node Socket.IO gateway.
+- `analytics`: used by the FastAPI Analytics API and restricted to administrative roles.
+
+The token carries only the user id, roles, workshop scope, audience, issued-at time, expiration time, and unique token id. Realtime and Analytics validate the token with `SERVICE_TOKEN_SECRET` and do not need access to MySQL or Laravel's Sanctum internals.
+
+## Email And Password Recovery
+
+Laravel queues two email flows:
+
+- Password recovery emails generated by the public auth endpoints.
+- Owner-facing operational emails when a maintenance order is scheduled or completed.
+
+Operational emails are sent only to the vehicle owner. Advisors, technicians, and workshop managers receive operational updates in the platform through realtime notifications instead of email.
+
+Local and demo environments use Mailpit by default. Mailpit captures outbound email and exposes it in a browser inbox without sending anything to the internet:
+
+```text
+http://localhost:8025
+```
+
+Use only demo data. Mailpit is visible to anyone with access to the local/demo URL.
+
+## API Documentation And Observability
+
+Scramble generates the OpenAPI specification from routes, requests, resources, and PHPDoc blocks. The documentation UI serves the exported `public/api.json` file.
+
+Protected internal tools:
+
+- `/admin/login`: web login for internal tools.
+- `/docs`: Scramble documentation UI.
+- `/docs/api.json`: exported OpenAPI JSON.
+- `/telescope`: local observability dashboard.
+
+These internal tools require a normal web session and an active `super_admin` user. API authentication remains token-based with Sanctum.
+
+Regenerate the OpenAPI file after changing routes, requests, resources, or controller PHPDocs:
+
+```bash
+docker compose exec app php artisan scramble:export
+```
+
+## Run Standalone With Docker
+
+The recommended way to review the complete product is `maintops-stack`. Use the standalone Compose file when you want to focus on the Laravel API by itself.
+
+Requirements:
+
+- Docker Engine or Docker Desktop with Docker Compose.
 - Git.
 
-## Initial Setup
-
-Clone the repository and enter the project directory:
+Clone and initialize:
 
 ```bash
 git clone https://github.com/cofran91/maintops-api-laravel.git
 cd maintops-api-laravel
-```
-
-Build the application image and initialize the project:
-
-```bash
 docker compose build
 docker compose run --rm app sh docker/init-development.sh
-```
-
-Start the services:
-
-```bash
 docker compose up -d
-```
-
-Export the OpenAPI specification used by the documentation UI:
-
-```bash
-docker compose exec app php artisan scramble:export
 ```
 
 The API is available at:
@@ -173,8 +241,6 @@ Mailpit is available at:
 http://localhost:8025
 ```
 
-This Mailpit inbox is intentionally public in the local/sandbox Docker setup. Do not use real emails, passwords, phone numbers, documents, customer names, or private operational data in the demo environment. Any email generated by the demo may be visible to anyone with access to the Mailpit URL.
-
 If local port `3306` is already in use, change this value in `.env`:
 
 ```dotenv
@@ -183,51 +249,35 @@ FORWARD_DB_PORT=3307
 
 The application inside Docker still connects to MySQL with `DB_HOST=mysql` and `DB_PORT=3306`.
 
-## Daily Usage
-
-Start services:
+## Useful Commands
 
 ```bash
 docker compose up -d
-```
-
-Stop services:
-
-```bash
 docker compose down
-```
-
-Run Artisan commands:
-
-```bash
+docker compose logs -f
 docker compose exec app php artisan <command>
-```
-
-Run Composer commands:
-
-```bash
 docker compose exec app composer <command>
 ```
 
-View logs:
+Run domain automation manually:
 
 ```bash
-docker compose logs -f
+docker compose exec app php artisan maintenance-orders:generate-items
+docker compose exec app php artisan maintenance-orders:schedule-approved
+docker compose exec app php artisan operational-events:dispatch --limit=100
+```
+
+Run queue workers in the standalone environment:
+
+```bash
+docker compose logs -f queue queue-events queue-mail scheduler
 ```
 
 ## Demo Data
 
-The `docker/init-development.sh` script runs migrations and seeders. It creates the base system roles, a development `super_admin` user, and a portfolio demo dataset:
+`docker/init-development.sh` runs migrations and seeders. It creates roles, a development `super_admin` user, and a portfolio demo dataset.
 
-```text
-super_admin
-admin
-workshop_manager
-advisor
-technician
-```
-
-All seeded users use the same demo password:
+All seeded users use:
 
 ```text
 password: password
@@ -248,109 +298,13 @@ technician:       technician.electrical@maint.test
 technician:       technician.suspension@maint.test
 ```
 
-The demo dataset includes owners, vehicles, workshops, technicians, vehicle systems, maintenance plans, reusable tasks, vehicle-specific tasks, and maintenance orders across the main lifecycle states. It is intentionally small but complete enough to review role scoping, scheduling behavior, state transitions, audit records, the dashboard, and future analytics work without inventing records manually.
-
-## API Documentation
-
-Scramble generates the OpenAPI specification from routes, requests, resources, and PHPDoc blocks. The documentation UI does not regenerate the specification on each visit. Instead, `/docs` serves the pre-exported `public/api.json` file and `/docs/api.json` exposes the same file as JSON.
-
-The documentation UI, the raw OpenAPI JSON, and Telescope are protected by the internal tools login at `/admin/login`. Only active users with the `super_admin` role can access those internal tools. API authentication remains token-based with Sanctum; the internal tools area uses a normal web session only for documentation and observability pages.
-
-Regenerate the specification after changing API routes, request validation, resources, or controller PHPDocs:
-
-```bash
-docker compose exec app php artisan scramble:export
-```
-
-## Audit Trail
-
-The API exposes a read-only audit trail for `super_admin` users. It is meant for operational review, not for public consumption: audit records include the actor, audited model, event name, old and new snapshots, request URL, IP address, user agent, tags, and timestamps.
-
-The implementation keeps audit recording close to the workflows that own the business event. Simple model changes can still be audited by the auditing package, while aggregate changes that touch relationships or derived snapshots are recorded through explicit actions and support services.
-
-## Operational Events
-
-MaintOps records relevant order and item lifecycle changes in a transactional outbox before publishing them to Redis Streams. Laravel remains the source of truth: the event row is created in MySQL inside the same transaction as the business change, and the publication job is queued only after the transaction commits.
-
-The outbox stores event metadata, aggregate information, actor, payload, targets, retry count, last error, and `published_at`. If Redis is unavailable, the event stays unpublished in MySQL and can be retried by the queue worker or by the scheduled `operational-events:dispatch` command.
-
-Redis Streams were chosen over Redis Pub/Sub because these events are integration data, not disposable live messages. Pub/Sub only delivers to subscribers that are connected at that moment. Streams keep an ordered log that other services can read later, replay after downtime, and process with their own consumer positions. That makes the pattern better for the realtime gateway and future analytics integrations.
-
-The stream name is configurable with `OPERATIONS_EVENT_STREAM` and defaults to:
-
-```text
-ops:events
-```
-
-The Redis connection used for streams has no Laravel key prefix, because the stream is a cross-service contract. External services should read exactly the configured stream name.
-
-## Analytics Initial Sync
-
-Analytics does not read the Laravel database directly. Laravel exposes an internal, service-key protected initial sync snapshot so the analytics service can build its own read model before it starts consuming Redis Streams.
-
-The snapshot is cursor-paginated and includes operational projection data for workshops, technicians, maintenance tasks, maintenance orders, and maintenance order items. Contact details, documents, credentials, and other owner/user PII are intentionally excluded. The service key is configured with `OPERATIONS_ANALYTICS_SERVICE_KEY`.
-
-## External Service Tokens
-
-MaintOps can issue short-lived signed tokens for external services after the user is authenticated with Sanctum. The token is intentionally small: it carries the user id, roles, workshop scope, audience, issued-at time, expiration time, and a unique token id. Realtime and Analytics can validate that signature without connecting to MySQL or knowing Laravel's session/token internals.
-
-Use `POST /api/v1/auth/service-token` with an `audience` value of `realtime` or `analytics`. Analytics tokens are restricted to `super_admin` and `admin` users.
-
-The signing contract is configured with `SERVICE_TOKEN_SECRET`, `SERVICE_TOKEN_TTL_SECONDS`, and `SERVICE_TOKEN_ISSUER`. Use a secret dedicated to external service tokens instead of sharing `APP_KEY` with another service.
-
-This is enough for the portfolio stack because Laravel remains the identity source and external services only validate a short-lived credential. A production deployment could harden the same boundary further with public/private key signatures, internal service credentials, mTLS, or another explicit trust contract between Laravel, Realtime, and Analytics.
-
-## Architecture Decisions
-
-The codebase keeps the default Laravel shape recognizable, but adds a few explicit boundaries where they make engineering decisions easier to inspect:
-
-- API routes are versioned under `routes/api/v1/*`, so future contract changes can be introduced without mixing versions in one file.
-- Write workflows that coordinate persistence, state changes, related records, or audit side effects live in `app/Actions/*`. This keeps multi-step use cases visible and easy to test.
-- Scheduled operational workflows live in `app/Console/Commands/*` because they are part of the business process: order items are generated from plans and approved orders are assigned to workshops.
-- Dashboard read logic lives in `app/Services/Dashboard/*`, keeping aggregation separate from HTTP controllers while still using Laravel as the transactional source of truth.
-- State machines in `app/States/*` protect order, item, and vehicle-specific task lifecycles. Related state changes are nested in the transition that owns the business event.
-- Operational integration events use `app/Services/OperationalEvents/*`, `app/Jobs/*`, and an outbox table so external delivery does not weaken the database transaction.
-- Access rules, submitted-value constraints, and list-query scoping are kept in `app/Policies/*`, `app/Rules/*`, and `app/ModelFilters/*`. This gives each module a consistent place for authorization, validation invariants, and filtering behavior as the API grows.
-- Cross-cutting or domain support code lives in `app/Support/*` and `app/Services/*`, making reusable behavior explicit instead of hiding it inside HTTP controllers.
-- Internal tooling is protected separately from the API token flow: Scramble docs and Telescope use a web session restricted to active `super_admin` users.
-- Shared domain vocabulary lives in `app/Enums/*` when repeated string values would otherwise spread across seeders, policies, requests, filters, actions, and tests.
-
-These choices are intentionally modest. The project is small, so the architecture favors readable boundaries over extra layers or premature abstractions.
-
-## Testing Architecture
-
-Feature tests are grouped by API area under `tests/Feature/Api/*`, and operational command tests live under `tests/Feature/Console/*`. This mirrors the production modules and makes the test suite useful as executable documentation for each workflow.
-
-- Authentication tests cover login, logout, current-user lookup, password recovery, inactive users, deleted users, and invalid tokens.
-- Domain tests are split by behavior: create, list, show, update, delete, relationships, audit side effects, and state transitions.
-- Data providers are used for role matrices so the same rule is exercised across `super_admin`, `admin`, `workshop_manager`, `advisor`, and `technician` without copy-paste test methods.
-- Test concerns centralize fixtures for users, roles, workshops, owners, vehicles, tasks, plans, and orders. Individual tests stay focused on behavior instead of setup noise.
-- `RefreshDatabase` and `RolesAndAdminUserSeeder` keep each test isolated while still exercising the real migrations, seeders, roles, policies, and Sanctum token flow.
-- State-machine tests verify valid and invalid transitions, role restrictions, and synchronized status changes between orders, items, and linked vehicle tasks.
-- Console tests verify the automated recommendation and scheduling flow, including day-first workshop/technician selection.
-- Dashboard tests verify role-scoped operational data for administrators, workshop managers, technicians, and guests.
-- Audit tests verify business side effects explicitly, including old and new snapshots, instead of only checking HTTP response codes.
-- Web access tests verify that internal documentation and observability pages require a `super_admin` session.
-
-The test suite favors feature coverage because the most important behavior in this API lives at the boundary between HTTP input, authorization, database state, role assignment, and audit recording.
-
-## Main Libraries
-
-- `laravel/sanctum`: API authentication with personal access tokens.
-- `spatie/laravel-permission`: system roles and permissions.
-- `owen-it/laravel-auditing`: audit trail support for domain model changes.
-- `spatie/laravel-model-states`: state machines for operational workflows.
-- `tucker-eric/eloquentfilter`: declarative filtering for queries and paginated lists.
-- `dedoc/scramble`: OpenAPI documentation generated from the Laravel codebase.
-- `laravel/telescope`: local observability for requests, queries, jobs, logs, and events.
+The dataset includes owners, vehicles, workshops, technicians, vehicle systems, maintenance plans, reusable tasks, vehicle-specific tasks, and maintenance orders across the main lifecycle states.
 
 ## Environment Variables
 
-The `.env` file must not be committed because it can contain sensitive values.
+Keep `.env.example` updated with safe example values. Do not commit `.env`.
 
-Keep `.env.example` updated with safe example values.
-
-Main local ports and API version:
+Important local values:
 
 ```dotenv
 APP_PORT=8000
@@ -362,26 +316,33 @@ QUEUE_DEFAULT=default
 QUEUE_EVENTS=events
 QUEUE_MAIL=mail
 OPERATIONS_EVENT_STREAM=ops:events
+SERVICE_TOKEN_SECRET=change-me-service-token-secret-32chars
+OPERATIONS_ANALYTICS_SERVICE_KEY=change-me-analytics-service-key
 FORWARD_MAILPIT_SMTP_PORT=1025
 FORWARD_MAILPIT_DASHBOARD_PORT=8025
 ```
 
-Operational email defaults:
+The standalone default stream is `ops:events`. The full MaintOps stack sets `OPERATIONS_EVENT_STREAM` to `maintops:events` so Laravel, Realtime, and Analytics share the same stream.
 
-```dotenv
-MAIL_MAILER=smtp
-MAIL_HOST=mailpit
-MAIL_PORT=1025
-MAIL_USERNAME=null
-MAIL_PASSWORD=null
-MAIL_FROM_ADDRESS="hello@example.com"
-MAIL_FROM_NAME="${APP_NAME}"
-```
+## Testing Architecture
 
-For a public demo where you prefer not to expose a Mailpit inbox, set `MAIL_MAILER=log` and inspect mail output through protected logs or Telescope. To verify a real SMTP flow, configure the same variables with a Mailtrap sandbox SMTP host, port, username, and password.
+Feature tests are grouped by API area under `tests/Feature/Api/*`, with additional suites for console automation, operational events, mail, and protected web tools.
 
-## Tests
+The suite covers:
+
+- Authentication, logout, current-user lookup, password recovery, inactive users, deleted users, and invalid tokens.
+- Role-scoped CRUD behavior for users, owners, vehicles, workshops, tasks, plans, orders, order items, dashboard, and audits.
+- Valid and invalid state transitions for orders, items, and linked vehicle tasks.
+- Scheduled recommendation and scheduling commands.
+- Transactional operational event recording and publishing.
+- Owner-facing mail delivery.
+- Analytics initial sync contract.
+- Internal tools access rules.
+
+Run tests:
 
 ```bash
 docker compose exec app php artisan test
 ```
+
+The test suite favors feature coverage because the important behavior lives at the boundary between HTTP input, authorization, database state, role assignment, state transitions, audit records, and integration events.
