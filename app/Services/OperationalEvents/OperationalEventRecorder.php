@@ -3,6 +3,7 @@
 namespace App\Services\OperationalEvents;
 
 use App\Jobs\PublishOperationalEventJob;
+use App\Jobs\SendOperationalEventMailJob;
 use App\Models\MaintenanceOrder;
 use App\Models\MaintenanceOrderItem;
 use App\Models\OperationalEventOutbox;
@@ -125,6 +126,13 @@ final class OperationalEventRecorder
         ]);
 
         PublishOperationalEventJob::dispatch($outbox->getKey())->afterCommit();
+
+        if (in_array($eventType, [
+            'maintenance_order.scheduled.v1',
+            'maintenance_order.completed.v1',
+        ], true)) {
+            SendOperationalEventMailJob::dispatch($outbox->getKey())->afterCommit();
+        }
 
         return $outbox;
     }

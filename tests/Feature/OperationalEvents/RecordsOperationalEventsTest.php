@@ -6,6 +6,7 @@ use App\Enums\MaintenanceOrderItemStatus;
 use App\Enums\MaintenanceOrderStatus;
 use App\Enums\SystemRole;
 use App\Jobs\PublishOperationalEventJob;
+use App\Jobs\SendOperationalEventMailJob;
 use App\Models\MaintenanceOrder;
 use App\Models\OperationalEventOutbox;
 use App\States\MaintenanceOrders\OrderPendingOwnerApproval;
@@ -85,6 +86,41 @@ class RecordsOperationalEventsTest extends TestCase
             'advisor_id' => $advisor->id,
         ]);
         $this->assertDatabaseCount('operational_event_outboxes', 0);
+    }
+
+    public function test_scheduled_order_event_queues_operational_mail(): void
+    {
+        Queue::fake();
+
+        $advisor = $this->userWithRole(SystemRole::Advisor, ['email' => 'events.mail.advisor@example.com']);
+        $manager = $this->userWithRole(SystemRole::WorkshopManager, ['email' => 'events.mail.manager@example.com']);
+        $workshop = $this->workshopFor($manager);
+        $technician = $this->technicianFor($workshop, ['email' => 'events.mail.technician@example.com']);
+        $vehicle = $this->vehicleFor($this->ownerFor(['email' => 'events.mail.owner@example.com']));
+        $order = $this->maintenanceOrderFor($vehicle, $advisor, [
+            'workshop_id' => $workshop->id,
+            'technician_id' => $technician->id,
+            'status' => MaintenanceOrderStatus::Approved->value,
+        ]);
+
+        $order->forceFill([
+            'status' => MaintenanceOrderStatus::Scheduled->value,
+            'scheduled_at' => now()->addHour(),
+        ])->save();
+
+        $event = OperationalEventOutbox::query()
+            ->where('event_type', 'maintenance_order.scheduled.v1')
+            ->where('aggregate_id', $order->id)
+            ->firstOrFail();
+
+        Queue::assertPushed(
+            PublishOperationalEventJob::class,
+            fn (PublishOperationalEventJob $job): bool => $job->outboxId === $event->id,
+        );
+        Queue::assertPushed(
+            SendOperationalEventMailJob::class,
+            fn (SendOperationalEventMailJob $job): bool => $job->outboxId === $event->id,
+        );
     }
 
     public function test_starting_item_records_order_and_item_events(): void

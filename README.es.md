@@ -54,6 +54,19 @@ Usa la documentacion generada por Scramble en `/docs` para el contrato HTTP exac
 10. Cerrar o cancelar.
    Las ordenes completadas pueden entregarse. El trabajo programado o en progreso puede cancelarse segun las reglas de estado. Las cancelaciones y rechazos se propagan por las maquinas de estado de items para mantener consistentes las tareas especificas del vehiculo.
 
+11. Revisar correos operativos.
+   Cuando una orden se programa o se completa, Laravel encola un correo de cara al cliente solo para el propietario del vehiculo. Los correos de programacion indican cuando llevar el vehiculo al taller asignado y a que direccion; los correos de completado indican cuando y donde puede recogerlo. En el sandbox Docker, esos correos quedan capturados por Mailpit en `http://localhost:8025`. La bandeja demo queda visible intencionalmente, asi que no ingreses datos personales o de clientes reales durante las pruebas.
+
+## Checklist De Revision
+
+Al revisar la demo, las superficies mas utiles son:
+
+- Contrato API: abre `/docs` con sesion `super_admin` y revisa los endpoints generados por Scramble.
+- Observabilidad: abre `/telescope` con sesion `super_admin` y revisa requests, jobs, logs, queries, eventos y actividad de correos/logs.
+- Sandbox de correo: abre Mailpit en `http://localhost:8025` despues de programar o completar una orden de mantenimiento y confirma que el correo operativo para el propietario fue capturado.
+- Comportamiento de cola: manten el servicio `queue` corriendo, porque la publicacion de eventos y el envio de correos operativos se procesan de forma asincrona.
+- Seguridad de datos: usa solo datos demo. Mailpit es una bandeja sandbox y los correos pueden ser visibles para cualquier persona con acceso a la URL de la demo.
+
 ## Roles En Resumen
 
 - `super_admin` y `admin`: gestionan catalogos, usuarios, talleres, propietarios, vehiculos, planes, tareas, ordenes y transiciones excepcionales.
@@ -88,6 +101,10 @@ operational-events:dispatch
 ```
 
 Ese comando reencola eventos de outbox no publicados para que fallos temporales de Redis o de la cola no dejen las integraciones atrasadas permanentemente.
+
+Los correos operativos de mantenimiento se envian desde Laravel mediante jobs encolados. Cuando una orden de mantenimiento se programa o se completa, la API encola un correo solo para el propietario del vehiculo con los detalles de entrega o recogida. Advisors, tecnicos y managers de taller usan las notificaciones dentro de la plataforma para sus actualizaciones operativas. Node, Realtime y Analytics no envian correos.
+
+Los ambientes locales y sandbox usan Mailpit por defecto. Mailpit captura los correos salientes y los muestra en una bandeja web sin entregar nada a internet.
 
 ## Por Que Docker Directo En Lugar De Laravel Sail
 
@@ -145,6 +162,8 @@ Mailpit queda disponible en:
 ```text
 http://localhost:8025
 ```
+
+Esta bandeja de Mailpit queda intencionalmente publica en la configuracion Docker local/sandbox. No uses correos reales, passwords, telefonos, documentos, nombres de clientes ni datos operativos privados en el ambiente demo. Cualquier correo generado por la demo puede ser visible para cualquier persona con acceso a la URL de Mailpit.
 
 Si el puerto local `3306` ya esta en uso, cambia este valor en `.env`:
 
@@ -332,6 +351,20 @@ OPERATIONS_EVENT_STREAM=ops:events
 FORWARD_MAILPIT_SMTP_PORT=1025
 FORWARD_MAILPIT_DASHBOARD_PORT=8025
 ```
+
+Valores por defecto para correos operativos:
+
+```dotenv
+MAIL_MAILER=smtp
+MAIL_HOST=mailpit
+MAIL_PORT=1025
+MAIL_USERNAME=null
+MAIL_PASSWORD=null
+MAIL_FROM_ADDRESS="hello@example.com"
+MAIL_FROM_NAME="${APP_NAME}"
+```
+
+Para una demo publica donde prefieras no exponer la bandeja de Mailpit, usa `MAIL_MAILER=log` y revisa la salida desde logs protegidos o Telescope. Para verificar un flujo SMTP real, configura las mismas variables con el host, puerto, usuario y password de un sandbox de Mailtrap.
 
 ## Pruebas
 
