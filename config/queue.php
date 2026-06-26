@@ -15,6 +15,12 @@ return [
 
     'default' => env('QUEUE_CONNECTION', 'database'),
 
+    'queues' => [
+        'default' => env('QUEUE_DEFAULT', 'default'),
+        'events' => env('QUEUE_EVENTS', 'events'),
+        'mail' => env('QUEUE_MAIL', 'mail'),
+    ],
+
     /*
     |--------------------------------------------------------------------------
     | Queue Connections

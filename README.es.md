@@ -64,7 +64,7 @@ Al revisar la demo, las superficies mas utiles son:
 - Contrato API: abre `/docs` con sesion `super_admin` y revisa los endpoints generados por Scramble.
 - Observabilidad: abre `/telescope` con sesion `super_admin` y revisa requests, jobs, logs, queries, eventos y actividad de correos/logs.
 - Sandbox de correo: abre Mailpit en `http://localhost:8025` despues de programar o completar una orden de mantenimiento y confirma que el correo operativo para el propietario fue capturado.
-- Comportamiento de cola: manten el servicio `queue` corriendo, porque la publicacion de eventos y el envio de correos operativos se procesan de forma asincrona.
+- Comportamiento de cola: manten los servicios `queue`, `queue-events` y `queue-mail` corriendo, porque los jobs por defecto, la publicacion de eventos y el envio de correos se procesan en colas separadas.
 - Seguridad de datos: usa solo datos demo. Mailpit es una bandeja sandbox y los correos pueden ser visibles para cualquier persona con acceso a la URL de la demo.
 
 ## Roles En Resumen
@@ -102,7 +102,17 @@ operational-events:dispatch
 
 Ese comando reencola eventos de outbox no publicados para que fallos temporales de Redis o de la cola no dejen las integraciones atrasadas permanentemente.
 
-Los correos operativos de mantenimiento se envian desde Laravel mediante jobs encolados. Cuando una orden de mantenimiento se programa o se completa, la API encola un correo solo para el propietario del vehiculo con los detalles de entrega o recogida. Advisors, tecnicos y managers de taller usan las notificaciones dentro de la plataforma para sus actualizaciones operativas. Node, Realtime y Analytics no envian correos.
+Los correos operativos de mantenimiento se envian desde Laravel mediante jobs encolados. Cuando una orden de mantenimiento se programa o se completa, la API encola un correo solo para el propietario del vehiculo con los detalles de entrega o recogida. Los correos de recuperacion de contrasena tambien se encolan y apuntan a `FRONTEND_PASSWORD_RESET_URL`. Advisors, tecnicos y managers de taller usan las notificaciones dentro de la plataforma para sus actualizaciones operativas. Node, Realtime y Analytics no envian correos.
+
+Las colas quedan separadas por tipo de trabajo:
+
+```text
+default
+events
+mail
+```
+
+El Compose standalone corre un worker para cada cola. Esto evita que trabajo lento de SMTP retrase la publicacion de eventos a Redis Streams.
 
 Los ambientes locales y sandbox usan Mailpit por defecto. Mailpit captura los correos salientes y los muestra en una bandeja web sin entregar nada a internet.
 
@@ -113,7 +123,7 @@ Laravel Sail es util cuando un proyecto acepta depender del runtime publicado en
 Este repositorio controla su runtime con `Dockerfile` y `compose.yaml`:
 
 - `Dockerfile` instala PHP, las extensiones requeridas y Composer dentro de la imagen de la aplicacion.
-- `compose.yaml` levanta la API, worker de cola, scheduler, MySQL, Redis y Mailpit con nombres de servicio estables.
+- `compose.yaml` levanta la API, workers de cola dedicados, scheduler, MySQL, Redis y Mailpit con nombres de servicio estables.
 - `docker/init-development.sh` prepara `.env`, dependencias, `APP_KEY`, migraciones y datos semilla desde el contenedor.
 
 Por esa razon, `laravel/sail` no esta instalado en este repositorio.
@@ -311,7 +321,7 @@ Estas decisiones son deliberadamente modestas. El proyecto es pequeno, asi que l
 
 Las pruebas feature se agrupan por area API en `tests/Feature/Api/*`, y las pruebas de comandos operativos viven en `tests/Feature/Console/*`. Esto replica los modulos de produccion y hace que la suite funcione como documentacion ejecutable de cada flujo.
 
-- Las pruebas de autenticacion cubren login, logout, consulta del usuario actual, usuarios inactivos, usuarios eliminados y tokens invalidos.
+- Las pruebas de autenticacion cubren login, logout, consulta del usuario actual, recuperacion de contrasena, usuarios inactivos, usuarios eliminados y tokens invalidos.
 - Las pruebas de dominio estan separadas por comportamiento: crear, listar, ver, actualizar, eliminar, relaciones, efectos de auditoria y transiciones de estado.
 - Los data providers cubren matrices de roles para ejercer la misma regla sobre `super_admin`, `admin`, `workshop_manager`, `advisor` y `technician` sin duplicar metodos.
 - Los test concerns centralizan fixtures de usuarios, roles, talleres, propietarios, vehiculos, tareas, planes y ordenes. Cada prueba individual queda enfocada en comportamiento y no en ruido de setup.
@@ -344,9 +354,13 @@ Puertos locales principales y version de la API:
 
 ```dotenv
 APP_PORT=8000
+FRONTEND_PASSWORD_RESET_URL=http://localhost:5173/reset-password
 API_VERSION=1.0.0
 FORWARD_DB_PORT=3306
 FORWARD_REDIS_PORT=6379
+QUEUE_DEFAULT=default
+QUEUE_EVENTS=events
+QUEUE_MAIL=mail
 OPERATIONS_EVENT_STREAM=ops:events
 FORWARD_MAILPIT_SMTP_PORT=1025
 FORWARD_MAILPIT_DASHBOARD_PORT=8025

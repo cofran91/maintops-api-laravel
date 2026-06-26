@@ -11,6 +11,7 @@ use Dedoc\Scramble\Support\Generator\OpenApi;
 use Dedoc\Scramble\Support\Generator\Operation;
 use Dedoc\Scramble\Support\Generator\SecurityScheme;
 use Dedoc\Scramble\Support\RouteInfo;
+use Illuminate\Auth\Notifications\ResetPassword;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Routing\Route;
 use Illuminate\Support\Facades\RateLimiter;
@@ -31,6 +32,15 @@ class AppServiceProvider extends ServiceProvider
 
         RateLimiter::for('analytics-initial-sync', fn ($request): Limit => Limit::perMinute(30)
             ->by((string) $request->ip()));
+
+        ResetPassword::createUrlUsing(function (object $notifiable, string $token): string {
+            $baseUrl = rtrim((string) config('app.frontend_password_reset_url'), '/');
+
+            return $baseUrl.'?'.http_build_query([
+                'token' => $token,
+                'email' => $notifiable->getEmailForPasswordReset(),
+            ]);
+        });
 
         Scramble::routes(fn (Route $route): bool => str_starts_with($route->uri, 'api/v1'));
 

@@ -64,7 +64,7 @@ When reviewing the demo, the most useful surfaces are:
 - API contract: open `/docs` with a `super_admin` session and inspect the Scramble-generated endpoints.
 - Observability: open `/telescope` with a `super_admin` session and inspect requests, jobs, logs, queries, events, and mail/log activity.
 - Mail sandbox: open Mailpit at `http://localhost:8025` after scheduling or completing a maintenance order and confirm the owner-facing operational email was captured.
-- Queue behavior: keep the `queue` service running, because event publication and operational email delivery are processed asynchronously.
+- Queue behavior: keep the `queue`, `queue-events`, and `queue-mail` services running, because default jobs, event publication, and email delivery are processed on separate queues.
 - Data safety: use only demo data. Mailpit is a sandbox inbox and emails may be visible to anyone with access to the demo URL.
 
 ## Roles At A Glance
@@ -102,7 +102,17 @@ operational-events:dispatch
 
 That command re-enqueues unpublished outbox events so temporary Redis or queue failures do not leave integrations permanently behind.
 
-Operational maintenance emails are sent by Laravel from queued jobs. When a maintenance order is scheduled or completed, the API queues an email only for the vehicle owner with the scheduled drop-off or pickup details. Advisors, technicians, and workshop managers rely on in-platform notifications for their operational updates. Node, Realtime, and Analytics do not send email.
+Operational maintenance emails are sent by Laravel from queued jobs. When a maintenance order is scheduled or completed, the API queues an email only for the vehicle owner with the scheduled drop-off or pickup details. Password reset emails are also queued and point to `FRONTEND_PASSWORD_RESET_URL`. Advisors, technicians, and workshop managers rely on in-platform notifications for their operational updates. Node, Realtime, and Analytics do not send email.
+
+Queues are separated by job type:
+
+```text
+default
+events
+mail
+```
+
+The standalone Compose file runs one worker for each queue. This keeps slow SMTP work from delaying Redis Stream publication.
 
 Local and sandbox environments use Mailpit by default. Mailpit captures outbound emails and exposes them in a browser inbox without delivering anything to the internet.
 
@@ -113,7 +123,7 @@ Laravel Sail is useful when a project accepts the runtime shipped through `vendo
 This repository owns its runtime through `Dockerfile` and `compose.yaml`:
 
 - `Dockerfile` installs PHP, required extensions, and Composer inside the application image.
-- `compose.yaml` starts the API, queue worker, scheduler, MySQL, Redis, and Mailpit with stable service names.
+- `compose.yaml` starts the API, dedicated queue workers, scheduler, MySQL, Redis, and Mailpit with stable service names.
 - `docker/init-development.sh` prepares `.env`, dependencies, `APP_KEY`, migrations, and seed data from inside the container.
 
 For that reason, `laravel/sail` is not installed in this repository.
@@ -311,7 +321,7 @@ These choices are intentionally modest. The project is small, so the architectur
 
 Feature tests are grouped by API area under `tests/Feature/Api/*`, and operational command tests live under `tests/Feature/Console/*`. This mirrors the production modules and makes the test suite useful as executable documentation for each workflow.
 
-- Authentication tests cover login, logout, current-user lookup, inactive users, deleted users, and invalid tokens.
+- Authentication tests cover login, logout, current-user lookup, password recovery, inactive users, deleted users, and invalid tokens.
 - Domain tests are split by behavior: create, list, show, update, delete, relationships, audit side effects, and state transitions.
 - Data providers are used for role matrices so the same rule is exercised across `super_admin`, `admin`, `workshop_manager`, `advisor`, and `technician` without copy-paste test methods.
 - Test concerns centralize fixtures for users, roles, workshops, owners, vehicles, tasks, plans, and orders. Individual tests stay focused on behavior instead of setup noise.
@@ -344,9 +354,13 @@ Main local ports and API version:
 
 ```dotenv
 APP_PORT=8000
+FRONTEND_PASSWORD_RESET_URL=http://localhost:5173/reset-password
 API_VERSION=1.0.0
 FORWARD_DB_PORT=3306
 FORWARD_REDIS_PORT=6379
+QUEUE_DEFAULT=default
+QUEUE_EVENTS=events
+QUEUE_MAIL=mail
 OPERATIONS_EVENT_STREAM=ops:events
 FORWARD_MAILPIT_SMTP_PORT=1025
 FORWARD_MAILPIT_DASHBOARD_PORT=8025

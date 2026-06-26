@@ -58,7 +58,8 @@ class RecordsOperationalEventsTest extends TestCase
 
         Queue::assertPushed(
             PublishOperationalEventJob::class,
-            fn (PublishOperationalEventJob $job): bool => $job->outboxId === $event->id,
+            fn (PublishOperationalEventJob $job): bool => $job->outboxId === $event->id
+                && $job->queue === 'events',
         );
     }
 
@@ -115,11 +116,13 @@ class RecordsOperationalEventsTest extends TestCase
 
         Queue::assertPushed(
             PublishOperationalEventJob::class,
-            fn (PublishOperationalEventJob $job): bool => $job->outboxId === $event->id,
+            fn (PublishOperationalEventJob $job): bool => $job->outboxId === $event->id
+                && $job->queue === 'events',
         );
         Queue::assertPushed(
             SendOperationalEventMailJob::class,
-            fn (SendOperationalEventMailJob $job): bool => $job->outboxId === $event->id,
+            fn (SendOperationalEventMailJob $job): bool => $job->outboxId === $event->id
+                && $job->queue === 'mail',
         );
     }
 

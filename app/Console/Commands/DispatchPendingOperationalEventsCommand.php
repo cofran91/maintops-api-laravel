@@ -22,7 +22,8 @@ final class DispatchPendingOperationalEventsCommand extends Command
             ->pluck('id');
 
         $outboxIds->each(
-            fn (int $outboxId): mixed => PublishOperationalEventJob::dispatch($outboxId),
+            fn (int $outboxId): mixed => PublishOperationalEventJob::dispatch($outboxId)
+                ->onQueue((string) config('queue.queues.events', 'events')),
         );
 
         $this->info(sprintf('%d pending operational event(s) enqueued.', $outboxIds->count()));

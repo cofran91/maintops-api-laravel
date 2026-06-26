@@ -37,7 +37,45 @@ services:
                 condition: service_started
         command: >
             sh -c "composer install --no-interaction --prefer-dist &&
-            php artisan queue:work --tries=5 --timeout=90 --sleep=1"
+            php artisan queue:work --queue=${QUEUE_DEFAULT:-default} --tries=5 --timeout=90 --sleep=1"
+        networks:
+            - maintops-api
+
+    queue-events:
+        build:
+            context: .
+        image: maintops-api-laravel/app
+        volumes:
+            - .:/var/www/html
+            - maintops-api-vendor:/var/www/html/vendor
+        depends_on:
+            mysql:
+                condition: service_healthy
+            redis:
+                condition: service_healthy
+        command: >
+            sh -c "composer install --no-interaction --prefer-dist &&
+            php artisan queue:work --queue=${QUEUE_EVENTS:-events} --tries=5 --timeout=90 --sleep=1"
+        networks:
+            - maintops-api
+
+    queue-mail:
+        build:
+            context: .
+        image: maintops-api-laravel/app
+        volumes:
+            - .:/var/www/html
+            - maintops-api-vendor:/var/www/html/vendor
+        depends_on:
+            mysql:
+                condition: service_healthy
+            redis:
+                condition: service_healthy
+            mailpit:
+                condition: service_started
+        command: >
+            sh -c "composer install --no-interaction --prefer-dist &&
+            php artisan queue:work --queue=${QUEUE_MAIL:-mail} --tries=5 --timeout=90 --sleep=1"
         networks:
             - maintops-api
 

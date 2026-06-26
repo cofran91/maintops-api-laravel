@@ -3,7 +3,7 @@
     "info": {
         "title": "MaintOps Laravel API Documentation",
         "version": "1.0.0",
-        "description": "Versioned API for MaintOps.\n\nAuthentication:\n- Login returns a Laravel Sanctum personal access token.\n- Protected endpoints require the Authorization: Bearer {token} header.\n- Logout revokes the token used by the current request.\n- Authenticated users can request a short-lived signed service token for Realtime or Analytics.\n\nRoles:\n- The API uses Spatie Laravel Permission for role-based access control.\n- Initial roles: super_admin, admin, workshop_manager, advisor, technician.\n- The development seed creates admin@maint.test with the super_admin role.\n\nDocumentation:\n- The OpenAPI specification is exported to public/api.json with php artisan scramble:export.\n- /docs serves the exported file, so the documentation UI does not regenerate the spec on each request.\n- /docs and /docs/api.json require a web login from an active super_admin user.\n- Internal analytics initial sync endpoints use X-Operations-Service-Key and are intended for service-to-service reads."
+        "description": "Versioned API for MaintOps.\n\nAuthentication:\n- Login returns a Laravel Sanctum personal access token.\n- Protected endpoints require the Authorization: Bearer {token} header.\n- Logout revokes the token used by the current request.\n- Password recovery uses Laravel's password broker and revokes active Sanctum tokens after a reset.\n- Authenticated users can request a short-lived signed service token for Realtime or Analytics.\n\nRoles:\n- The API uses Spatie Laravel Permission for role-based access control.\n- Initial roles: super_admin, admin, workshop_manager, advisor, technician.\n- The development seed creates admin@maint.test with the super_admin role.\n\nDocumentation:\n- The OpenAPI specification is exported to public/api.json with php artisan scramble:export.\n- /docs serves the exported file, so the documentation UI does not regenerate the spec on each request.\n- /docs and /docs/api.json require a web login from an active super_admin user.\n- Internal analytics initial sync endpoints use X-Operations-Service-Key and are intended for service-to-service reads."
     },
     "servers": [
         {
@@ -421,6 +421,102 @@
                                         "success",
                                         "message",
                                         "data"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "$ref": "#/components/responses/ValidationException"
+                    }
+                },
+                "security": []
+            }
+        },
+        "/auth/forgot-password": {
+            "post": {
+                "operationId": "v1.auth.forgot-password",
+                "description": "Queues a password reset email when the address belongs to an active user.\nThe public response is intentionally the same for unknown addresses.",
+                "summary": "Request password recovery",
+                "tags": [
+                    "Authentication"
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/ForgotPasswordRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean"
+                                        },
+                                        "message": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "success",
+                                        "message"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "$ref": "#/components/responses/ValidationException"
+                    }
+                },
+                "security": []
+            }
+        },
+        "/auth/reset-password": {
+            "post": {
+                "operationId": "v1.auth.reset-password",
+                "description": "Updates the password using the token sent by email and revokes existing\nSanctum personal access tokens so the user must log in again.",
+                "summary": "Reset password",
+                "tags": [
+                    "Authentication"
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/ResetPasswordRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean"
+                                        },
+                                        "message": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "success",
+                                        "message"
                                     ]
                                 }
                             }
@@ -6431,6 +6527,20 @@
             }
         },
         "schemas": {
+            "ForgotPasswordRequest": {
+                "type": "object",
+                "properties": {
+                    "email": {
+                        "type": "string",
+                        "format": "email",
+                        "maxLength": 255
+                    }
+                },
+                "required": [
+                    "email"
+                ],
+                "title": "ForgotPasswordRequest"
+            },
             "LoginRequest": {
                 "type": "object",
                 "properties": {
@@ -6611,6 +6721,32 @@
                     "is_active"
                 ],
                 "title": "OwnerRequest"
+            },
+            "ResetPasswordRequest": {
+                "type": "object",
+                "properties": {
+                    "token": {
+                        "type": "string"
+                    },
+                    "email": {
+                        "type": "string",
+                        "format": "email",
+                        "maxLength": 255
+                    },
+                    "password": {
+                        "type": "string"
+                    },
+                    "password_confirmation": {
+                        "type": "string"
+                    }
+                },
+                "required": [
+                    "token",
+                    "email",
+                    "password",
+                    "password_confirmation"
+                ],
+                "title": "ResetPasswordRequest"
             },
             "ServiceTokenRequest": {
                 "type": "object",

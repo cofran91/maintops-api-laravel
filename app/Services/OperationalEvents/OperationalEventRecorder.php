@@ -125,13 +125,17 @@ final class OperationalEventRecorder
             'occurred_at' => now(),
         ]);
 
-        PublishOperationalEventJob::dispatch($outbox->getKey())->afterCommit();
+        PublishOperationalEventJob::dispatch($outbox->getKey())
+            ->onQueue((string) config('queue.queues.events', 'events'))
+            ->afterCommit();
 
         if (in_array($eventType, [
             'maintenance_order.scheduled.v1',
             'maintenance_order.completed.v1',
         ], true)) {
-            SendOperationalEventMailJob::dispatch($outbox->getKey())->afterCommit();
+            SendOperationalEventMailJob::dispatch($outbox->getKey())
+                ->onQueue((string) config('queue.queues.mail', 'mail'))
+                ->afterCommit();
         }
 
         return $outbox;

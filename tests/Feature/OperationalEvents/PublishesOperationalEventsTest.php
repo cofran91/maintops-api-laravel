@@ -176,7 +176,8 @@ class PublishesOperationalEventsTest extends TestCase
         Queue::assertPushed(PublishOperationalEventJob::class, 1);
         Queue::assertPushed(
             PublishOperationalEventJob::class,
-            fn (PublishOperationalEventJob $job): bool => $job->outboxId === $firstPending->id,
+            fn (PublishOperationalEventJob $job): bool => $job->outboxId === $firstPending->id
+                && $job->queue === 'events',
         );
     }
 

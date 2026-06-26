@@ -18,6 +18,7 @@ Authentication:
 - Login returns a Laravel Sanctum personal access token.
 - Protected endpoints require the Authorization: Bearer {token} header.
 - Logout revokes the token used by the current request.
+- Password recovery uses Laravel's password broker and revokes active Sanctum tokens after a reset.
 - Authenticated users can request a short-lived signed service token for Realtime or Analytics.
 
 Roles:
