@@ -25,11 +25,18 @@ class DemoVehicleTasksSeeder extends Seeder
 
             unset($attributes['license_plate'], $attributes['vehicle_system_code']);
 
-            MaintenanceTask::query()->create(array_merge($attributes, [
-                'vehicle_id' => $vehicleIdsByLicensePlate[$licensePlate],
-                'vehicle_system_id' => $vehicleSystemIdsByCode[$vehicleSystemCode],
-                'is_active' => true,
-            ]));
+            $task = MaintenanceTask::withTrashed()->updateOrCreate(
+                ['code' => $attributes['code']],
+                array_merge($attributes, [
+                    'vehicle_id' => $vehicleIdsByLicensePlate[$licensePlate],
+                    'vehicle_system_id' => $vehicleSystemIdsByCode[$vehicleSystemCode],
+                    'is_active' => true,
+                ]),
+            );
+
+            if ($task->trashed()) {
+                $task->restore();
+            }
         }
     }
 

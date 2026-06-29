@@ -19,15 +19,20 @@ class DemoUsersSeeder extends Seeder
 
             unset($attributes['role']);
 
-            $user = User::query()->make(array_merge($attributes, [
-                'password' => Hash::make('password'),
-                'is_active' => true,
-            ]));
+            $user = User::withTrashed()->updateOrCreate(
+                ['email' => $attributes['email']],
+                array_merge($attributes, [
+                    'password' => Hash::make('password'),
+                    'email_verified_at' => now(),
+                    'is_active' => true,
+                ]),
+            );
 
-            $user->email_verified_at = now();
-            $user->save();
+            if ($user->trashed()) {
+                $user->restore();
+            }
 
-            $user->assignRole($role);
+            $user->syncRoles([$role]);
         }
     }
 

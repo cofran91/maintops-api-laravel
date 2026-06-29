@@ -25,12 +25,19 @@ class DemoWorkshopsSeeder extends Seeder
 
             unset($attributes['vehicle_system_codes'], $attributes['manager_email'], $attributes['technician_emails']);
 
-            $workshop = Workshop::query()->create(array_merge($attributes, [
-                'manager_user_id' => $userIdsByEmail[$managerEmail],
-                'is_active' => true,
-            ]));
+            $workshop = Workshop::withTrashed()->updateOrCreate(
+                ['code' => $attributes['code']],
+                array_merge($attributes, [
+                    'manager_user_id' => $userIdsByEmail[$managerEmail],
+                    'is_active' => true,
+                ]),
+            );
 
-            $workshop->vehicleSystems()->attach(
+            if ($workshop->trashed()) {
+                $workshop->restore();
+            }
+
+            $workshop->vehicleSystems()->sync(
                 collect($systemCodes)
                     ->map(fn (string $code): int => $vehicleSystemIdsByCode[$code])
                     ->all(),

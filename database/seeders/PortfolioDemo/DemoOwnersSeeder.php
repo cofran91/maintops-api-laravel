@@ -13,9 +13,16 @@ class DemoOwnersSeeder extends Seeder
     public function run(): void
     {
         foreach ($this->owners() as $attributes) {
-            Owner::query()->create(array_merge($attributes, [
-                'is_active' => true,
-            ]));
+            $owner = Owner::withTrashed()->updateOrCreate(
+                ['document_number' => $attributes['document_number']],
+                array_merge($attributes, [
+                    'is_active' => true,
+                ]),
+            );
+
+            if ($owner->trashed()) {
+                $owner->restore();
+            }
         }
     }
 

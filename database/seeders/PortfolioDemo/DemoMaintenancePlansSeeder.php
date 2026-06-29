@@ -24,9 +24,16 @@ class DemoMaintenancePlansSeeder extends Seeder
 
             unset($attributes['tasks']);
 
-            $plan = MaintenancePlan::query()->create(array_merge($attributes, [
-                'is_active' => true,
-            ]));
+            $plan = MaintenancePlan::withTrashed()->updateOrCreate(
+                ['code' => $attributes['code']],
+                array_merge($attributes, [
+                    'is_active' => true,
+                ]),
+            );
+
+            if ($plan->trashed()) {
+                $plan->restore();
+            }
 
             $taskIds = [];
 
@@ -35,17 +42,24 @@ class DemoMaintenancePlansSeeder extends Seeder
 
                 unset($taskAttributes['vehicle_system_code']);
 
-                $task = MaintenanceTask::query()->create(array_merge($taskAttributes, [
-                    'vehicle_id' => null,
-                    'vehicle_system_id' => $vehicleSystemIdsByCode[$systemCode],
-                    'status' => MaintenanceTaskStatus::Created->value,
-                    'is_active' => true,
-                ]));
+                $task = MaintenanceTask::withTrashed()->updateOrCreate(
+                    ['code' => $taskAttributes['code']],
+                    array_merge($taskAttributes, [
+                        'vehicle_id' => null,
+                        'vehicle_system_id' => $vehicleSystemIdsByCode[$systemCode],
+                        'status' => MaintenanceTaskStatus::Created->value,
+                        'is_active' => true,
+                    ]),
+                );
+
+                if ($task->trashed()) {
+                    $task->restore();
+                }
 
                 $taskIds[] = $task->id;
             }
 
-            $plan->tasks()->attach($taskIds);
+            $plan->tasks()->sync($taskIds);
         }
     }
 

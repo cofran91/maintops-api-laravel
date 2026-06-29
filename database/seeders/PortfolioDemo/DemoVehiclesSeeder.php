@@ -20,9 +20,16 @@ class DemoVehiclesSeeder extends Seeder
 
             unset($attributes['owner_email']);
 
-            Vehicle::query()->create(array_merge($attributes, [
-                'owner_id' => $ownerIdsByEmail[$ownerEmail],
-            ]));
+            $vehicle = Vehicle::withTrashed()->updateOrCreate(
+                ['license_plate' => $attributes['license_plate']],
+                array_merge($attributes, [
+                    'owner_id' => $ownerIdsByEmail[$ownerEmail],
+                ]),
+            );
+
+            if ($vehicle->trashed()) {
+                $vehicle->restore();
+            }
         }
     }
 

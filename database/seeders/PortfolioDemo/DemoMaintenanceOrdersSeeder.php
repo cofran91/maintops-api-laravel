@@ -45,12 +45,18 @@ class DemoMaintenanceOrdersSeeder extends Seeder
 
             $vehicle = $vehiclesByLicensePlate[$licensePlate];
 
-            $order = MaintenanceOrder::query()->create(array_merge($attributes, [
-                'vehicle_id' => $vehicle->id,
-                'advisor_id' => $userIdsByEmail[$advisorEmail],
-                'workshop_id' => $workshopCode === null ? null : $workshopIdsByCode[$workshopCode],
-                'technician_id' => $technicianEmail === null ? null : $userIdsByEmail[$technicianEmail],
-            ]));
+            $order = MaintenanceOrder::withTrashed()->updateOrCreate(
+                ['vehicle_id' => $vehicle->id],
+                array_merge($attributes, [
+                    'advisor_id' => $userIdsByEmail[$advisorEmail],
+                    'workshop_id' => $workshopCode === null ? null : $workshopIdsByCode[$workshopCode],
+                    'technician_id' => $technicianEmail === null ? null : $userIdsByEmail[$technicianEmail],
+                ]),
+            );
+
+            if ($order->trashed()) {
+                $order->restore();
+            }
 
             foreach ($items as $itemAttributes) {
                 $this->seedItem($order, $vehicle, $itemAttributes, $tasksByCode, $planIdsByCode);
@@ -77,13 +83,21 @@ class DemoMaintenanceOrdersSeeder extends Seeder
 
         $task = $tasksByCode[$taskCode];
 
-        MaintenanceOrderItem::query()->create(array_merge([
-            'maintenance_order_id' => $order->id,
-            'maintenance_task_id' => $task->id,
-            'maintenance_plan_id' => $planCode === null ? null : $planIdsByCode[$planCode],
-            'odometer_km' => $vehicle->odometer_km,
-            'planned_duration_minutes' => $task->estimated_duration_minutes,
-        ], $attributes));
+        $item = MaintenanceOrderItem::withTrashed()->updateOrCreate(
+            [
+                'maintenance_order_id' => $order->id,
+                'maintenance_task_id' => $task->id,
+            ],
+            array_merge([
+                'maintenance_plan_id' => $planCode === null ? null : $planIdsByCode[$planCode],
+                'odometer_km' => $vehicle->odometer_km,
+                'planned_duration_minutes' => $task->estimated_duration_minutes,
+            ], $attributes),
+        );
+
+        if ($item->trashed()) {
+            $item->restore();
+        }
     }
 
     /**
