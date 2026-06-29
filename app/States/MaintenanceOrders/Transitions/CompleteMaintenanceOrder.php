@@ -14,7 +14,7 @@ class CompleteMaintenanceOrder extends UpdateMaintenanceOrderStatus
 
         if (($attributes['started_at'] ?? $this->model->started_at) === null) {
             throw ValidationException::withMessages([
-                'status' => 'An order cannot be completed before it has started.',
+                'status' => __('api.validation.maintenance_orders.complete_before_started'),
             ]);
         }
 
@@ -27,7 +27,7 @@ class CompleteMaintenanceOrder extends UpdateMaintenanceOrderStatus
             ->exists()
         ) {
             throw ValidationException::withMessages([
-                'status' => 'An order with pending or active items cannot be completed.',
+                'status' => __('api.validation.maintenance_orders.complete_with_open_items'),
             ]);
         }
 

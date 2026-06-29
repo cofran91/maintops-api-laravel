@@ -68,7 +68,7 @@ class MaintenancePlanController extends ApiController
 
         return $this->success(
             data: MaintenancePlanFilter::paginatedResource($paginator, MaintenancePlanResource::class, $request),
-            message: 'Maintenance plans retrieved.',
+            message: __('api.messages.maintenance_plans.retrieved'),
         );
     }
 
@@ -95,7 +95,7 @@ class MaintenancePlanController extends ApiController
 
         return $this->success(
             data: (new MaintenancePlanResource($maintenancePlan))->resolve($request),
-            message: 'Maintenance plan created successfully.',
+            message: __('api.messages.maintenance_plans.created'),
             status: Response::HTTP_CREATED,
         );
     }
@@ -111,7 +111,7 @@ class MaintenancePlanController extends ApiController
 
         return $this->success(
             data: (new MaintenancePlanResource($maintenancePlan->load(['tasks.vehicle', 'tasks.vehicleSystem'])))->resolve($request),
-            message: 'Maintenance plan retrieved.',
+            message: __('api.messages.maintenance_plans.retrieved_one'),
         );
     }
 
@@ -141,7 +141,7 @@ class MaintenancePlanController extends ApiController
 
         return $this->success(
             data: (new MaintenancePlanResource($maintenancePlan))->resolve($request),
-            message: 'Maintenance plan updated successfully.',
+            message: __('api.messages.maintenance_plans.updated'),
         );
     }
 
@@ -158,6 +158,6 @@ class MaintenancePlanController extends ApiController
 
         $maintenancePlan->delete();
 
-        return $this->success(message: 'Maintenance plan deleted successfully.');
+        return $this->success(message: __('api.messages.maintenance_plans.deleted'));
     }
 }

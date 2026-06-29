@@ -9,13 +9,13 @@ abstract class ApiController extends Controller
 {
     protected function success(
         array|object|null $data = null,
-        string $message = 'OK',
+        ?string $message = null,
         int $status = 200,
         array $meta = []
     ): JsonResponse {
         $payload = [
             'success' => true,
-            'message' => $message,
+            'message' => $message ?? __('api.messages.ok'),
         ];
 
         if ($data !== null) {

@@ -33,6 +33,7 @@ class RolesAndAdminUserSeeder extends Seeder
         $admin->forceFill([
             'name' => 'Maint Admin',
             'password' => Hash::make('password'),
+            'preferred_locale' => 'en',
             'email_verified_at' => now(),
             'is_active' => true,
         ])->save();

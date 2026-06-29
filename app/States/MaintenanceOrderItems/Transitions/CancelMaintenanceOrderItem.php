@@ -24,7 +24,7 @@ class CancelMaintenanceOrderItem extends UpdateMaintenanceOrderItemStatus
             MaintenanceOrderItemStatus::Rejected->value,
         ], true)) {
             throw ValidationException::withMessages([
-                'status' => 'The item cannot be cancelled from its current status.',
+                'status' => __('api.validation.maintenance_order_items.cancel_current_status'),
             ]);
         }
 

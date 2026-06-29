@@ -29,7 +29,7 @@ final class AssignableWorkshopManager implements ValidationRule
             ->first();
 
         if (! $manager instanceof User) {
-            $fail('The workshop manager must be an active user with the workshop_manager role.');
+            $fail(__('api.validation.rules.manager_active_role'));
 
             return;
         }
@@ -42,7 +42,7 @@ final class AssignableWorkshopManager implements ValidationRule
         }
 
         if ($assignedWorkshopQuery->exists()) {
-            $fail('The workshop manager is already assigned to another workshop.');
+            $fail(__('api.validation.rules.manager_assigned_elsewhere'));
         }
     }
 }

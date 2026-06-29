@@ -30,19 +30,19 @@ class ServiceTokenController extends ApiController
         $audience = $request->string('audience')->toString();
 
         if (! $user instanceof User || ! $user->is_active || ! $user->hasAnyRole(SystemRole::values())) {
-            return $this->error('Not authorized to issue service tokens.', 403);
+            return $this->error(__('api.exceptions.service_tokens.unauthorized'), 403);
         }
 
         if ($audience === 'analytics' && ! $user->hasAnyRole([
             SystemRole::SuperAdmin->value,
             SystemRole::Admin->value,
         ])) {
-            return $this->error('Not authorized to issue Analytics tokens.', 403);
+            return $this->error(__('api.exceptions.service_tokens.analytics_unauthorized'), 403);
         }
 
         return $this->success(
             data: $issuer->issueFor($user, $audience),
-            message: 'Service token issued.',
+            message: __('api.messages.service_tokens.issued'),
         );
     }
 }

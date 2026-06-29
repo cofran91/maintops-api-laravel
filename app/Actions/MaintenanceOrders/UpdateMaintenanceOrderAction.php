@@ -42,7 +42,7 @@ final class UpdateMaintenanceOrderAction
                 $maintenanceOrder->status->transitionTo($targetState, $attributesWithoutStatus);
             } catch (CouldNotPerformTransition) {
                 throw ValidationException::withMessages([
-                    'status' => 'The requested order status transition is not valid.',
+                    'status' => __('api.validation.maintenance_orders.transition_invalid'),
                 ]);
             }
 

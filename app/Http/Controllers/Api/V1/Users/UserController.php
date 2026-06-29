@@ -63,7 +63,7 @@ class UserController extends ApiController
 
         return $this->success(
             data: UserFilter::paginatedResource($paginator, UserResource::class, $request),
-            message: 'Users retrieved.',
+            message: __('api.messages.users.retrieved'),
         );
     }
 
@@ -93,7 +93,7 @@ class UserController extends ApiController
 
         return $this->success(
             data: (new UserResource($user))->resolve($request),
-            message: 'User created successfully.',
+            message: __('api.messages.users.created'),
             status: Response::HTTP_CREATED,
         );
     }
@@ -111,7 +111,7 @@ class UserController extends ApiController
 
         return $this->success(
             data: (new UserResource($user->load(['roles', 'workshop'])))->resolve($request),
-            message: 'User retrieved.',
+            message: __('api.messages.users.retrieved_one'),
         );
     }
 
@@ -141,7 +141,7 @@ class UserController extends ApiController
 
         return $this->success(
             data: (new UserResource($user))->resolve($request),
-            message: 'User updated successfully.',
+            message: __('api.messages.users.updated'),
         );
     }
 
@@ -158,6 +158,6 @@ class UserController extends ApiController
 
         $user->delete();
 
-        return $this->success(message: 'User deleted successfully.');
+        return $this->success(message: __('api.messages.users.deleted'));
     }
 }

@@ -24,19 +24,19 @@ final class AssignableUserWorkshop implements ValidationRule
         $workshopId = filter_var($value, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
 
         if ($workshopId === false || ! $this->workshopExists($workshopId)) {
-            $fail('The selected workshop is invalid.');
+            $fail(__('api.validation.rules.selected_workshop_invalid'));
 
             return;
         }
 
         if ($this->roleValue !== SystemRole::Technician->value) {
-            $fail('Only users with the technician role can be assigned to a workshop.');
+            $fail(__('api.validation.rules.user_workshop_requires_technician'));
 
             return;
         }
 
         if (! $this->actorCanAssignWorkshop()) {
-            $fail('Only system administrators can assign technicians to a workshop.');
+            $fail(__('api.validation.rules.user_workshop_admin_only'));
         }
     }
 

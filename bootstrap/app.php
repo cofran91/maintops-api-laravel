@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Middleware\SetApiLocale;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Foundation\Application;
@@ -20,7 +21,7 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        //
+        $middleware->prependToGroup('api', SetApiLocale::class);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->shouldRenderJsonWhen(
@@ -34,7 +35,7 @@ return Application::configure(basePath: dirname(__DIR__))
 
             return response()->json([
                 'success' => false,
-                'message' => 'Unauthenticated.',
+                'message' => __('api.exceptions.unauthenticated'),
             ], 401);
         });
 
@@ -45,7 +46,7 @@ return Application::configure(basePath: dirname(__DIR__))
 
             return response()->json([
                 'success' => false,
-                'message' => 'Forbidden.',
+                'message' => __('api.exceptions.forbidden'),
             ], 403);
         });
 
@@ -56,7 +57,7 @@ return Application::configure(basePath: dirname(__DIR__))
 
             return response()->json([
                 'success' => false,
-                'message' => 'Forbidden.',
+                'message' => __('api.exceptions.forbidden'),
             ], 403);
         });
 
@@ -67,7 +68,7 @@ return Application::configure(basePath: dirname(__DIR__))
 
             return response()->json([
                 'success' => false,
-                'message' => 'The given data was invalid.',
+                'message' => __('api.exceptions.validation'),
                 'errors' => $e->errors(),
             ], $e->status);
         });
@@ -79,7 +80,7 @@ return Application::configure(basePath: dirname(__DIR__))
 
             return response()->json([
                 'success' => false,
-                'message' => 'Resource not found.',
+                'message' => __('api.exceptions.not_found'),
             ], 404);
         });
 
@@ -97,7 +98,7 @@ return Application::configure(basePath: dirname(__DIR__))
 
             return response()->json([
                 'success' => false,
-                'message' => 'Unable to process the request.',
+                'message' => __('api.exceptions.server_error'),
             ], 500);
         });
     })->create();

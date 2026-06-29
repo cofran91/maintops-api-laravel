@@ -57,7 +57,7 @@ class MaintenanceOrderController extends ApiController
 
         return $this->success(
             data: MaintenanceOrderFilter::paginatedResource($paginator, MaintenanceOrderResource::class, $request),
-            message: 'Maintenance orders retrieved.',
+            message: __('api.messages.maintenance_orders.retrieved'),
         );
     }
 
@@ -79,7 +79,7 @@ class MaintenanceOrderController extends ApiController
 
         return $this->success(
             data: (new MaintenanceOrderResource($maintenanceOrder))->resolve($request),
-            message: 'Maintenance order created successfully.',
+            message: __('api.messages.maintenance_orders.created'),
             status: Response::HTTP_CREATED,
         );
     }
@@ -93,7 +93,7 @@ class MaintenanceOrderController extends ApiController
 
         return $this->success(
             data: (new MaintenanceOrderResource($maintenanceOrder->load($this->relations())))->resolve($request),
-            message: 'Maintenance order retrieved.',
+            message: __('api.messages.maintenance_orders.retrieved_one'),
         );
     }
 
@@ -115,7 +115,7 @@ class MaintenanceOrderController extends ApiController
 
         return $this->success(
             data: (new MaintenanceOrderResource($maintenanceOrder))->resolve($request),
-            message: 'Maintenance order updated successfully.',
+            message: __('api.messages.maintenance_orders.updated'),
         );
     }
 

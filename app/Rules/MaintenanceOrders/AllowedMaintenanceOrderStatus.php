@@ -26,7 +26,7 @@ final class AllowedMaintenanceOrderStatus implements ValidationRule
         }
 
         if (! in_array($value, $this->allowedStatuses(), true)) {
-            $fail('The authenticated role cannot apply this order status change.');
+            $fail(__('api.validation.rules.order_status_role'));
 
             return;
         }
@@ -37,7 +37,7 @@ final class AllowedMaintenanceOrderStatus implements ValidationRule
                 MaintenanceOrderState::resolveStateClass($status->value),
             )
         ) {
-            $fail('The requested order status transition is not allowed.');
+            $fail(__('api.validation.rules.order_status_transition'));
         }
     }
 

@@ -1,0 +1,143 @@
+<?php
+
+return [
+    'messages' => [
+        'ok' => 'OK',
+        'auth' => [
+            'login_successful' => 'Inicio de sesión exitoso.',
+            'password_reset_link_sent' => 'Si el correo existe, se enviará un enlace para restablecer la contraseña.',
+            'password_updated' => 'Contraseña actualizada correctamente.',
+            'authenticated_user' => 'Usuario autenticado.',
+            'language_updated' => 'Idioma actualizado correctamente.',
+            'signed_out' => 'Sesión cerrada correctamente.',
+        ],
+        'service_tokens' => [
+            'issued' => 'Token de servicio emitido.',
+        ],
+        'audits' => [
+            'retrieved' => 'Auditorías obtenidas.',
+        ],
+        'maintenance_orders' => [
+            'retrieved' => 'Órdenes de mantenimiento obtenidas.',
+            'created' => 'Orden de mantenimiento creada correctamente.',
+            'retrieved_one' => 'Orden de mantenimiento obtenida.',
+            'updated' => 'Orden de mantenimiento actualizada correctamente.',
+        ],
+        'maintenance_order_items' => [
+            'retrieved' => 'Ítems de la orden de mantenimiento obtenidos.',
+            'retrieved_one' => 'Ítem de la orden de mantenimiento obtenido.',
+            'updated' => 'Ítem de la orden de mantenimiento actualizado correctamente.',
+        ],
+        'maintenance_tasks' => [
+            'retrieved' => 'Tareas de mantenimiento obtenidas.',
+            'created' => 'Tarea de mantenimiento creada correctamente.',
+            'retrieved_one' => 'Tarea de mantenimiento obtenida.',
+            'updated' => 'Tarea de mantenimiento actualizada correctamente.',
+            'deleted' => 'Tarea de mantenimiento eliminada correctamente.',
+        ],
+        'maintenance_plans' => [
+            'retrieved' => 'Planes de mantenimiento obtenidos.',
+            'created' => 'Plan de mantenimiento creado correctamente.',
+            'retrieved_one' => 'Plan de mantenimiento obtenido.',
+            'updated' => 'Plan de mantenimiento actualizado correctamente.',
+            'deleted' => 'Plan de mantenimiento eliminado correctamente.',
+        ],
+        'workshops' => [
+            'retrieved' => 'Talleres obtenidos.',
+            'created' => 'Taller creado correctamente.',
+            'retrieved_one' => 'Taller obtenido.',
+            'updated' => 'Taller actualizado correctamente.',
+            'deleted' => 'Taller eliminado correctamente.',
+        ],
+        'vehicles' => [
+            'retrieved' => 'Vehículos obtenidos.',
+            'created' => 'Vehículo creado correctamente.',
+            'retrieved_one' => 'Vehículo obtenido.',
+            'updated' => 'Vehículo actualizado correctamente.',
+            'deleted' => 'Vehículo eliminado correctamente.',
+        ],
+        'dashboard' => [
+            'retrieved' => 'Dashboard obtenido.',
+        ],
+        'vehicle_systems' => [
+            'retrieved' => 'Sistemas del vehículo obtenidos.',
+        ],
+        'users' => [
+            'retrieved' => 'Usuarios obtenidos.',
+            'created' => 'Usuario creado correctamente.',
+            'retrieved_one' => 'Usuario obtenido.',
+            'updated' => 'Usuario actualizado correctamente.',
+            'deleted' => 'Usuario eliminado correctamente.',
+        ],
+        'owners' => [
+            'retrieved' => 'Propietarios obtenidos.',
+            'created' => 'Propietario creado correctamente.',
+            'retrieved_one' => 'Propietario obtenido.',
+            'updated' => 'Propietario actualizado correctamente.',
+            'deleted' => 'Propietario eliminado correctamente.',
+        ],
+        'analytics_initial_sync' => [
+            'snapshot_retrieved' => 'Snapshot de sincronización inicial de Analytics obtenido.',
+        ],
+    ],
+
+    'exceptions' => [
+        'unauthenticated' => 'No autenticado.',
+        'forbidden' => 'No autorizado.',
+        'validation' => 'Los datos proporcionados no son válidos.',
+        'not_found' => 'Recurso no encontrado.',
+        'server_error' => 'No se pudo procesar la solicitud.',
+        'unauthorized_service_request' => 'Solicitud de servicio no autorizada.',
+        'unsupported_analytics_initial_sync_resource' => 'Recurso de sincronización inicial de Analytics no soportado.',
+        'service_tokens' => [
+            'unauthorized' => 'No autorizado para emitir tokens de servicio.',
+            'analytics_unauthorized' => 'No autorizado para emitir tokens de Analytics.',
+        ],
+    ],
+
+    'validation' => [
+        'auth' => [
+            'credentials' => 'Las credenciales proporcionadas son incorrectas.',
+        ],
+        'maintenance_orders' => [
+            'transition_invalid' => 'La transición solicitada para el estado de la orden no es válida.',
+            'approve_without_items' => 'Una orden sin ítems no puede ser aprobada.',
+            'complete_before_started' => 'Una orden no puede completarse antes de haber iniciado.',
+            'complete_with_open_items' => 'Una orden con ítems pendientes o activos no puede completarse.',
+            'cancel_allowed_status' => 'Solo las órdenes programadas o en progreso pueden cancelarse.',
+            'cancel_with_in_progress_items' => 'Una orden con ítems en progreso no puede cancelarse.',
+            'reject_scheduled' => 'Una orden programada no puede ser rechazada.',
+            'deliver_before_completed' => 'Una orden no puede entregarse antes de haber sido completada.',
+            'deliver_with_open_items' => 'Una orden con ítems pendientes o activos no puede entregarse.',
+            'submit_without_items' => 'Una orden sin ítems no puede enviarse para aprobación del propietario.',
+        ],
+        'maintenance_order_items' => [
+            'transition_invalid' => 'La transición solicitada para el estado del ítem no es válida.',
+            'reject_scheduled' => 'Un ítem programado no puede ser rechazado.',
+            'start_requires_order_scheduled_or_in_progress' => 'Un ítem no puede iniciar si su orden no está programada o en progreso.',
+            'cancel_current_status' => 'El ítem no puede cancelarse desde su estado actual.',
+            'complete_before_started' => 'Un ítem no puede completarse antes de haber iniciado.',
+        ],
+        'rules' => [
+            'vehicle_without_open_order' => 'El vehículo seleccionado ya tiene una orden de mantenimiento abierta.',
+            'order_status_role' => 'El rol autenticado no puede aplicar este cambio de estado de la orden.',
+            'order_status_transition' => 'La transición solicitada para el estado de la orden no está permitida.',
+            'active_advisor' => 'El asesor seleccionado debe ser un usuario asesor activo.',
+            'item_status_role' => 'El rol autenticado no puede aplicar este cambio de estado del ítem.',
+            'item_cancel_allowed_status' => 'Solo los ítems programados o en progreso pueden cancelarse desde este endpoint.',
+            'item_status_transition' => 'La transición solicitada para el estado del ítem no está permitida.',
+            'selected_workshop_invalid' => 'El taller seleccionado no es válido.',
+            'user_workshop_requires_technician' => 'Solo los usuarios con rol técnico pueden asignarse a un taller.',
+            'user_workshop_admin_only' => 'Solo los administradores del sistema pueden asignar técnicos a un taller.',
+            'super_admin_not_assignable' => 'Los usuarios super_admin no pueden crearse ni promoverse desde este endpoint.',
+            'role_not_allowed' => 'No tienes permiso para asignar el rol seleccionado.',
+            'technician_active_role' => 'Cada técnico debe ser un usuario activo con rol técnico.',
+            'technician_assigned_elsewhere' => 'El técnico ya está asignado a otro taller.',
+            'schedule_day_invalid' => 'El día debe ser monday, tuesday, wednesday, thursday, friday, saturday o sunday.',
+            'schedule_allowed_keys' => 'Cada día solo acepta opens_at y closes_at.',
+            'schedule_closing_after_opening' => 'La hora de cierre debe ser posterior a la hora de apertura.',
+            'manager_active_role' => 'El gerente del taller debe ser un usuario activo con el rol workshop_manager.',
+            'manager_assigned_elsewhere' => 'El gerente del taller ya está asignado a otro taller.',
+        ],
+    ],
+];

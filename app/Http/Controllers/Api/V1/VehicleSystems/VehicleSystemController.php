@@ -42,7 +42,7 @@ class VehicleSystemController extends ApiController
 
         return $this->success(
             data: VehicleSystemFilter::paginatedResource($paginator, VehicleSystemResource::class, $request),
-            message: 'Vehicle systems retrieved.',
+            message: __('api.messages.vehicle_systems.retrieved'),
         );
     }
 }

@@ -22,7 +22,7 @@ class EnsureAnalyticsServiceRequest
         ) {
             return response()->json([
                 'success' => false,
-                'message' => 'Unauthorized service request.',
+                'message' => __('api.exceptions.unauthorized_service_request'),
             ], Response::HTTP_UNAUTHORIZED);
         }
 

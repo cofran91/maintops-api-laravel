@@ -6,8 +6,10 @@ use App\Http\Controllers\Api\ApiController;
 use App\Http\Requests\Api\V1\Auth\ForgotPasswordRequest;
 use App\Http\Requests\Api\V1\Auth\LoginRequest;
 use App\Http\Requests\Api\V1\Auth\ResetPasswordRequest;
+use App\Http\Requests\Api\V1\Auth\UpdateLanguageRequest;
 use App\Http\Resources\Api\V1\Auth\AuthenticatedUserResource;
 use App\Models\User;
+use App\Support\Localization\Locale;
 use Illuminate\Auth\Events\PasswordReset;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -44,9 +46,11 @@ class AuthController extends ApiController
             ->where('is_active', true)
             ->first();
 
+        $this->setLocaleFromUser($user);
+
         if (! $user || ! Hash::check($request->string('password')->toString(), $user->password)) {
             throw ValidationException::withMessages([
-                'email' => ['The provided credentials are incorrect.'],
+                'email' => [__('api.validation.auth.credentials')],
             ]);
         }
 
@@ -56,7 +60,7 @@ class AuthController extends ApiController
                 'token_type' => 'Bearer',
                 'user' => (new AuthenticatedUserResource($user))->resolve($request),
             ],
-            message: 'Login successful.'
+            message: __('api.messages.auth.login_successful')
         );
     }
 
@@ -74,19 +78,21 @@ class AuthController extends ApiController
     {
         $email = $request->string('email')->lower()->toString();
 
-        $userExists = User::query()
+        $user = User::query()
             ->where('email', $email)
             ->where('is_active', true)
-            ->exists();
+            ->first();
 
-        if (! $userExists) {
-            return $this->success(message: 'If the email exists, a password reset link will be sent.');
+        $this->setLocaleFromUser($user);
+
+        if (! $user instanceof User) {
+            return $this->success(message: __('api.messages.auth.password_reset_link_sent'));
         }
 
         $status = Password::sendResetLink(['email' => $email]);
 
         if ($status === Password::RESET_LINK_SENT || $status === Password::INVALID_USER) {
-            return $this->success(message: 'If the email exists, a password reset link will be sent.');
+            return $this->success(message: __('api.messages.auth.password_reset_link_sent'));
         }
 
         throw ValidationException::withMessages([
@@ -108,12 +114,14 @@ class AuthController extends ApiController
     {
         $email = $request->string('email')->lower()->toString();
 
-        $userExists = User::query()
+        $user = User::query()
             ->where('email', $email)
             ->where('is_active', true)
-            ->exists();
+            ->first();
 
-        if (! $userExists) {
+        $this->setLocaleFromUser($user);
+
+        if (! $user instanceof User) {
             throw ValidationException::withMessages([
                 'email' => [__(Password::INVALID_USER)],
             ]);
@@ -139,7 +147,7 @@ class AuthController extends ApiController
         );
 
         if ($status === Password::PASSWORD_RESET) {
-            return $this->success(message: 'Password updated successfully.');
+            return $this->success(message: __('api.messages.auth.password_updated'));
         }
 
         throw ValidationException::withMessages([
@@ -162,7 +170,31 @@ class AuthController extends ApiController
     {
         return $this->success(
             data: (new AuthenticatedUserResource($request->user()))->resolve($request),
-            message: 'Authenticated user.'
+            message: __('api.messages.auth.authenticated_user')
+        );
+    }
+
+    /**
+     * Update authenticated user language.
+     *
+     * Stores the locale used for subsequent authenticated API responses.
+     *
+     * @response array{success: bool, message: string, data: array{locale: string}}
+     */
+    public function updateLanguage(UpdateLanguageRequest $request): JsonResponse
+    {
+        $locale = $request->string('locale')->toString();
+        $user = $request->user();
+
+        $user->forceFill([
+            'preferred_locale' => $locale,
+        ])->save();
+
+        app()->setLocale($locale);
+
+        return $this->success(
+            data: ['locale' => $locale],
+            message: __('api.messages.auth.language_updated')
         );
     }
 
@@ -181,6 +213,15 @@ class AuthController extends ApiController
             $accessToken->delete();
         }
 
-        return $this->success(message: 'Signed out successfully.');
+        return $this->success(message: __('api.messages.auth.signed_out'));
+    }
+
+    private function setLocaleFromUser(?User $user): void
+    {
+        $locale = Locale::normalize($user?->preferred_locale);
+
+        if ($locale !== null) {
+            app()->setLocale($locale);
+        }
     }
 }

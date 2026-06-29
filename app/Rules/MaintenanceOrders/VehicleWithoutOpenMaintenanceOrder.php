@@ -28,7 +28,7 @@ final class VehicleWithoutOpenMaintenanceOrder implements ValidationRule
             ->exists();
 
         if ($hasOpenOrder) {
-            $fail('The selected vehicle already has an open maintenance order.');
+            $fail(__('api.validation.rules.vehicle_without_open_order'));
         }
     }
 }

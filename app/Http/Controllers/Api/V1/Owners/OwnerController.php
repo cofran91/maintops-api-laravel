@@ -44,7 +44,7 @@ class OwnerController extends ApiController
 
         return $this->success(
             data: OwnerFilter::paginatedResource($paginator, OwnerResource::class, $request),
-            message: 'Owners retrieved.',
+            message: __('api.messages.owners.retrieved'),
         );
     }
 
@@ -72,7 +72,7 @@ class OwnerController extends ApiController
 
         return $this->success(
             data: (new OwnerResource($owner))->resolve($request),
-            message: 'Owner created successfully.',
+            message: __('api.messages.owners.created'),
             status: Response::HTTP_CREATED,
         );
     }
@@ -92,7 +92,7 @@ class OwnerController extends ApiController
 
         return $this->success(
             data: (new OwnerResource($owner))->resolve($request),
-            message: 'Owner retrieved.',
+            message: __('api.messages.owners.retrieved_one'),
         );
     }
 
@@ -120,7 +120,7 @@ class OwnerController extends ApiController
 
         return $this->success(
             data: (new OwnerResource($owner->refresh()))->resolve($request),
-            message: 'Owner updated successfully.',
+            message: __('api.messages.owners.updated'),
         );
     }
 
@@ -137,6 +137,6 @@ class OwnerController extends ApiController
 
         $owner->delete();
 
-        return $this->success(message: 'Owner deleted successfully.');
+        return $this->success(message: __('api.messages.owners.deleted'));
     }
 }

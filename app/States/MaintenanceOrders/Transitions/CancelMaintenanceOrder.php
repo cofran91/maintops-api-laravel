@@ -17,7 +17,7 @@ class CancelMaintenanceOrder extends UpdateMaintenanceOrderStatus
             MaintenanceOrderStatus::InProgress->value,
         ], true)) {
             throw ValidationException::withMessages([
-                'status' => 'Only scheduled or in-progress orders can be cancelled.',
+                'status' => __('api.validation.maintenance_orders.cancel_allowed_status'),
             ]);
         }
 
@@ -28,7 +28,7 @@ class CancelMaintenanceOrder extends UpdateMaintenanceOrderStatus
             ->exists()
         ) {
             throw ValidationException::withMessages([
-                'status' => 'An order with in-progress items cannot be cancelled.',
+                'status' => __('api.validation.maintenance_orders.cancel_with_in_progress_items'),
             ]);
         }
 

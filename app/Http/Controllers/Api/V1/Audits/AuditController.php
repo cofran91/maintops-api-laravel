@@ -68,7 +68,7 @@ final class AuditController extends ApiController
 
         return $this->success(
             data: AuditFilter::paginatedResource($paginator, AuditResource::class, $request),
-            message: 'Audits retrieved.',
+            message: __('api.messages.audits.retrieved'),
         );
     }
 }

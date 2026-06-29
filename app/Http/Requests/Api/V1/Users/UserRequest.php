@@ -6,6 +6,7 @@ use App\Enums\SystemRole;
 use App\Models\User;
 use App\Rules\Users\AssignableUserRole;
 use App\Rules\Users\AssignableUserWorkshop;
+use App\Support\Localization\Locale;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
@@ -39,6 +40,12 @@ class UserRequest extends FormRequest
             ]);
         }
 
+        if ($this->has('preferred_locale')) {
+            $this->merge([
+                'preferred_locale' => Locale::normalize((string) $this->input('preferred_locale')) ?? $this->input('preferred_locale'),
+            ]);
+        }
+
         if (! $this->has('workshop_id') || $this->input('workshop_id') === '') {
             $this->merge(['workshop_id' => null]);
         }
@@ -63,6 +70,7 @@ class UserRequest extends FormRequest
                 Rule::unique('users', 'email')->ignore($targetId),
             ],
             'password' => ['required', 'string', Password::min(8), 'confirmed'],
+            'preferred_locale' => ['sometimes', 'string', Rule::in(Locale::supported())],
             'role' => [
                 'required',
                 'string',

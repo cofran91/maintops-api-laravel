@@ -2,11 +2,12 @@
 
 namespace App\Http\Resources\Api\V1\Auth;
 
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
 /**
- * @mixin \App\Models\User
+ * @mixin User
  */
 class AuthenticatedUserResource extends JsonResource
 {
@@ -18,6 +19,7 @@ class AuthenticatedUserResource extends JsonResource
             'id' => $this->id,
             'name' => $this->name,
             'email' => $this->email,
+            'preferred_locale' => $this->preferred_locale,
             'roles' => $this->getRoleNames()->values()->all(),
             'email_verified_at' => $this->email_verified_at?->toISOString(),
             'created_at' => $this->created_at?->toISOString(),

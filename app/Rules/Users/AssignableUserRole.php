@@ -28,13 +28,13 @@ final class AssignableUserRole implements ValidationRule
         }
 
         if ($this->isCreatingSuperAdmin($role) || $this->isPromotingToSuperAdmin($role)) {
-            $fail('Super admin users cannot be created or promoted through this endpoint.');
+            $fail(__('api.validation.rules.super_admin_not_assignable'));
 
             return;
         }
 
         if (! $this->actor instanceof User || ! $this->actorCanAssign($role)) {
-            $fail('You are not allowed to assign the selected role.');
+            $fail(__('api.validation.rules.role_not_allowed'));
         }
     }
 

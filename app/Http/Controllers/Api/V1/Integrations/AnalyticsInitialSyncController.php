@@ -169,7 +169,7 @@ class AnalyticsInitialSyncController extends ApiController
                     'updated_at' => $item->updated_at?->toISOString(),
                 ],
             ),
-            default => $this->error('Unsupported analytics initial sync resource.', 404),
+            default => $this->error(__('api.exceptions.unsupported_analytics_initial_sync_resource'), 404),
         };
     }
 
@@ -208,7 +208,7 @@ class AnalyticsInitialSyncController extends ApiController
                     'next_cursor' => $nextCursor,
                 ],
             ],
-            message: 'Analytics initial sync snapshot retrieved.',
+            message: __('api.messages.analytics_initial_sync.snapshot_retrieved'),
         );
     }
 }

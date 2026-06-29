@@ -22,6 +22,7 @@ class UserResource extends JsonResource
             'id' => $this->id,
             'name' => $this->name,
             'email' => $this->email,
+            'preferred_locale' => $this->preferred_locale,
             'roles' => $this->getRoleNames()->values()->all(),
             'is_active' => (bool) $this->is_active,
             'phone' => $this->phone,

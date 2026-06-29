@@ -28,7 +28,7 @@ final class AllowedMaintenanceOrderItemStatus implements ValidationRule
         }
 
         if (! in_array($value, $this->allowedStatuses(), true)) {
-            $fail('The authenticated role cannot apply this item status change.');
+            $fail(__('api.validation.rules.item_status_role'));
 
             return;
         }
@@ -38,7 +38,7 @@ final class AllowedMaintenanceOrderItemStatus implements ValidationRule
             && $this->item instanceof MaintenanceOrderItem
             && ! $this->item->status->equals(OrderItemScheduled::class, OrderItemInProgress::class)
         ) {
-            $fail('Only scheduled or in-progress items can be cancelled from this endpoint.');
+            $fail(__('api.validation.rules.item_cancel_allowed_status'));
 
             return;
         }
@@ -49,7 +49,7 @@ final class AllowedMaintenanceOrderItemStatus implements ValidationRule
                 MaintenanceOrderItemState::resolveStateClass($status->value),
             )
         ) {
-            $fail('The requested item status transition is not allowed.');
+            $fail(__('api.validation.rules.item_status_transition'));
         }
     }
 

@@ -23,6 +23,7 @@ use Spatie\Permission\Traits\HasRoles;
 #[Fillable([
     'name',
     'email',
+    'preferred_locale',
     'password',
     'is_active',
     'phone',
@@ -95,6 +96,7 @@ class User extends Authenticatable implements AuditableContract
         return [
             'email_verified_at' => 'datetime',
             'is_active' => 'boolean',
+            'preferred_locale' => 'string',
             'password' => 'hashed',
         ];
     }

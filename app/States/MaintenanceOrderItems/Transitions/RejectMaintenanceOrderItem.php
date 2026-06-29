@@ -16,7 +16,7 @@ class RejectMaintenanceOrderItem extends UpdateMaintenanceOrderItemStatus
     {
         if ($this->model->scheduled_at !== null) {
             throw ValidationException::withMessages([
-                'status' => 'A scheduled item cannot be rejected.',
+                'status' => __('api.validation.maintenance_order_items.reject_scheduled'),
             ]);
         }
 

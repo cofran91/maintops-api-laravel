@@ -25,7 +25,7 @@ class DashboardController extends ApiController
 
         return $this->success(
             data: (new DashboardResource($dashboardService->forActor($request->user())))->resolve($request),
-            message: 'Dashboard retrieved.',
+            message: __('api.messages.dashboard.retrieved'),
         );
     }
 }

@@ -24,7 +24,7 @@ final class ActiveMaintenanceOrderAdvisor implements ValidationRule
             ->first();
 
         if (! $advisor instanceof User) {
-            $fail('The selected advisor must be an active advisor user.');
+            $fail(__('api.validation.rules.active_advisor'));
         }
     }
 }

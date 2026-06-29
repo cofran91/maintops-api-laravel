@@ -32,13 +32,13 @@ final class AssignableWorkshopTechnician implements ValidationRule
             ->first();
 
         if (! $technician instanceof User) {
-            $fail('Each technician must be an active user with the technician role.');
+            $fail(__('api.validation.rules.technician_active_role'));
 
             return;
         }
 
         if ($technician->workshop_id !== null && (string) $technician->workshop_id !== (string) $this->workshopId) {
-            $fail('The technician is already assigned to another workshop.');
+            $fail(__('api.validation.rules.technician_assigned_elsewhere'));
         }
     }
 }

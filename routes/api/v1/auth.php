@@ -11,6 +11,7 @@ Route::prefix('auth')->as('auth.')->group(function (): void {
 
     Route::middleware('auth:sanctum')->group(function (): void {
         Route::get('me', [AuthController::class, 'me'])->name('me');
+        Route::patch('language', [AuthController::class, 'updateLanguage'])->name('language.update');
         Route::post('service-token', ServiceTokenController::class)->name('service-token');
         Route::post('logout', [AuthController::class, 'logout'])->name('logout');
     });

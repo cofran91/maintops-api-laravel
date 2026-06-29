@@ -17,7 +17,7 @@ final class ValidWorkshopSchedule
             if (! is_string($day) || ! in_array($day, WorkshopScheduleService::DAYS, true)) {
                 $validator->errors()->add(
                     'weekly_schedule.'.$day,
-                    'The day must be monday, tuesday, wednesday, thursday, friday, saturday, or sunday.',
+                    __('api.validation.rules.schedule_day_invalid'),
                 );
 
                 continue;
@@ -30,7 +30,7 @@ final class ValidWorkshopSchedule
             if (array_diff(array_keys($hours), ['opens_at', 'closes_at']) !== []) {
                 $validator->errors()->add(
                     'weekly_schedule.'.$day,
-                    'Each day only accepts opens_at and closes_at.',
+                    __('api.validation.rules.schedule_allowed_keys'),
                 );
             }
 
@@ -42,7 +42,7 @@ final class ValidWorkshopSchedule
             ) {
                 $validator->errors()->add(
                     'weekly_schedule.'.$day.'.closes_at',
-                    'The closing time must be after the opening time.',
+                    __('api.validation.rules.schedule_closing_after_opening'),
                 );
             }
         }

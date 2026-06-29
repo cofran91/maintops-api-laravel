@@ -17,7 +17,7 @@ class ApproveMaintenanceOrder extends UpdateMaintenanceOrderStatus
 
         if ($totalItems === 0) {
             throw ValidationException::withMessages([
-                'status' => 'An order without items cannot be approved.',
+                'status' => __('api.validation.maintenance_orders.approve_without_items'),
             ]);
         }
 

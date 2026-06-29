@@ -20,7 +20,7 @@ class CompleteMaintenanceOrderItem extends UpdateMaintenanceOrderItemStatus
 
         if (($attributes['started_at'] ?? $this->model->started_at) === null) {
             throw ValidationException::withMessages([
-                'status' => 'An item cannot be completed before it has started.',
+                'status' => __('api.validation.maintenance_order_items.complete_before_started'),
             ]);
         }
 

@@ -70,7 +70,7 @@ class MaintenanceTaskController extends ApiController
 
         return $this->success(
             data: MaintenanceTaskFilter::paginatedResource($paginator, MaintenanceTaskResource::class, $request),
-            message: 'Maintenance tasks retrieved.',
+            message: __('api.messages.maintenance_tasks.retrieved'),
         );
     }
 
@@ -99,7 +99,7 @@ class MaintenanceTaskController extends ApiController
 
         return $this->success(
             data: (new MaintenanceTaskResource($maintenanceTask))->resolve($request),
-            message: 'Maintenance task created successfully.',
+            message: __('api.messages.maintenance_tasks.created'),
             status: Response::HTTP_CREATED,
         );
     }
@@ -115,7 +115,7 @@ class MaintenanceTaskController extends ApiController
 
         return $this->success(
             data: (new MaintenanceTaskResource($maintenanceTask->load(['vehicle', 'vehicleSystem'])))->resolve($request),
-            message: 'Maintenance task retrieved.',
+            message: __('api.messages.maintenance_tasks.retrieved_one'),
         );
     }
 
@@ -140,7 +140,7 @@ class MaintenanceTaskController extends ApiController
 
         return $this->success(
             data: (new MaintenanceTaskResource($maintenanceTask->refresh()->load(['vehicle', 'vehicleSystem'])))->resolve($request),
-            message: 'Maintenance task updated successfully.',
+            message: __('api.messages.maintenance_tasks.updated'),
         );
     }
 
@@ -157,6 +157,6 @@ class MaintenanceTaskController extends ApiController
 
         $maintenanceTask->delete();
 
-        return $this->success(message: 'Maintenance task deleted successfully.');
+        return $this->success(message: __('api.messages.maintenance_tasks.deleted'));
     }
 }

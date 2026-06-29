@@ -50,7 +50,7 @@ class MaintenanceOrderItemController extends ApiController
 
         return $this->success(
             data: MaintenanceOrderItemFilter::paginatedResource($paginator, MaintenanceOrderItemResource::class, $request),
-            message: 'Maintenance order items retrieved.',
+            message: __('api.messages.maintenance_order_items.retrieved'),
         );
     }
 
@@ -63,7 +63,7 @@ class MaintenanceOrderItemController extends ApiController
 
         return $this->success(
             data: (new MaintenanceOrderItemResource($maintenanceOrderItem->load($this->relations())))->resolve($request),
-            message: 'Maintenance order item retrieved.',
+            message: __('api.messages.maintenance_order_items.retrieved_one'),
         );
     }
 
@@ -85,7 +85,7 @@ class MaintenanceOrderItemController extends ApiController
 
         return $this->success(
             data: (new MaintenanceOrderItemResource($maintenanceOrderItem))->resolve($request),
-            message: 'Maintenance order item updated successfully.',
+            message: __('api.messages.maintenance_order_items.updated'),
         );
     }
 

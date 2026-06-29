@@ -14,7 +14,7 @@ class DeliverMaintenanceOrder extends UpdateMaintenanceOrderStatus
 
         if (($attributes['finished_at'] ?? $this->model->finished_at) === null) {
             throw ValidationException::withMessages([
-                'status' => 'An order cannot be delivered before it has been completed.',
+                'status' => __('api.validation.maintenance_orders.deliver_before_completed'),
             ]);
         }
 
@@ -27,7 +27,7 @@ class DeliverMaintenanceOrder extends UpdateMaintenanceOrderStatus
             ->exists()
         ) {
             throw ValidationException::withMessages([
-                'status' => 'An order with pending or active items cannot be delivered.',
+                'status' => __('api.validation.maintenance_orders.deliver_with_open_items'),
             ]);
         }
 

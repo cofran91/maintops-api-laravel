@@ -19,7 +19,7 @@ class StartMaintenanceOrderItem extends UpdateMaintenanceOrderItemStatus
 
         if (! $order->status->equals(OrderScheduled::class, OrderInProgress::class)) {
             throw ValidationException::withMessages([
-                'status' => 'An item cannot be started unless its order is scheduled or in progress.',
+                'status' => __('api.validation.maintenance_order_items.start_requires_order_scheduled_or_in_progress'),
             ]);
         }
 

@@ -12,7 +12,7 @@ class SubmitMaintenanceOrderForOwnerApproval extends UpdateMaintenanceOrderStatu
     {
         if (! $this->model->items()->exists()) {
             throw ValidationException::withMessages([
-                'status' => 'An order without items cannot be submitted for owner approval.',
+                'status' => __('api.validation.maintenance_orders.submit_without_items'),
             ]);
         }
 

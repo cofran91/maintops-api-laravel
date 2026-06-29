@@ -64,7 +64,7 @@ class VehicleController extends ApiController
 
         return $this->success(
             data: VehicleFilter::paginatedResource($paginator, VehicleResource::class, $request),
-            message: 'Vehicles retrieved.',
+            message: __('api.messages.vehicles.retrieved'),
         );
     }
 
@@ -107,7 +107,7 @@ class VehicleController extends ApiController
 
         return $this->success(
             data: (new VehicleResource($vehicle))->resolve($request),
-            message: 'Vehicle created successfully.',
+            message: __('api.messages.vehicles.created'),
             status: Response::HTTP_CREATED,
         );
     }
@@ -139,7 +139,7 @@ class VehicleController extends ApiController
 
         return $this->success(
             data: (new VehicleResource($vehicle->load('owner')))->resolve($request),
-            message: 'Vehicle retrieved.',
+            message: __('api.messages.vehicles.retrieved_one'),
         );
     }
 
@@ -180,7 +180,7 @@ class VehicleController extends ApiController
 
         return $this->success(
             data: (new VehicleResource($vehicle->refresh()->load('owner')))->resolve($request),
-            message: 'Vehicle updated successfully.',
+            message: __('api.messages.vehicles.updated'),
         );
     }
 
@@ -197,6 +197,6 @@ class VehicleController extends ApiController
 
         $vehicle->delete();
 
-        return $this->success(message: 'Vehicle deleted successfully.');
+        return $this->success(message: __('api.messages.vehicles.deleted'));
     }
 }

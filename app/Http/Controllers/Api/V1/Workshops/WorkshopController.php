@@ -74,7 +74,7 @@ class WorkshopController extends ApiController
 
         return $this->success(
             data: WorkshopFilter::paginatedResource($paginator, WorkshopResource::class, $request),
-            message: 'Workshops retrieved.',
+            message: __('api.messages.workshops.retrieved'),
         );
     }
 
@@ -127,7 +127,7 @@ class WorkshopController extends ApiController
 
         return $this->success(
             data: (new WorkshopResource($workshop))->resolve($request),
-            message: 'Workshop created successfully.',
+            message: __('api.messages.workshops.created'),
             status: Response::HTTP_CREATED,
         );
     }
@@ -165,7 +165,7 @@ class WorkshopController extends ApiController
 
         return $this->success(
             data: (new WorkshopResource($workshop->load(['manager.roles', 'vehicleSystems', 'technicians.roles'])))->resolve($request),
-            message: 'Workshop retrieved.',
+            message: __('api.messages.workshops.retrieved_one'),
         );
     }
 
@@ -221,7 +221,7 @@ class WorkshopController extends ApiController
 
         return $this->success(
             data: (new WorkshopResource($workshop))->resolve($request),
-            message: 'Workshop updated successfully.',
+            message: __('api.messages.workshops.updated'),
         );
     }
 
@@ -238,6 +238,6 @@ class WorkshopController extends ApiController
 
         $workshop->delete();
 
-        return $this->success(message: 'Workshop deleted successfully.');
+        return $this->success(message: __('api.messages.workshops.deleted'));
     }
 }
