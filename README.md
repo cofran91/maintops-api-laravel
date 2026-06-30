@@ -16,6 +16,7 @@ The project is designed as part of the full MaintOps portfolio stack. It can run
 - Laravel API design with versioned routes, request validation, resources, policies, and feature tests.
 - Domain modeling for owners, vehicles, workshops, technicians, vehicle systems, tasks, plans, maintenance orders, and order items.
 - Role-based access control with operational scopes for administrators, advisors, workshop managers, and technicians.
+- English and Spanish API localization for response messages, validation errors, exceptions, and persisted authenticated-user language preference.
 - State machines for maintenance orders, order items, and vehicle-specific tasks.
 - Automated operational workflows that generate recommended order items and schedule approved work.
 - Transactional outbox pattern for cross-service operational events.
@@ -173,6 +174,8 @@ Supported audiences:
 - `analytics`: used by the FastAPI Analytics API and restricted to administrative roles.
 
 The token carries only the user id, roles, workshop scope, audience, issued-at time, expiration time, and unique token id. Realtime and Analytics validate the token with `SERVICE_TOKEN_SECRET` and do not need access to MySQL or Laravel's Sanctum internals.
+
+Authenticated users can also update their language preference through the auth API. Laravel stores that preference on the user profile and uses it, together with locale headers, when resolving localized API messages and exceptions for subsequent requests.
 
 ## Email And Password Recovery
 
