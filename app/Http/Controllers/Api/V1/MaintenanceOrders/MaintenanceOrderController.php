@@ -4,15 +4,13 @@ namespace App\Http\Controllers\Api\V1\MaintenanceOrders;
 
 use App\Actions\MaintenanceOrders\UpdateMaintenanceOrderAction;
 use App\Enums\MaintenanceOrderStatus;
-use App\Enums\SystemRole;
 use App\Http\Controllers\Api\ApiController;
 use App\Http\Requests\Api\V1\MaintenanceOrders\MaintenanceOrderRequest;
 use App\Http\Resources\Api\V1\MaintenanceOrders\MaintenanceOrderResource;
 use App\ModelFilters\MaintenanceOrderFilter;
 use App\Models\MaintenanceOrder;
-use App\Models\User;
+use App\Support\MaintenanceOrders\MaintenanceOrderAccess;
 use Dedoc\Scramble\Attributes\QueryParameter;
-use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
@@ -51,7 +49,7 @@ class MaintenanceOrderController extends ApiController
             ->latest('id')
             ->filter($request->query());
 
-        $this->scopeForActor($query, $request->user());
+        MaintenanceOrderAccess::scopeOrdersForActor($query, $request->user());
 
         $paginator = $query->paginateFilter(MaintenanceOrderFilter::perPage($request));
 
@@ -132,41 +130,5 @@ class MaintenanceOrderController extends ApiController
             'items.maintenanceTask.vehicleSystem',
             'items.maintenancePlan',
         ];
-    }
-
-    private function scopeForActor(Builder $query, mixed $actor): void
-    {
-        if (! $actor instanceof User) {
-            $query->whereRaw('1 = 0');
-
-            return;
-        }
-
-        if ($actor->hasRole([
-            SystemRole::SuperAdmin->value,
-            SystemRole::Admin->value,
-        ])) {
-            return;
-        }
-
-        if ($actor->hasRole(SystemRole::WorkshopManager->value)) {
-            $query->whereHas('workshop', function (Builder $query) use ($actor): void {
-                $query->where('manager_user_id', $actor->getKey());
-            });
-
-            return;
-        }
-
-        if ($actor->hasRole(SystemRole::Advisor->value)) {
-            return;
-        }
-
-        if ($actor->hasRole(SystemRole::Technician->value)) {
-            $query->where('technician_id', $actor->getKey());
-
-            return;
-        }
-
-        $query->whereRaw('1 = 0');
     }
 }

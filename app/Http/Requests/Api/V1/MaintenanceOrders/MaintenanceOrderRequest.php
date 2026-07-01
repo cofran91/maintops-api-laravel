@@ -3,12 +3,12 @@
 namespace App\Http\Requests\Api\V1\MaintenanceOrders;
 
 use App\Enums\MaintenanceOrderStatus;
-use App\Enums\SystemRole;
 use App\Models\MaintenanceOrder;
 use App\Models\User;
 use App\Rules\MaintenanceOrders\ActiveMaintenanceOrderAdvisor;
 use App\Rules\MaintenanceOrders\AllowedMaintenanceOrderStatus;
 use App\Rules\MaintenanceOrders\VehicleWithoutOpenMaintenanceOrder;
+use App\Support\MaintenanceOrders\MaintenanceOrderAccess;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -43,7 +43,7 @@ class MaintenanceOrderRequest extends FormRequest
             return;
         }
 
-        if (! $this->has('advisor_id') || $this->input('advisor_id') === '' || $this->isPrimaryAdvisor($actor)) {
+        if (! $this->has('advisor_id') || $this->input('advisor_id') === '' || MaintenanceOrderAccess::isPrimaryAdvisor($actor)) {
             $this->merge(['advisor_id' => $actor->getKey()]);
         }
     }
@@ -111,15 +111,5 @@ class MaintenanceOrderRequest extends FormRequest
         $maintenanceOrder = $this->route('maintenance_order');
 
         return $maintenanceOrder instanceof MaintenanceOrder ? $maintenanceOrder : null;
-    }
-
-    private function isPrimaryAdvisor(User $user): bool
-    {
-        return $user->hasRole(SystemRole::Advisor->value)
-            && ! $user->hasRole([
-                SystemRole::SuperAdmin->value,
-                SystemRole::Admin->value,
-                SystemRole::WorkshopManager->value,
-            ]);
     }
 }
