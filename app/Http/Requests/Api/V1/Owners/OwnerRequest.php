@@ -2,38 +2,25 @@
 
 namespace App\Http\Requests\Api\V1\Owners;
 
+use App\Http\Requests\Api\V1\ResourceRequest;
 use App\Models\Owner;
-use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 
-class OwnerRequest extends FormRequest
+class OwnerRequest extends ResourceRequest
 {
-    public function authorize(): bool
+    protected function modelClass(): string
     {
-        $actor = $this->user();
+        return Owner::class;
+    }
 
-        if ($actor === null) {
-            return false;
-        }
-
-        if ($this->isMethod('post')) {
-            return $actor->can('create', Owner::class);
-        }
-
-        $owner = $this->route('owner');
-
-        return $owner instanceof Owner
-            && $actor->can('update', $owner);
+    protected function routeParameter(): string
+    {
+        return 'owner';
     }
 
     protected function prepareForValidation(): void
     {
-        if ($this->has('email')) {
-            $this->merge([
-                'email' => Str::lower(trim((string) $this->input('email'))),
-            ]);
-        }
+        $this->lowerTrimmedString('email');
     }
 
     /**
@@ -41,8 +28,7 @@ class OwnerRequest extends FormRequest
      */
     public function rules(): array
     {
-        $owner = $this->route('owner');
-        $ownerId = $owner instanceof Owner ? $owner->getKey() : null;
+        $ownerId = $this->routeModelKey();
 
         return [
             'name' => ['required', 'string', 'max:255'],

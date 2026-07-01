@@ -2,48 +2,31 @@
 
 namespace App\Http\Requests\Api\V1\MaintenancePlans;
 
+use App\Http\Requests\Api\V1\ResourceRequest;
 use App\Models\MaintenancePlan;
-use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 
-class MaintenancePlanRequest extends FormRequest
+class MaintenancePlanRequest extends ResourceRequest
 {
-    public function authorize(): bool
+    protected function modelClass(): string
     {
-        $actor = $this->user();
+        return MaintenancePlan::class;
+    }
 
-        if ($actor === null) {
-            return false;
-        }
-
-        if ($this->isMethod('post')) {
-            return $actor->can('create', MaintenancePlan::class);
-        }
-
-        $maintenancePlan = $this->route('maintenance_plan');
-
-        return $maintenancePlan instanceof MaintenancePlan
-            && $actor->can('update', $maintenancePlan);
+    protected function routeParameter(): string
+    {
+        return 'maintenance_plan';
     }
 
     protected function prepareForValidation(): void
     {
-        if ($this->has('code')) {
-            $this->merge([
-                'code' => Str::upper(Str::slug((string) $this->input('code'), '-')),
-            ]);
-        }
+        $this->upperSlugString('code');
 
         foreach (['recommended_interval_days', 'recommended_interval_km'] as $field) {
-            if ($this->has($field) && $this->input($field) === '') {
-                $this->merge([$field => null]);
-            }
+            $this->emptyStringToNull($field);
         }
 
-        if ($this->has('task_ids') && ($this->input('task_ids') === null || $this->input('task_ids') === '')) {
-            $this->merge(['task_ids' => []]);
-        }
+        $this->emptyValueToArray('task_ids');
     }
 
     /**
@@ -51,8 +34,7 @@ class MaintenancePlanRequest extends FormRequest
      */
     public function rules(): array
     {
-        $maintenancePlan = $this->route('maintenance_plan');
-        $maintenancePlanId = $maintenancePlan instanceof MaintenancePlan ? $maintenancePlan->getKey() : null;
+        $maintenancePlanId = $this->routeModelKey();
 
         return [
             'code' => [

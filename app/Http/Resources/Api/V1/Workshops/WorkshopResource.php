@@ -23,12 +23,7 @@ class WorkshopResource extends JsonResource
         return [
             'id' => $this->id,
             'manager_user_id' => $this->manager_user_id,
-            'manager' => $this->whenLoaded('manager', fn (): array => [
-                'id' => $this->manager->id,
-                'name' => $this->manager->name,
-                'email' => $this->manager->email,
-                'roles' => $this->manager->getRoleNames()->values()->all(),
-            ]),
+            'manager' => $this->whenLoaded('manager', fn () => UserResource::make($this->manager)),
             'name' => $this->name,
             'code' => $this->code,
             'address' => $this->address,

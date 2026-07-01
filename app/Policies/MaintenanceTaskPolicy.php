@@ -5,9 +5,12 @@ namespace App\Policies;
 use App\Enums\SystemRole;
 use App\Models\MaintenanceTask;
 use App\Models\User;
+use App\Policies\Concerns\AuthorizesRoles;
 
 final class MaintenanceTaskPolicy
 {
+    use AuthorizesRoles;
+
     public function viewAny(User $user): bool
     {
         return $this->canViewMaintenanceTasks($user);
@@ -39,15 +42,11 @@ final class MaintenanceTaskPolicy
      */
     private function canViewMaintenanceTasks(User $user): bool
     {
-        if (! $user->is_active) {
-            return false;
-        }
-
-        return $user->hasRole($this->roleValues([
+        return $this->hasActiveRole($user, [
             SystemRole::SuperAdmin,
             SystemRole::Admin,
             SystemRole::Advisor,
-        ]));
+        ]);
     }
 
     /**
@@ -55,25 +54,9 @@ final class MaintenanceTaskPolicy
      */
     private function canManageMaintenanceTasks(User $user): bool
     {
-        if (! $user->is_active) {
-            return false;
-        }
-
-        return $user->hasRole($this->roleValues([
+        return $this->hasActiveRole($user, [
             SystemRole::SuperAdmin,
             SystemRole::Admin,
-        ]));
-    }
-
-    /**
-     * @param  array<int, SystemRole>  $roles
-     * @return array<int, string>
-     */
-    private function roleValues(array $roles): array
-    {
-        return array_map(
-            static fn (SystemRole $role): string => $role->value,
-            $roles,
-        );
+        ]);
     }
 }

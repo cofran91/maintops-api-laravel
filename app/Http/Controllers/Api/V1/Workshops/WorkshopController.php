@@ -43,7 +43,7 @@ class WorkshopController extends ApiController
      *         items: array<int, array{
      *             id: int,
      *             manager_user_id: int,
-     *             manager: array{id: int, name: string, email: string, roles: array<int, string>},
+     *             manager: array{id: int, name: string, email: string, preferred_locale: string, roles: array<int, string>, is_active: bool, phone: string|null, document_number: string|null, address: string|null, workshop_id: int|null, email_verified_at: string|null, created_at: string|null, updated_at: string|null},
      *             name: string,
      *             code: string,
      *             address: string|null,
@@ -54,7 +54,7 @@ class WorkshopController extends ApiController
      *             vehicle_system_ids: array<int, int>,
      *             vehicle_systems: array<int, array{id: int, code: string, name: string, created_at: string|null, updated_at: string|null}>,
      *             technician_user_ids: array<int, int>,
-     *             technicians: array<int, array{id: int, name: string, email: string, roles: array<int, string>, workshop_id: int|null}>,
+     *             technicians: array<int, array{id: int, name: string, email: string, preferred_locale: string, roles: array<int, string>, is_active: bool, phone: string|null, document_number: string|null, address: string|null, workshop_id: int|null, email_verified_at: string|null, created_at: string|null, updated_at: string|null}>,
      *             is_active: bool,
      *             created_at: string|null,
      *             updated_at: string|null
@@ -207,7 +207,7 @@ class WorkshopController extends ApiController
      *     data: array{
      *         id: int,
      *         manager_user_id: int,
-     *         manager: array{id: int, name: string, email: string, roles: array<int, string>},
+     *         manager: array{id: int, name: string, email: string, preferred_locale: string, roles: array<int, string>, is_active: bool, phone: string|null, document_number: string|null, address: string|null, workshop_id: int|null, email_verified_at: string|null, created_at: string|null, updated_at: string|null},
      *         name: string,
      *         code: string,
      *         address: string|null,
@@ -218,7 +218,7 @@ class WorkshopController extends ApiController
      *         vehicle_system_ids: array<int, int>,
      *         vehicle_systems: array<int, array{id: int, code: string, name: string, created_at: string|null, updated_at: string|null}>,
      *         technician_user_ids: array<int, int>,
-     *         technicians: array<int, array{id: int, name: string, email: string, roles: array<int, string>, workshop_id: int|null}>,
+     *         technicians: array<int, array{id: int, name: string, email: string, preferred_locale: string, roles: array<int, string>, is_active: bool, phone: string|null, document_number: string|null, address: string|null, workshop_id: int|null, email_verified_at: string|null, created_at: string|null, updated_at: string|null}>,
      *         is_active: bool,
      *         created_at: string|null,
      *         updated_at: string|null
@@ -247,7 +247,7 @@ class WorkshopController extends ApiController
      *     data: array{
      *         id: int,
      *         manager_user_id: int,
-     *         manager: array{id: int, name: string, email: string, roles: array<int, string>},
+     *         manager: array{id: int, name: string, email: string, preferred_locale: string, roles: array<int, string>, is_active: bool, phone: string|null, document_number: string|null, address: string|null, workshop_id: int|null, email_verified_at: string|null, created_at: string|null, updated_at: string|null},
      *         name: string,
      *         code: string,
      *         address: string|null,
@@ -258,7 +258,7 @@ class WorkshopController extends ApiController
      *         vehicle_system_ids: array<int, int>,
      *         vehicle_systems: array<int, array{id: int, code: string, name: string, created_at: string|null, updated_at: string|null}>,
      *         technician_user_ids: array<int, int>,
-     *         technicians: array<int, array{id: int, name: string, email: string, roles: array<int, string>, workshop_id: int|null}>,
+     *         technicians: array<int, array{id: int, name: string, email: string, preferred_locale: string, roles: array<int, string>, is_active: bool, phone: string|null, document_number: string|null, address: string|null, workshop_id: int|null, email_verified_at: string|null, created_at: string|null, updated_at: string|null}>,
      *         is_active: bool,
      *         created_at: string|null,
      *         updated_at: string|null
@@ -298,7 +298,7 @@ class WorkshopController extends ApiController
      *     data: array{
      *         id: int,
      *         manager_user_id: int,
-     *         manager: array{id: int, name: string, email: string, roles: array<int, string>},
+     *         manager: array{id: int, name: string, email: string, preferred_locale: string, roles: array<int, string>, is_active: bool, phone: string|null, document_number: string|null, address: string|null, workshop_id: int|null, email_verified_at: string|null, created_at: string|null, updated_at: string|null},
      *         name: string,
      *         code: string,
      *         address: string|null,
@@ -309,7 +309,7 @@ class WorkshopController extends ApiController
      *         vehicle_system_ids: array<int, int>,
      *         vehicle_systems: array<int, array{id: int, code: string, name: string, created_at: string|null, updated_at: string|null}>,
      *         technician_user_ids: array<int, int>,
-     *         technicians: array<int, array{id: int, name: string, email: string, roles: array<int, string>, workshop_id: int|null}>,
+     *         technicians: array<int, array{id: int, name: string, email: string, preferred_locale: string, roles: array<int, string>, is_active: bool, phone: string|null, document_number: string|null, address: string|null, workshop_id: int|null, email_verified_at: string|null, created_at: string|null, updated_at: string|null}>,
      *         is_active: bool,
      *         created_at: string|null,
      *         updated_at: string|null

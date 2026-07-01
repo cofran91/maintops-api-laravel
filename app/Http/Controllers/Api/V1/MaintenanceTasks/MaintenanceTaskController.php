@@ -28,9 +28,9 @@ class MaintenanceTaskController extends ApiController
      *         items: array<int, array{
      *             id: int,
      *             vehicle_id: int|null,
-     *             vehicle: array{id: int, owner_id: int, license_plate: string, brand: string|null, model: string|null, year: int|null, color: string|null, odometer_km: int}|null,
+     *             vehicle: array{id: int, owner_id: int, license_plate: string, brand: string|null, model: string|null, year: int|null, color: string|null, odometer_km: int, created_at: string|null, updated_at: string|null}|null,
      *             vehicle_system_id: int,
-     *             vehicle_system: array{id: int, code: string, name: string},
+     *             vehicle_system: array{id: int, code: string, name: string, created_at: string|null, updated_at: string|null},
      *             name: string,
      *             code: string,
      *             description: string|null,
@@ -87,7 +87,7 @@ class MaintenanceTaskController extends ApiController
      * @bodyParam estimated_duration_minutes integer required Estimated duration in minutes. Minimum 1 and maximum 10080. Example: 90
      * @bodyParam is_active boolean required Whether the task can be selected in operations. Example: true
      *
-     * @return JsonResponse<array{success: bool, message: string, data: array{id: int, vehicle_id: int|null, vehicle_system_id: int, name: string, code: string, estimated_duration_minutes: int, status: string, is_active: bool}}, 201>
+     * @return JsonResponse<array{success: bool, message: string, data: array{id: int, vehicle_id: int|null, vehicle: array{id: int, owner_id: int, license_plate: string, brand: string|null, model: string|null, year: int|null, color: string|null, odometer_km: int, created_at: string|null, updated_at: string|null}|null, vehicle_system_id: int, vehicle_system: array{id: int, code: string, name: string, created_at: string|null, updated_at: string|null}, name: string, code: string, description: string|null, estimated_duration_minutes: int, status: string, is_active: bool, created_at: string|null, updated_at: string|null}}, 201>
      */
     public function store(MaintenanceTaskRequest $request): JsonResponse
     {
@@ -107,7 +107,7 @@ class MaintenanceTaskController extends ApiController
     /**
      * Show maintenance task.
      *
-     * @return JsonResponse<array{success: bool, message: string, data: array{id: int, vehicle_id: int|null, vehicle_system_id: int, name: string, code: string, estimated_duration_minutes: int, status: string, is_active: bool}}, 200>
+     * @return JsonResponse<array{success: bool, message: string, data: array{id: int, vehicle_id: int|null, vehicle: array{id: int, owner_id: int, license_plate: string, brand: string|null, model: string|null, year: int|null, color: string|null, odometer_km: int, created_at: string|null, updated_at: string|null}|null, vehicle_system_id: int, vehicle_system: array{id: int, code: string, name: string, created_at: string|null, updated_at: string|null}, name: string, code: string, description: string|null, estimated_duration_minutes: int, status: string, is_active: bool, created_at: string|null, updated_at: string|null}}, 200>
      */
     public function show(Request $request, MaintenanceTask $maintenanceTask): JsonResponse
     {
@@ -132,7 +132,7 @@ class MaintenanceTaskController extends ApiController
      * @bodyParam estimated_duration_minutes integer required Estimated duration in minutes. Minimum 1 and maximum 10080. Example: 75
      * @bodyParam is_active boolean required Whether the task can be selected in operations. Example: true
      *
-     * @return JsonResponse<array{success: bool, message: string, data: array{id: int, vehicle_id: int|null, vehicle_system_id: int, name: string, code: string, estimated_duration_minutes: int, status: string, is_active: bool}}, 200>
+     * @return JsonResponse<array{success: bool, message: string, data: array{id: int, vehicle_id: int|null, vehicle: array{id: int, owner_id: int, license_plate: string, brand: string|null, model: string|null, year: int|null, color: string|null, odometer_km: int, created_at: string|null, updated_at: string|null}|null, vehicle_system_id: int, vehicle_system: array{id: int, code: string, name: string, created_at: string|null, updated_at: string|null}, name: string, code: string, description: string|null, estimated_duration_minutes: int, status: string, is_active: bool, created_at: string|null, updated_at: string|null}}, 200>
      */
     public function update(MaintenanceTaskRequest $request, MaintenanceTask $maintenanceTask): JsonResponse
     {

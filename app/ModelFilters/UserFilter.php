@@ -54,39 +54,17 @@ final class UserFilter extends ModelFilter
 
     public function isActive(bool|int|string $value): void
     {
-        $isActive = filter_var($value, FILTER_VALIDATE_BOOL, FILTER_NULL_ON_FAILURE);
-
-        if ($isActive === null) {
-            return;
-        }
-
-        $this->where('is_active', $isActive);
+        $this->whereBoolean('is_active', $value);
     }
 
     public function workshopId(int|string $value): void
     {
-        $normalizedValue = strtolower(trim((string) $value));
-
-        if (in_array($normalizedValue, ['null', 'none', 'unassigned'], true)) {
-            $this->whereNull('workshop_id');
-
-            return;
-        }
-
-        $workshopId = filter_var($value, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
-
-        if ($workshopId === false) {
-            return;
-        }
-
-        $this->where('workshop_id', $workshopId);
+        $this->whereNullableInteger('workshop_id', $value);
     }
 
     public function withoutWorkshop(bool|int|string $value): void
     {
-        $withoutWorkshop = filter_var($value, FILTER_VALIDATE_BOOL, FILTER_NULL_ON_FAILURE);
-
-        if ($withoutWorkshop !== true) {
+        if ($this->booleanFilterValue($value) !== true) {
             return;
         }
 

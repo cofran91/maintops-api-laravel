@@ -68,13 +68,7 @@ final class WorkshopFilter extends ModelFilter
 
     public function isActive(bool|int|string $value): void
     {
-        $isActive = filter_var($value, FILTER_VALIDATE_BOOL, FILTER_NULL_ON_FAILURE);
-
-        if ($isActive === null) {
-            return;
-        }
-
-        $this->where('is_active', $isActive);
+        $this->whereBoolean('is_active', $value);
     }
 
     public function managerUserId(int|string $value): void
@@ -91,23 +85,11 @@ final class WorkshopFilter extends ModelFilter
 
     public function createdFrom(string $value): void
     {
-        $date = $this->dateFilterValue($value);
-
-        if ($date === null) {
-            return;
-        }
-
-        $this->where('created_at', '>=', $date->startOfDay());
+        $this->whereDateFrom('created_at', $value);
     }
 
     public function createdTo(string $value): void
     {
-        $date = $this->dateFilterValue($value);
-
-        if ($date === null) {
-            return;
-        }
-
-        $this->where('created_at', '<=', $date->endOfDay());
+        $this->whereDateTo('created_at', $value);
     }
 }

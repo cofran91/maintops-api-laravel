@@ -3,42 +3,29 @@
 namespace App\Http\Requests\Api\V1\Users;
 
 use App\Enums\SystemRole;
+use App\Http\Requests\Api\V1\ResourceRequest;
 use App\Models\User;
 use App\Rules\Users\AssignableUserRole;
 use App\Rules\Users\AssignableUserWorkshop;
 use App\Support\Localization\Locale;
-use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Password;
 
-class UserRequest extends FormRequest
+class UserRequest extends ResourceRequest
 {
-    public function authorize(): bool
+    protected function modelClass(): string
     {
-        $actor = $this->user();
+        return User::class;
+    }
 
-        if ($actor === null) {
-            return false;
-        }
-
-        if ($this->isMethod('post')) {
-            return $actor->can('create', User::class);
-        }
-
-        $target = $this->route('user');
-
-        return $target instanceof User
-            && $actor->can('update', $target);
+    protected function routeParameter(): string
+    {
+        return 'user';
     }
 
     protected function prepareForValidation(): void
     {
-        if ($this->has('email')) {
-            $this->merge([
-                'email' => Str::lower((string) $this->input('email')),
-            ]);
-        }
+        $this->lowerTrimmedString('email');
 
         if ($this->has('preferred_locale')) {
             $this->merge([
@@ -46,10 +33,7 @@ class UserRequest extends FormRequest
             ]);
         }
 
-        if (! $this->has('workshop_id') || $this->input('workshop_id') === '') {
-            $this->merge(['workshop_id' => null]);
-        }
-
+        $this->missingOrEmptyStringToNull('workshop_id');
     }
 
     /**
@@ -57,8 +41,8 @@ class UserRequest extends FormRequest
      */
     public function rules(): array
     {
-        $target = $this->route('user');
-        $targetId = $target instanceof User ? $target->getKey() : null;
+        $target = $this->routeModel();
+        $targetId = $this->routeModelKey();
 
         return [
             'name' => ['required', 'string', 'max:255'],

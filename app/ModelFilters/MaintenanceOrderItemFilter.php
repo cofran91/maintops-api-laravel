@@ -72,13 +72,7 @@ final class MaintenanceOrderItemFilter extends ModelFilter
 
     public function withoutPlan(bool|int|string $value): void
     {
-        $enabled = filter_var($value, FILTER_VALIDATE_BOOL, FILTER_NULL_ON_FAILURE);
-
-        if ($enabled !== true) {
-            return;
-        }
-
-        $this->whereNull('maintenance_plan_id');
+        $this->whereBooleanNull('maintenance_plan_id', $value);
     }
 
     public function status(string $value): void
@@ -158,58 +152,5 @@ final class MaintenanceOrderItemFilter extends ModelFilter
     public function createdTo(string $value): void
     {
         $this->whereDateTo('created_at', $value);
-    }
-
-    private function whereInteger(string $field, int|string $value): void
-    {
-        $integer = $this->positiveInteger($value);
-
-        if ($integer === null) {
-            return;
-        }
-
-        $this->where($field, $integer);
-    }
-
-    private function whereNullableInteger(string $field, int|string $value): void
-    {
-        $normalizedValue = strtolower(trim((string) $value));
-
-        if (in_array($normalizedValue, ['null', 'none', 'unassigned'], true)) {
-            $this->whereNull($field);
-
-            return;
-        }
-
-        $this->whereInteger($field, $value);
-    }
-
-    private function whereDateFrom(string $field, string $value): void
-    {
-        $date = $this->dateFilterValue($value);
-
-        if ($date === null) {
-            return;
-        }
-
-        $this->where($field, '>=', $date->startOfDay());
-    }
-
-    private function whereDateTo(string $field, string $value): void
-    {
-        $date = $this->dateFilterValue($value);
-
-        if ($date === null) {
-            return;
-        }
-
-        $this->where($field, '<=', $date->endOfDay());
-    }
-
-    private function positiveInteger(int|string $value): ?int
-    {
-        $integer = filter_var($value, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
-
-        return $integer === false ? null : $integer;
     }
 }

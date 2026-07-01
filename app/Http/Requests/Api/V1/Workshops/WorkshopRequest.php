@@ -2,62 +2,32 @@
 
 namespace App\Http\Requests\Api\V1\Workshops;
 
+use App\Http\Requests\Api\V1\ResourceRequest;
 use App\Models\Workshop;
 use App\Rules\Workshops\AssignableWorkshopManager;
 use App\Rules\Workshops\AssignableWorkshopTechnician;
 use App\Rules\Workshops\ValidWorkshopSchedule;
-use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Validator;
 
-class WorkshopRequest extends FormRequest
+class WorkshopRequest extends ResourceRequest
 {
-    public function authorize(): bool
+    protected function modelClass(): string
     {
-        $actor = $this->user();
+        return Workshop::class;
+    }
 
-        if ($actor === null) {
-            return false;
-        }
-
-        if ($this->isMethod('post')) {
-            return $actor->can('create', Workshop::class);
-        }
-
-        $workshop = $this->route('workshop');
-
-        return $workshop instanceof Workshop
-            && $actor->can('update', $workshop);
+    protected function routeParameter(): string
+    {
+        return 'workshop';
     }
 
     protected function prepareForValidation(): void
     {
-        if ($this->has('email')) {
-            $this->merge([
-                'email' => Str::lower(trim((string) $this->input('email'))),
-            ]);
-        }
-
-        if ($this->has('code')) {
-            $this->merge([
-                'code' => Str::upper(Str::slug((string) $this->input('code'), '-')),
-            ]);
-        }
-
-        if ($this->has('weekly_schedule') && is_array($this->input('weekly_schedule'))) {
-            $normalizedSchedule = [];
-
-            foreach ($this->input('weekly_schedule') as $day => $hours) {
-                $normalizedSchedule[Str::lower((string) $day)] = $hours;
-            }
-
-            $this->merge(['weekly_schedule' => $normalizedSchedule]);
-        }
-
-        if ($this->has('technician_user_ids') && in_array($this->input('technician_user_ids'), [null, ''], true)) {
-            $this->merge(['technician_user_ids' => []]);
-        }
+        $this->lowerTrimmedString('email');
+        $this->upperSlugString('code');
+        $this->normalizeArrayKeysToLower('weekly_schedule');
+        $this->emptyValueToArray('technician_user_ids');
     }
 
     /**
@@ -65,8 +35,8 @@ class WorkshopRequest extends FormRequest
      */
     public function rules(): array
     {
-        $workshop = $this->route('workshop');
-        $workshopId = $workshop instanceof Workshop ? $workshop->getKey() : null;
+        $workshop = $this->routeModel();
+        $workshopId = $this->routeModelKey();
 
         return [
             'manager_user_id' => [

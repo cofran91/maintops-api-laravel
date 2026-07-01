@@ -2,6 +2,7 @@
 
 namespace App\Http\Resources\Api\V1\Vehicles;
 
+use App\Http\Resources\Api\V1\Owners\OwnerResource;
 use App\Models\Vehicle;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
@@ -21,15 +22,7 @@ class VehicleResource extends JsonResource
         return [
             'id' => $this->id,
             'owner_id' => $this->owner_id,
-            'owner' => $this->whenLoaded('owner', fn (): array => [
-                'id' => $this->owner->id,
-                'name' => $this->owner->name,
-                'email' => $this->owner->email,
-                'is_active' => (bool) $this->owner->is_active,
-                'phone' => $this->owner->phone,
-                'document_number' => $this->owner->document_number,
-                'address' => $this->owner->address,
-            ]),
+            'owner' => $this->whenLoaded('owner', fn () => OwnerResource::make($this->owner)),
             'license_plate' => $this->license_plate,
             'brand' => $this->brand,
             'model' => $this->model,

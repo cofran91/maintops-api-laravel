@@ -41,7 +41,7 @@ class VehicleController extends ApiController
      *         items: array<int, array{
      *             id: int,
      *             owner_id: int,
-     *             owner: array{id: int, name: string, email: string, is_active: bool, phone: string|null, document_number: string|null, address: string|null},
+     *             owner: array{id: int, name: string, email: string, is_active: bool, phone: string|null, document_number: string|null, address: string|null, created_at: string|null, updated_at: string|null},
      *             license_plate: string,
      *             brand: string|null,
      *             model: string|null,
@@ -193,7 +193,7 @@ class VehicleController extends ApiController
      *     data: array{
      *         id: int,
      *         owner_id: int,
-     *         owner: array{id: int, name: string, email: string, is_active: bool, phone: string|null, document_number: string|null, address: string|null},
+     *         owner: array{id: int, name: string, email: string, is_active: bool, phone: string|null, document_number: string|null, address: string|null, created_at: string|null, updated_at: string|null},
      *         license_plate: string,
      *         brand: string|null,
      *         model: string|null,
@@ -227,7 +227,7 @@ class VehicleController extends ApiController
      *     data: array{
      *         id: int,
      *         owner_id: int,
-     *         owner: array{id: int, name: string, email: string, is_active: bool, phone: string|null, document_number: string|null, address: string|null},
+     *         owner: array{id: int, name: string, email: string, is_active: bool, phone: string|null, document_number: string|null, address: string|null, created_at: string|null, updated_at: string|null},
      *         license_plate: string,
      *         brand: string|null,
      *         model: string|null,
@@ -268,7 +268,7 @@ class VehicleController extends ApiController
      *     data: array{
      *         id: int,
      *         owner_id: int,
-     *         owner: array{id: int, name: string, email: string, is_active: bool, phone: string|null, document_number: string|null, address: string|null},
+     *         owner: array{id: int, name: string, email: string, is_active: bool, phone: string|null, document_number: string|null, address: string|null, created_at: string|null, updated_at: string|null},
      *         license_plate: string,
      *         brand: string|null,
      *         model: string|null,

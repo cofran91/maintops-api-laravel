@@ -30,12 +30,14 @@ class UserController extends ApiController
      *             id: int,
      *             name: string,
      *             email: string,
+     *             preferred_locale: string,
      *             roles: array<int, string>,
      *             is_active: bool,
      *             phone: string|null,
      *             document_number: string|null,
      *             address: string|null,
      *             workshop_id: int|null,
+     *             workshop: array{id: int, manager_user_id: int, name: string, code: string, address: string|null, city: string|null, phone: string|null, email: string|null, weekly_schedule: array<string, array{opens_at: string, closes_at: string}>, is_active: bool, created_at: string|null, updated_at: string|null}|null,
      *             email_verified_at: string|null,
      *             created_at: string|null,
      *             updated_at: string|null
@@ -83,7 +85,7 @@ class UserController extends ApiController
      * @bodyParam address string|null Contact address. Example: 10 Main Street
      * @bodyParam workshop_id integer|null Workshop assigned to a technician. Only valid when role is technician. Example: 5
      *
-     * @return JsonResponse<array{success: bool, message: string, data: array{id: int, name: string, email: string, roles: array<int, string>}}, 201>
+     * @return JsonResponse<array{success: bool, message: string, data: array{id: int, name: string, email: string, preferred_locale: string, roles: array<int, string>, is_active: bool, phone: string|null, document_number: string|null, address: string|null, workshop_id: int|null, workshop: array{id: int, manager_user_id: int, name: string, code: string, address: string|null, city: string|null, phone: string|null, email: string|null, weekly_schedule: array<string, array{opens_at: string, closes_at: string}>, is_active: bool, created_at: string|null, updated_at: string|null}|null, email_verified_at: string|null, created_at: string|null, updated_at: string|null}}, 201>
      */
     public function store(UserRequest $request, CreateUserAction $createUserAction): JsonResponse
     {
@@ -103,7 +105,7 @@ class UserController extends ApiController
      *
      * Returns a user when the authenticated user is allowed to view that role.
      *
-     * @return JsonResponse<array{success: bool, message: string, data: array{id: int, name: string, email: string, roles: array<int, string>}}, 200>
+     * @return JsonResponse<array{success: bool, message: string, data: array{id: int, name: string, email: string, preferred_locale: string, roles: array<int, string>, is_active: bool, phone: string|null, document_number: string|null, address: string|null, workshop_id: int|null, workshop: array{id: int, manager_user_id: int, name: string, code: string, address: string|null, city: string|null, phone: string|null, email: string|null, weekly_schedule: array<string, array{opens_at: string, closes_at: string}>, is_active: bool, created_at: string|null, updated_at: string|null}|null, email_verified_at: string|null, created_at: string|null, updated_at: string|null}}, 200>
      */
     public function show(Request $request, User $user): JsonResponse
     {
@@ -131,7 +133,7 @@ class UserController extends ApiController
      * @bodyParam address string|null Contact address. Example: 10 Main Street
      * @bodyParam workshop_id integer|null Workshop assigned to a technician. Send null to unassign. Example: 5
      *
-     * @return JsonResponse<array{success: bool, message: string, data: array{id: int, name: string, email: string, roles: array<int, string>}}, 200>
+     * @return JsonResponse<array{success: bool, message: string, data: array{id: int, name: string, email: string, preferred_locale: string, roles: array<int, string>, is_active: bool, phone: string|null, document_number: string|null, address: string|null, workshop_id: int|null, workshop: array{id: int, manager_user_id: int, name: string, code: string, address: string|null, city: string|null, phone: string|null, email: string|null, weekly_schedule: array<string, array{opens_at: string, closes_at: string}>, is_active: bool, created_at: string|null, updated_at: string|null}|null, email_verified_at: string|null, created_at: string|null, updated_at: string|null}}, 200>
      */
     public function update(UserRequest $request, User $user, UpdateUserAction $updateUserAction): JsonResponse
     {

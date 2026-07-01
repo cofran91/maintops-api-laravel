@@ -5,9 +5,12 @@ namespace App\Policies;
 use App\Enums\SystemRole;
 use App\Models\Owner;
 use App\Models\User;
+use App\Policies\Concerns\AuthorizesRoles;
 
 final class OwnerPolicy
 {
+    use AuthorizesRoles;
+
     public function viewAny(User $user): bool
     {
         return $this->canManageOwnerRecords($user);
@@ -30,17 +33,17 @@ final class OwnerPolicy
 
     public function export(User $user): bool
     {
-        return $user->is_active && $this->isSystemAdmin($user);
+        return $this->isActiveSystemAdmin($user);
     }
 
     public function import(User $user): bool
     {
-        return $user->is_active && $this->isSystemAdmin($user);
+        return $this->isActiveSystemAdmin($user);
     }
 
     public function delete(User $user, Owner $owner): bool
     {
-        return $user->is_active && $this->isSystemAdmin($user);
+        return $this->isActiveSystemAdmin($user);
     }
 
     /**
@@ -49,38 +52,11 @@ final class OwnerPolicy
      */
     private function canManageOwnerRecords(User $user): bool
     {
-        if (! $user->is_active) {
-            return false;
-        }
-
-        return $user->hasRole($this->roleValues([
+        return $this->hasActiveRole($user, [
             SystemRole::SuperAdmin,
             SystemRole::Admin,
             SystemRole::WorkshopManager,
             SystemRole::Advisor,
-        ]));
-    }
-
-    /**
-     * Destructive owner operations are limited to system administrators.
-     */
-    private function isSystemAdmin(User $user): bool
-    {
-        return $user->hasRole($this->roleValues([
-            SystemRole::SuperAdmin,
-            SystemRole::Admin,
-        ]));
-    }
-
-    /**
-     * @param  array<int, SystemRole>  $roles
-     * @return array<int, string>
-     */
-    private function roleValues(array $roles): array
-    {
-        return array_map(
-            static fn (SystemRole $role): string => $role->value,
-            $roles,
-        );
+        ]);
     }
 }

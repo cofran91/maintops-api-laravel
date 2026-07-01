@@ -2018,6 +2018,18 @@
                                                                             "string",
                                                                             "null"
                                                                         ]
+                                                                    },
+                                                                    "created_at": {
+                                                                        "type": [
+                                                                            "string",
+                                                                            "null"
+                                                                        ]
+                                                                    },
+                                                                    "updated_at": {
+                                                                        "type": [
+                                                                            "string",
+                                                                            "null"
+                                                                        ]
                                                                     }
                                                                 },
                                                                 "required": [
@@ -2027,7 +2039,9 @@
                                                                     "is_active",
                                                                     "phone",
                                                                     "document_number",
-                                                                    "address"
+                                                                    "address",
+                                                                    "created_at",
+                                                                    "updated_at"
                                                                 ]
                                                             },
                                                             "license_plate": {
@@ -2221,6 +2235,18 @@
                                                                 "string",
                                                                 "null"
                                                             ]
+                                                        },
+                                                        "created_at": {
+                                                            "type": [
+                                                                "string",
+                                                                "null"
+                                                            ]
+                                                        },
+                                                        "updated_at": {
+                                                            "type": [
+                                                                "string",
+                                                                "null"
+                                                            ]
                                                         }
                                                     },
                                                     "required": [
@@ -2230,7 +2256,9 @@
                                                         "is_active",
                                                         "phone",
                                                         "document_number",
-                                                        "address"
+                                                        "address",
+                                                        "created_at",
+                                                        "updated_at"
                                                     ]
                                                 },
                                                 "license_plate": {
@@ -2385,6 +2413,18 @@
                                                                 "string",
                                                                 "null"
                                                             ]
+                                                        },
+                                                        "created_at": {
+                                                            "type": [
+                                                                "string",
+                                                                "null"
+                                                            ]
+                                                        },
+                                                        "updated_at": {
+                                                            "type": [
+                                                                "string",
+                                                                "null"
+                                                            ]
                                                         }
                                                     },
                                                     "required": [
@@ -2394,7 +2434,9 @@
                                                         "is_active",
                                                         "phone",
                                                         "document_number",
-                                                        "address"
+                                                        "address",
+                                                        "created_at",
+                                                        "updated_at"
                                                     ]
                                                 },
                                                 "license_plate": {
@@ -2558,6 +2600,18 @@
                                                                 "string",
                                                                 "null"
                                                             ]
+                                                        },
+                                                        "created_at": {
+                                                            "type": [
+                                                                "string",
+                                                                "null"
+                                                            ]
+                                                        },
+                                                        "updated_at": {
+                                                            "type": [
+                                                                "string",
+                                                                "null"
+                                                            ]
                                                         }
                                                     },
                                                     "required": [
@@ -2567,7 +2621,9 @@
                                                         "is_active",
                                                         "phone",
                                                         "document_number",
-                                                        "address"
+                                                        "address",
+                                                        "created_at",
+                                                        "updated_at"
                                                     ]
                                                 },
                                                 "license_plate": {
@@ -3038,18 +3094,75 @@
                                                                     "email": {
                                                                         "type": "string"
                                                                     },
+                                                                    "preferred_locale": {
+                                                                        "type": "string"
+                                                                    },
                                                                     "roles": {
                                                                         "type": "array",
                                                                         "items": {
                                                                             "type": "string"
                                                                         }
+                                                                    },
+                                                                    "is_active": {
+                                                                        "type": "boolean"
+                                                                    },
+                                                                    "phone": {
+                                                                        "type": [
+                                                                            "string",
+                                                                            "null"
+                                                                        ]
+                                                                    },
+                                                                    "document_number": {
+                                                                        "type": [
+                                                                            "string",
+                                                                            "null"
+                                                                        ]
+                                                                    },
+                                                                    "address": {
+                                                                        "type": [
+                                                                            "string",
+                                                                            "null"
+                                                                        ]
+                                                                    },
+                                                                    "workshop_id": {
+                                                                        "type": [
+                                                                            "integer",
+                                                                            "null"
+                                                                        ]
+                                                                    },
+                                                                    "email_verified_at": {
+                                                                        "type": [
+                                                                            "string",
+                                                                            "null"
+                                                                        ]
+                                                                    },
+                                                                    "created_at": {
+                                                                        "type": [
+                                                                            "string",
+                                                                            "null"
+                                                                        ]
+                                                                    },
+                                                                    "updated_at": {
+                                                                        "type": [
+                                                                            "string",
+                                                                            "null"
+                                                                        ]
                                                                     }
                                                                 },
                                                                 "required": [
                                                                     "id",
                                                                     "name",
                                                                     "email",
-                                                                    "roles"
+                                                                    "preferred_locale",
+                                                                    "roles",
+                                                                    "is_active",
+                                                                    "phone",
+                                                                    "document_number",
+                                                                    "address",
+                                                                    "workshop_id",
+                                                                    "email_verified_at",
+                                                                    "created_at",
+                                                                    "updated_at"
                                                                 ]
                                                             },
                                                             "name": {
@@ -3162,15 +3275,57 @@
                                                                         "email": {
                                                                             "type": "string"
                                                                         },
+                                                                        "preferred_locale": {
+                                                                            "type": "string"
+                                                                        },
                                                                         "roles": {
                                                                             "type": "array",
                                                                             "items": {
                                                                                 "type": "string"
                                                                             }
                                                                         },
+                                                                        "is_active": {
+                                                                            "type": "boolean"
+                                                                        },
+                                                                        "phone": {
+                                                                            "type": [
+                                                                                "string",
+                                                                                "null"
+                                                                            ]
+                                                                        },
+                                                                        "document_number": {
+                                                                            "type": [
+                                                                                "string",
+                                                                                "null"
+                                                                            ]
+                                                                        },
+                                                                        "address": {
+                                                                            "type": [
+                                                                                "string",
+                                                                                "null"
+                                                                            ]
+                                                                        },
                                                                         "workshop_id": {
                                                                             "type": [
                                                                                 "integer",
+                                                                                "null"
+                                                                            ]
+                                                                        },
+                                                                        "email_verified_at": {
+                                                                            "type": [
+                                                                                "string",
+                                                                                "null"
+                                                                            ]
+                                                                        },
+                                                                        "created_at": {
+                                                                            "type": [
+                                                                                "string",
+                                                                                "null"
+                                                                            ]
+                                                                        },
+                                                                        "updated_at": {
+                                                                            "type": [
+                                                                                "string",
                                                                                 "null"
                                                                             ]
                                                                         }
@@ -3179,8 +3334,16 @@
                                                                         "id",
                                                                         "name",
                                                                         "email",
+                                                                        "preferred_locale",
                                                                         "roles",
-                                                                        "workshop_id"
+                                                                        "is_active",
+                                                                        "phone",
+                                                                        "document_number",
+                                                                        "address",
+                                                                        "workshop_id",
+                                                                        "email_verified_at",
+                                                                        "created_at",
+                                                                        "updated_at"
                                                                     ]
                                                                 }
                                                             },
@@ -3334,18 +3497,75 @@
                                                         "email": {
                                                             "type": "string"
                                                         },
+                                                        "preferred_locale": {
+                                                            "type": "string"
+                                                        },
                                                         "roles": {
                                                             "type": "array",
                                                             "items": {
                                                                 "type": "string"
                                                             }
+                                                        },
+                                                        "is_active": {
+                                                            "type": "boolean"
+                                                        },
+                                                        "phone": {
+                                                            "type": [
+                                                                "string",
+                                                                "null"
+                                                            ]
+                                                        },
+                                                        "document_number": {
+                                                            "type": [
+                                                                "string",
+                                                                "null"
+                                                            ]
+                                                        },
+                                                        "address": {
+                                                            "type": [
+                                                                "string",
+                                                                "null"
+                                                            ]
+                                                        },
+                                                        "workshop_id": {
+                                                            "type": [
+                                                                "integer",
+                                                                "null"
+                                                            ]
+                                                        },
+                                                        "email_verified_at": {
+                                                            "type": [
+                                                                "string",
+                                                                "null"
+                                                            ]
+                                                        },
+                                                        "created_at": {
+                                                            "type": [
+                                                                "string",
+                                                                "null"
+                                                            ]
+                                                        },
+                                                        "updated_at": {
+                                                            "type": [
+                                                                "string",
+                                                                "null"
+                                                            ]
                                                         }
                                                     },
                                                     "required": [
                                                         "id",
                                                         "name",
                                                         "email",
-                                                        "roles"
+                                                        "preferred_locale",
+                                                        "roles",
+                                                        "is_active",
+                                                        "phone",
+                                                        "document_number",
+                                                        "address",
+                                                        "workshop_id",
+                                                        "email_verified_at",
+                                                        "created_at",
+                                                        "updated_at"
                                                     ]
                                                 },
                                                 "name": {
@@ -3458,15 +3678,57 @@
                                                             "email": {
                                                                 "type": "string"
                                                             },
+                                                            "preferred_locale": {
+                                                                "type": "string"
+                                                            },
                                                             "roles": {
                                                                 "type": "array",
                                                                 "items": {
                                                                     "type": "string"
                                                                 }
                                                             },
+                                                            "is_active": {
+                                                                "type": "boolean"
+                                                            },
+                                                            "phone": {
+                                                                "type": [
+                                                                    "string",
+                                                                    "null"
+                                                                ]
+                                                            },
+                                                            "document_number": {
+                                                                "type": [
+                                                                    "string",
+                                                                    "null"
+                                                                ]
+                                                            },
+                                                            "address": {
+                                                                "type": [
+                                                                    "string",
+                                                                    "null"
+                                                                ]
+                                                            },
                                                             "workshop_id": {
                                                                 "type": [
                                                                     "integer",
+                                                                    "null"
+                                                                ]
+                                                            },
+                                                            "email_verified_at": {
+                                                                "type": [
+                                                                    "string",
+                                                                    "null"
+                                                                ]
+                                                            },
+                                                            "created_at": {
+                                                                "type": [
+                                                                    "string",
+                                                                    "null"
+                                                                ]
+                                                            },
+                                                            "updated_at": {
+                                                                "type": [
+                                                                    "string",
                                                                     "null"
                                                                 ]
                                                             }
@@ -3475,8 +3737,16 @@
                                                             "id",
                                                             "name",
                                                             "email",
+                                                            "preferred_locale",
                                                             "roles",
-                                                            "workshop_id"
+                                                            "is_active",
+                                                            "phone",
+                                                            "document_number",
+                                                            "address",
+                                                            "workshop_id",
+                                                            "email_verified_at",
+                                                            "created_at",
+                                                            "updated_at"
                                                         ]
                                                     }
                                                 },
@@ -3591,18 +3861,75 @@
                                                         "email": {
                                                             "type": "string"
                                                         },
+                                                        "preferred_locale": {
+                                                            "type": "string"
+                                                        },
                                                         "roles": {
                                                             "type": "array",
                                                             "items": {
                                                                 "type": "string"
                                                             }
+                                                        },
+                                                        "is_active": {
+                                                            "type": "boolean"
+                                                        },
+                                                        "phone": {
+                                                            "type": [
+                                                                "string",
+                                                                "null"
+                                                            ]
+                                                        },
+                                                        "document_number": {
+                                                            "type": [
+                                                                "string",
+                                                                "null"
+                                                            ]
+                                                        },
+                                                        "address": {
+                                                            "type": [
+                                                                "string",
+                                                                "null"
+                                                            ]
+                                                        },
+                                                        "workshop_id": {
+                                                            "type": [
+                                                                "integer",
+                                                                "null"
+                                                            ]
+                                                        },
+                                                        "email_verified_at": {
+                                                            "type": [
+                                                                "string",
+                                                                "null"
+                                                            ]
+                                                        },
+                                                        "created_at": {
+                                                            "type": [
+                                                                "string",
+                                                                "null"
+                                                            ]
+                                                        },
+                                                        "updated_at": {
+                                                            "type": [
+                                                                "string",
+                                                                "null"
+                                                            ]
                                                         }
                                                     },
                                                     "required": [
                                                         "id",
                                                         "name",
                                                         "email",
-                                                        "roles"
+                                                        "preferred_locale",
+                                                        "roles",
+                                                        "is_active",
+                                                        "phone",
+                                                        "document_number",
+                                                        "address",
+                                                        "workshop_id",
+                                                        "email_verified_at",
+                                                        "created_at",
+                                                        "updated_at"
                                                     ]
                                                 },
                                                 "name": {
@@ -3715,15 +4042,57 @@
                                                             "email": {
                                                                 "type": "string"
                                                             },
+                                                            "preferred_locale": {
+                                                                "type": "string"
+                                                            },
                                                             "roles": {
                                                                 "type": "array",
                                                                 "items": {
                                                                     "type": "string"
                                                                 }
                                                             },
+                                                            "is_active": {
+                                                                "type": "boolean"
+                                                            },
+                                                            "phone": {
+                                                                "type": [
+                                                                    "string",
+                                                                    "null"
+                                                                ]
+                                                            },
+                                                            "document_number": {
+                                                                "type": [
+                                                                    "string",
+                                                                    "null"
+                                                                ]
+                                                            },
+                                                            "address": {
+                                                                "type": [
+                                                                    "string",
+                                                                    "null"
+                                                                ]
+                                                            },
                                                             "workshop_id": {
                                                                 "type": [
                                                                     "integer",
+                                                                    "null"
+                                                                ]
+                                                            },
+                                                            "email_verified_at": {
+                                                                "type": [
+                                                                    "string",
+                                                                    "null"
+                                                                ]
+                                                            },
+                                                            "created_at": {
+                                                                "type": [
+                                                                    "string",
+                                                                    "null"
+                                                                ]
+                                                            },
+                                                            "updated_at": {
+                                                                "type": [
+                                                                    "string",
                                                                     "null"
                                                                 ]
                                                             }
@@ -3732,8 +4101,16 @@
                                                             "id",
                                                             "name",
                                                             "email",
+                                                            "preferred_locale",
                                                             "roles",
-                                                            "workshop_id"
+                                                            "is_active",
+                                                            "phone",
+                                                            "document_number",
+                                                            "address",
+                                                            "workshop_id",
+                                                            "email_verified_at",
+                                                            "created_at",
+                                                            "updated_at"
                                                         ]
                                                     }
                                                 },
@@ -3857,18 +4234,75 @@
                                                         "email": {
                                                             "type": "string"
                                                         },
+                                                        "preferred_locale": {
+                                                            "type": "string"
+                                                        },
                                                         "roles": {
                                                             "type": "array",
                                                             "items": {
                                                                 "type": "string"
                                                             }
+                                                        },
+                                                        "is_active": {
+                                                            "type": "boolean"
+                                                        },
+                                                        "phone": {
+                                                            "type": [
+                                                                "string",
+                                                                "null"
+                                                            ]
+                                                        },
+                                                        "document_number": {
+                                                            "type": [
+                                                                "string",
+                                                                "null"
+                                                            ]
+                                                        },
+                                                        "address": {
+                                                            "type": [
+                                                                "string",
+                                                                "null"
+                                                            ]
+                                                        },
+                                                        "workshop_id": {
+                                                            "type": [
+                                                                "integer",
+                                                                "null"
+                                                            ]
+                                                        },
+                                                        "email_verified_at": {
+                                                            "type": [
+                                                                "string",
+                                                                "null"
+                                                            ]
+                                                        },
+                                                        "created_at": {
+                                                            "type": [
+                                                                "string",
+                                                                "null"
+                                                            ]
+                                                        },
+                                                        "updated_at": {
+                                                            "type": [
+                                                                "string",
+                                                                "null"
+                                                            ]
                                                         }
                                                     },
                                                     "required": [
                                                         "id",
                                                         "name",
                                                         "email",
-                                                        "roles"
+                                                        "preferred_locale",
+                                                        "roles",
+                                                        "is_active",
+                                                        "phone",
+                                                        "document_number",
+                                                        "address",
+                                                        "workshop_id",
+                                                        "email_verified_at",
+                                                        "created_at",
+                                                        "updated_at"
                                                     ]
                                                 },
                                                 "name": {
@@ -3981,15 +4415,57 @@
                                                             "email": {
                                                                 "type": "string"
                                                             },
+                                                            "preferred_locale": {
+                                                                "type": "string"
+                                                            },
                                                             "roles": {
                                                                 "type": "array",
                                                                 "items": {
                                                                     "type": "string"
                                                                 }
                                                             },
+                                                            "is_active": {
+                                                                "type": "boolean"
+                                                            },
+                                                            "phone": {
+                                                                "type": [
+                                                                    "string",
+                                                                    "null"
+                                                                ]
+                                                            },
+                                                            "document_number": {
+                                                                "type": [
+                                                                    "string",
+                                                                    "null"
+                                                                ]
+                                                            },
+                                                            "address": {
+                                                                "type": [
+                                                                    "string",
+                                                                    "null"
+                                                                ]
+                                                            },
                                                             "workshop_id": {
                                                                 "type": [
                                                                     "integer",
+                                                                    "null"
+                                                                ]
+                                                            },
+                                                            "email_verified_at": {
+                                                                "type": [
+                                                                    "string",
+                                                                    "null"
+                                                                ]
+                                                            },
+                                                            "created_at": {
+                                                                "type": [
+                                                                    "string",
+                                                                    "null"
+                                                                ]
+                                                            },
+                                                            "updated_at": {
+                                                                "type": [
+                                                                    "string",
                                                                     "null"
                                                                 ]
                                                             }
@@ -3998,8 +4474,16 @@
                                                             "id",
                                                             "name",
                                                             "email",
+                                                            "preferred_locale",
                                                             "roles",
-                                                            "workshop_id"
+                                                            "is_active",
+                                                            "phone",
+                                                            "document_number",
+                                                            "address",
+                                                            "workshop_id",
+                                                            "email_verified_at",
+                                                            "created_at",
+                                                            "updated_at"
                                                         ]
                                                     }
                                                 },
@@ -4514,6 +4998,18 @@
                                                                     },
                                                                     "odometer_km": {
                                                                         "type": "integer"
+                                                                    },
+                                                                    "created_at": {
+                                                                        "type": [
+                                                                            "string",
+                                                                            "null"
+                                                                        ]
+                                                                    },
+                                                                    "updated_at": {
+                                                                        "type": [
+                                                                            "string",
+                                                                            "null"
+                                                                        ]
                                                                     }
                                                                 },
                                                                 "required": [
@@ -4524,7 +5020,9 @@
                                                                     "model",
                                                                     "year",
                                                                     "color",
-                                                                    "odometer_km"
+                                                                    "odometer_km",
+                                                                    "created_at",
+                                                                    "updated_at"
                                                                 ]
                                                             },
                                                             "vehicle_system_id": {
@@ -4541,12 +5039,26 @@
                                                                     },
                                                                     "name": {
                                                                         "type": "string"
+                                                                    },
+                                                                    "created_at": {
+                                                                        "type": [
+                                                                            "string",
+                                                                            "null"
+                                                                        ]
+                                                                    },
+                                                                    "updated_at": {
+                                                                        "type": [
+                                                                            "string",
+                                                                            "null"
+                                                                        ]
                                                                     }
                                                                 },
                                                                 "required": [
                                                                     "id",
                                                                     "code",
-                                                                    "name"
+                                                                    "name",
+                                                                    "created_at",
+                                                                    "updated_at"
                                                                 ]
                                                             },
                                                             "name": {
@@ -4704,14 +5216,121 @@
                                                         "null"
                                                     ]
                                                 },
+                                                "vehicle": {
+                                                    "type": [
+                                                        "object",
+                                                        "null"
+                                                    ],
+                                                    "properties": {
+                                                        "id": {
+                                                            "type": "integer"
+                                                        },
+                                                        "owner_id": {
+                                                            "type": "integer"
+                                                        },
+                                                        "license_plate": {
+                                                            "type": "string"
+                                                        },
+                                                        "brand": {
+                                                            "type": [
+                                                                "string",
+                                                                "null"
+                                                            ]
+                                                        },
+                                                        "model": {
+                                                            "type": [
+                                                                "string",
+                                                                "null"
+                                                            ]
+                                                        },
+                                                        "year": {
+                                                            "type": [
+                                                                "integer",
+                                                                "null"
+                                                            ]
+                                                        },
+                                                        "color": {
+                                                            "type": [
+                                                                "string",
+                                                                "null"
+                                                            ]
+                                                        },
+                                                        "odometer_km": {
+                                                            "type": "integer"
+                                                        },
+                                                        "created_at": {
+                                                            "type": [
+                                                                "string",
+                                                                "null"
+                                                            ]
+                                                        },
+                                                        "updated_at": {
+                                                            "type": [
+                                                                "string",
+                                                                "null"
+                                                            ]
+                                                        }
+                                                    },
+                                                    "required": [
+                                                        "id",
+                                                        "owner_id",
+                                                        "license_plate",
+                                                        "brand",
+                                                        "model",
+                                                        "year",
+                                                        "color",
+                                                        "odometer_km",
+                                                        "created_at",
+                                                        "updated_at"
+                                                    ]
+                                                },
                                                 "vehicle_system_id": {
                                                     "type": "integer"
+                                                },
+                                                "vehicle_system": {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "id": {
+                                                            "type": "integer"
+                                                        },
+                                                        "code": {
+                                                            "type": "string"
+                                                        },
+                                                        "name": {
+                                                            "type": "string"
+                                                        },
+                                                        "created_at": {
+                                                            "type": [
+                                                                "string",
+                                                                "null"
+                                                            ]
+                                                        },
+                                                        "updated_at": {
+                                                            "type": [
+                                                                "string",
+                                                                "null"
+                                                            ]
+                                                        }
+                                                    },
+                                                    "required": [
+                                                        "id",
+                                                        "code",
+                                                        "name",
+                                                        "created_at",
+                                                        "updated_at"
+                                                    ]
                                                 },
                                                 "name": {
                                                     "type": "string"
                                                 },
                                                 "code": {
                                                     "type": "string"
+                                                },
+                                                "description": {
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
                                                 },
                                                 "estimated_duration_minutes": {
                                                     "type": "integer"
@@ -4721,17 +5340,34 @@
                                                 },
                                                 "is_active": {
                                                     "type": "boolean"
+                                                },
+                                                "created_at": {
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
+                                                },
+                                                "updated_at": {
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
                                                 }
                                             },
                                             "required": [
                                                 "id",
                                                 "vehicle_id",
+                                                "vehicle",
                                                 "vehicle_system_id",
+                                                "vehicle_system",
                                                 "name",
                                                 "code",
+                                                "description",
                                                 "estimated_duration_minutes",
                                                 "status",
-                                                "is_active"
+                                                "is_active",
+                                                "created_at",
+                                                "updated_at"
                                             ]
                                         }
                                     },
@@ -4800,14 +5436,121 @@
                                                         "null"
                                                     ]
                                                 },
+                                                "vehicle": {
+                                                    "type": [
+                                                        "object",
+                                                        "null"
+                                                    ],
+                                                    "properties": {
+                                                        "id": {
+                                                            "type": "integer"
+                                                        },
+                                                        "owner_id": {
+                                                            "type": "integer"
+                                                        },
+                                                        "license_plate": {
+                                                            "type": "string"
+                                                        },
+                                                        "brand": {
+                                                            "type": [
+                                                                "string",
+                                                                "null"
+                                                            ]
+                                                        },
+                                                        "model": {
+                                                            "type": [
+                                                                "string",
+                                                                "null"
+                                                            ]
+                                                        },
+                                                        "year": {
+                                                            "type": [
+                                                                "integer",
+                                                                "null"
+                                                            ]
+                                                        },
+                                                        "color": {
+                                                            "type": [
+                                                                "string",
+                                                                "null"
+                                                            ]
+                                                        },
+                                                        "odometer_km": {
+                                                            "type": "integer"
+                                                        },
+                                                        "created_at": {
+                                                            "type": [
+                                                                "string",
+                                                                "null"
+                                                            ]
+                                                        },
+                                                        "updated_at": {
+                                                            "type": [
+                                                                "string",
+                                                                "null"
+                                                            ]
+                                                        }
+                                                    },
+                                                    "required": [
+                                                        "id",
+                                                        "owner_id",
+                                                        "license_plate",
+                                                        "brand",
+                                                        "model",
+                                                        "year",
+                                                        "color",
+                                                        "odometer_km",
+                                                        "created_at",
+                                                        "updated_at"
+                                                    ]
+                                                },
                                                 "vehicle_system_id": {
                                                     "type": "integer"
+                                                },
+                                                "vehicle_system": {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "id": {
+                                                            "type": "integer"
+                                                        },
+                                                        "code": {
+                                                            "type": "string"
+                                                        },
+                                                        "name": {
+                                                            "type": "string"
+                                                        },
+                                                        "created_at": {
+                                                            "type": [
+                                                                "string",
+                                                                "null"
+                                                            ]
+                                                        },
+                                                        "updated_at": {
+                                                            "type": [
+                                                                "string",
+                                                                "null"
+                                                            ]
+                                                        }
+                                                    },
+                                                    "required": [
+                                                        "id",
+                                                        "code",
+                                                        "name",
+                                                        "created_at",
+                                                        "updated_at"
+                                                    ]
                                                 },
                                                 "name": {
                                                     "type": "string"
                                                 },
                                                 "code": {
                                                     "type": "string"
+                                                },
+                                                "description": {
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
                                                 },
                                                 "estimated_duration_minutes": {
                                                     "type": "integer"
@@ -4817,17 +5560,34 @@
                                                 },
                                                 "is_active": {
                                                     "type": "boolean"
+                                                },
+                                                "created_at": {
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
+                                                },
+                                                "updated_at": {
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
                                                 }
                                             },
                                             "required": [
                                                 "id",
                                                 "vehicle_id",
+                                                "vehicle",
                                                 "vehicle_system_id",
+                                                "vehicle_system",
                                                 "name",
                                                 "code",
+                                                "description",
                                                 "estimated_duration_minutes",
                                                 "status",
-                                                "is_active"
+                                                "is_active",
+                                                "created_at",
+                                                "updated_at"
                                             ]
                                         }
                                     },
@@ -4905,14 +5665,121 @@
                                                         "null"
                                                     ]
                                                 },
+                                                "vehicle": {
+                                                    "type": [
+                                                        "object",
+                                                        "null"
+                                                    ],
+                                                    "properties": {
+                                                        "id": {
+                                                            "type": "integer"
+                                                        },
+                                                        "owner_id": {
+                                                            "type": "integer"
+                                                        },
+                                                        "license_plate": {
+                                                            "type": "string"
+                                                        },
+                                                        "brand": {
+                                                            "type": [
+                                                                "string",
+                                                                "null"
+                                                            ]
+                                                        },
+                                                        "model": {
+                                                            "type": [
+                                                                "string",
+                                                                "null"
+                                                            ]
+                                                        },
+                                                        "year": {
+                                                            "type": [
+                                                                "integer",
+                                                                "null"
+                                                            ]
+                                                        },
+                                                        "color": {
+                                                            "type": [
+                                                                "string",
+                                                                "null"
+                                                            ]
+                                                        },
+                                                        "odometer_km": {
+                                                            "type": "integer"
+                                                        },
+                                                        "created_at": {
+                                                            "type": [
+                                                                "string",
+                                                                "null"
+                                                            ]
+                                                        },
+                                                        "updated_at": {
+                                                            "type": [
+                                                                "string",
+                                                                "null"
+                                                            ]
+                                                        }
+                                                    },
+                                                    "required": [
+                                                        "id",
+                                                        "owner_id",
+                                                        "license_plate",
+                                                        "brand",
+                                                        "model",
+                                                        "year",
+                                                        "color",
+                                                        "odometer_km",
+                                                        "created_at",
+                                                        "updated_at"
+                                                    ]
+                                                },
                                                 "vehicle_system_id": {
                                                     "type": "integer"
+                                                },
+                                                "vehicle_system": {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "id": {
+                                                            "type": "integer"
+                                                        },
+                                                        "code": {
+                                                            "type": "string"
+                                                        },
+                                                        "name": {
+                                                            "type": "string"
+                                                        },
+                                                        "created_at": {
+                                                            "type": [
+                                                                "string",
+                                                                "null"
+                                                            ]
+                                                        },
+                                                        "updated_at": {
+                                                            "type": [
+                                                                "string",
+                                                                "null"
+                                                            ]
+                                                        }
+                                                    },
+                                                    "required": [
+                                                        "id",
+                                                        "code",
+                                                        "name",
+                                                        "created_at",
+                                                        "updated_at"
+                                                    ]
                                                 },
                                                 "name": {
                                                     "type": "string"
                                                 },
                                                 "code": {
                                                     "type": "string"
+                                                },
+                                                "description": {
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
                                                 },
                                                 "estimated_duration_minutes": {
                                                     "type": "integer"
@@ -4922,17 +5789,34 @@
                                                 },
                                                 "is_active": {
                                                     "type": "boolean"
+                                                },
+                                                "created_at": {
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
+                                                },
+                                                "updated_at": {
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
                                                 }
                                             },
                                             "required": [
                                                 "id",
                                                 "vehicle_id",
+                                                "vehicle",
                                                 "vehicle_system_id",
+                                                "vehicle_system",
                                                 "name",
                                                 "code",
+                                                "description",
                                                 "estimated_duration_minutes",
                                                 "status",
-                                                "is_active"
+                                                "is_active",
+                                                "created_at",
+                                                "updated_at"
                                             ]
                                         }
                                     },
@@ -5219,14 +6103,121 @@
                                                                                 "null"
                                                                             ]
                                                                         },
+                                                                        "vehicle": {
+                                                                            "type": [
+                                                                                "object",
+                                                                                "null"
+                                                                            ],
+                                                                            "properties": {
+                                                                                "id": {
+                                                                                    "type": "integer"
+                                                                                },
+                                                                                "owner_id": {
+                                                                                    "type": "integer"
+                                                                                },
+                                                                                "license_plate": {
+                                                                                    "type": "string"
+                                                                                },
+                                                                                "brand": {
+                                                                                    "type": [
+                                                                                        "string",
+                                                                                        "null"
+                                                                                    ]
+                                                                                },
+                                                                                "model": {
+                                                                                    "type": [
+                                                                                        "string",
+                                                                                        "null"
+                                                                                    ]
+                                                                                },
+                                                                                "year": {
+                                                                                    "type": [
+                                                                                        "integer",
+                                                                                        "null"
+                                                                                    ]
+                                                                                },
+                                                                                "color": {
+                                                                                    "type": [
+                                                                                        "string",
+                                                                                        "null"
+                                                                                    ]
+                                                                                },
+                                                                                "odometer_km": {
+                                                                                    "type": "integer"
+                                                                                },
+                                                                                "created_at": {
+                                                                                    "type": [
+                                                                                        "string",
+                                                                                        "null"
+                                                                                    ]
+                                                                                },
+                                                                                "updated_at": {
+                                                                                    "type": [
+                                                                                        "string",
+                                                                                        "null"
+                                                                                    ]
+                                                                                }
+                                                                            },
+                                                                            "required": [
+                                                                                "id",
+                                                                                "owner_id",
+                                                                                "license_plate",
+                                                                                "brand",
+                                                                                "model",
+                                                                                "year",
+                                                                                "color",
+                                                                                "odometer_km",
+                                                                                "created_at",
+                                                                                "updated_at"
+                                                                            ]
+                                                                        },
                                                                         "vehicle_system_id": {
                                                                             "type": "integer"
+                                                                        },
+                                                                        "vehicle_system": {
+                                                                            "type": "object",
+                                                                            "properties": {
+                                                                                "id": {
+                                                                                    "type": "integer"
+                                                                                },
+                                                                                "code": {
+                                                                                    "type": "string"
+                                                                                },
+                                                                                "name": {
+                                                                                    "type": "string"
+                                                                                },
+                                                                                "created_at": {
+                                                                                    "type": [
+                                                                                        "string",
+                                                                                        "null"
+                                                                                    ]
+                                                                                },
+                                                                                "updated_at": {
+                                                                                    "type": [
+                                                                                        "string",
+                                                                                        "null"
+                                                                                    ]
+                                                                                }
+                                                                            },
+                                                                            "required": [
+                                                                                "id",
+                                                                                "code",
+                                                                                "name",
+                                                                                "created_at",
+                                                                                "updated_at"
+                                                                            ]
                                                                         },
                                                                         "name": {
                                                                             "type": "string"
                                                                         },
                                                                         "code": {
                                                                             "type": "string"
+                                                                        },
+                                                                        "description": {
+                                                                            "type": [
+                                                                                "string",
+                                                                                "null"
+                                                                            ]
                                                                         },
                                                                         "estimated_duration_minutes": {
                                                                             "type": "integer"
@@ -5236,17 +6227,34 @@
                                                                         },
                                                                         "is_active": {
                                                                             "type": "boolean"
+                                                                        },
+                                                                        "created_at": {
+                                                                            "type": [
+                                                                                "string",
+                                                                                "null"
+                                                                            ]
+                                                                        },
+                                                                        "updated_at": {
+                                                                            "type": [
+                                                                                "string",
+                                                                                "null"
+                                                                            ]
                                                                         }
                                                                     },
                                                                     "required": [
                                                                         "id",
                                                                         "vehicle_id",
+                                                                        "vehicle",
                                                                         "vehicle_system_id",
+                                                                        "vehicle_system",
                                                                         "name",
                                                                         "code",
+                                                                        "description",
                                                                         "estimated_duration_minutes",
                                                                         "status",
-                                                                        "is_active"
+                                                                        "is_active",
+                                                                        "created_at",
+                                                                        "updated_at"
                                                                     ]
                                                                 }
                                                             },
@@ -5385,6 +6393,12 @@
                                                 "name": {
                                                     "type": "string"
                                                 },
+                                                "description": {
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
+                                                },
                                                 "recommended_interval_days": {
                                                     "type": [
                                                         "integer",
@@ -5403,18 +6417,203 @@
                                                         "type": "integer"
                                                     }
                                                 },
+                                                "tasks": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "object",
+                                                        "properties": {
+                                                            "id": {
+                                                                "type": "integer"
+                                                            },
+                                                            "vehicle_id": {
+                                                                "type": [
+                                                                    "integer",
+                                                                    "null"
+                                                                ]
+                                                            },
+                                                            "vehicle": {
+                                                                "type": [
+                                                                    "object",
+                                                                    "null"
+                                                                ],
+                                                                "properties": {
+                                                                    "id": {
+                                                                        "type": "integer"
+                                                                    },
+                                                                    "owner_id": {
+                                                                        "type": "integer"
+                                                                    },
+                                                                    "license_plate": {
+                                                                        "type": "string"
+                                                                    },
+                                                                    "brand": {
+                                                                        "type": [
+                                                                            "string",
+                                                                            "null"
+                                                                        ]
+                                                                    },
+                                                                    "model": {
+                                                                        "type": [
+                                                                            "string",
+                                                                            "null"
+                                                                        ]
+                                                                    },
+                                                                    "year": {
+                                                                        "type": [
+                                                                            "integer",
+                                                                            "null"
+                                                                        ]
+                                                                    },
+                                                                    "color": {
+                                                                        "type": [
+                                                                            "string",
+                                                                            "null"
+                                                                        ]
+                                                                    },
+                                                                    "odometer_km": {
+                                                                        "type": "integer"
+                                                                    },
+                                                                    "created_at": {
+                                                                        "type": [
+                                                                            "string",
+                                                                            "null"
+                                                                        ]
+                                                                    },
+                                                                    "updated_at": {
+                                                                        "type": [
+                                                                            "string",
+                                                                            "null"
+                                                                        ]
+                                                                    }
+                                                                },
+                                                                "required": [
+                                                                    "id",
+                                                                    "owner_id",
+                                                                    "license_plate",
+                                                                    "brand",
+                                                                    "model",
+                                                                    "year",
+                                                                    "color",
+                                                                    "odometer_km",
+                                                                    "created_at",
+                                                                    "updated_at"
+                                                                ]
+                                                            },
+                                                            "vehicle_system_id": {
+                                                                "type": "integer"
+                                                            },
+                                                            "vehicle_system": {
+                                                                "type": "object",
+                                                                "properties": {
+                                                                    "id": {
+                                                                        "type": "integer"
+                                                                    },
+                                                                    "code": {
+                                                                        "type": "string"
+                                                                    },
+                                                                    "name": {
+                                                                        "type": "string"
+                                                                    },
+                                                                    "created_at": {
+                                                                        "type": [
+                                                                            "string",
+                                                                            "null"
+                                                                        ]
+                                                                    },
+                                                                    "updated_at": {
+                                                                        "type": [
+                                                                            "string",
+                                                                            "null"
+                                                                        ]
+                                                                    }
+                                                                },
+                                                                "required": [
+                                                                    "id",
+                                                                    "code",
+                                                                    "name",
+                                                                    "created_at",
+                                                                    "updated_at"
+                                                                ]
+                                                            },
+                                                            "name": {
+                                                                "type": "string"
+                                                            },
+                                                            "code": {
+                                                                "type": "string"
+                                                            },
+                                                            "description": {
+                                                                "type": [
+                                                                    "string",
+                                                                    "null"
+                                                                ]
+                                                            },
+                                                            "estimated_duration_minutes": {
+                                                                "type": "integer"
+                                                            },
+                                                            "status": {
+                                                                "type": "string"
+                                                            },
+                                                            "is_active": {
+                                                                "type": "boolean"
+                                                            },
+                                                            "created_at": {
+                                                                "type": [
+                                                                    "string",
+                                                                    "null"
+                                                                ]
+                                                            },
+                                                            "updated_at": {
+                                                                "type": [
+                                                                    "string",
+                                                                    "null"
+                                                                ]
+                                                            }
+                                                        },
+                                                        "required": [
+                                                            "id",
+                                                            "vehicle_id",
+                                                            "vehicle",
+                                                            "vehicle_system_id",
+                                                            "vehicle_system",
+                                                            "name",
+                                                            "code",
+                                                            "description",
+                                                            "estimated_duration_minutes",
+                                                            "status",
+                                                            "is_active",
+                                                            "created_at",
+                                                            "updated_at"
+                                                        ]
+                                                    }
+                                                },
                                                 "is_active": {
                                                     "type": "boolean"
+                                                },
+                                                "created_at": {
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
+                                                },
+                                                "updated_at": {
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
                                                 }
                                             },
                                             "required": [
                                                 "id",
                                                 "code",
                                                 "name",
+                                                "description",
                                                 "recommended_interval_days",
                                                 "recommended_interval_km",
                                                 "task_ids",
-                                                "is_active"
+                                                "tasks",
+                                                "is_active",
+                                                "created_at",
+                                                "updated_at"
                                             ]
                                         }
                                     },
@@ -5483,6 +6682,12 @@
                                                 "name": {
                                                     "type": "string"
                                                 },
+                                                "description": {
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
+                                                },
                                                 "recommended_interval_days": {
                                                     "type": [
                                                         "integer",
@@ -5501,18 +6706,203 @@
                                                         "type": "integer"
                                                     }
                                                 },
+                                                "tasks": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "object",
+                                                        "properties": {
+                                                            "id": {
+                                                                "type": "integer"
+                                                            },
+                                                            "vehicle_id": {
+                                                                "type": [
+                                                                    "integer",
+                                                                    "null"
+                                                                ]
+                                                            },
+                                                            "vehicle": {
+                                                                "type": [
+                                                                    "object",
+                                                                    "null"
+                                                                ],
+                                                                "properties": {
+                                                                    "id": {
+                                                                        "type": "integer"
+                                                                    },
+                                                                    "owner_id": {
+                                                                        "type": "integer"
+                                                                    },
+                                                                    "license_plate": {
+                                                                        "type": "string"
+                                                                    },
+                                                                    "brand": {
+                                                                        "type": [
+                                                                            "string",
+                                                                            "null"
+                                                                        ]
+                                                                    },
+                                                                    "model": {
+                                                                        "type": [
+                                                                            "string",
+                                                                            "null"
+                                                                        ]
+                                                                    },
+                                                                    "year": {
+                                                                        "type": [
+                                                                            "integer",
+                                                                            "null"
+                                                                        ]
+                                                                    },
+                                                                    "color": {
+                                                                        "type": [
+                                                                            "string",
+                                                                            "null"
+                                                                        ]
+                                                                    },
+                                                                    "odometer_km": {
+                                                                        "type": "integer"
+                                                                    },
+                                                                    "created_at": {
+                                                                        "type": [
+                                                                            "string",
+                                                                            "null"
+                                                                        ]
+                                                                    },
+                                                                    "updated_at": {
+                                                                        "type": [
+                                                                            "string",
+                                                                            "null"
+                                                                        ]
+                                                                    }
+                                                                },
+                                                                "required": [
+                                                                    "id",
+                                                                    "owner_id",
+                                                                    "license_plate",
+                                                                    "brand",
+                                                                    "model",
+                                                                    "year",
+                                                                    "color",
+                                                                    "odometer_km",
+                                                                    "created_at",
+                                                                    "updated_at"
+                                                                ]
+                                                            },
+                                                            "vehicle_system_id": {
+                                                                "type": "integer"
+                                                            },
+                                                            "vehicle_system": {
+                                                                "type": "object",
+                                                                "properties": {
+                                                                    "id": {
+                                                                        "type": "integer"
+                                                                    },
+                                                                    "code": {
+                                                                        "type": "string"
+                                                                    },
+                                                                    "name": {
+                                                                        "type": "string"
+                                                                    },
+                                                                    "created_at": {
+                                                                        "type": [
+                                                                            "string",
+                                                                            "null"
+                                                                        ]
+                                                                    },
+                                                                    "updated_at": {
+                                                                        "type": [
+                                                                            "string",
+                                                                            "null"
+                                                                        ]
+                                                                    }
+                                                                },
+                                                                "required": [
+                                                                    "id",
+                                                                    "code",
+                                                                    "name",
+                                                                    "created_at",
+                                                                    "updated_at"
+                                                                ]
+                                                            },
+                                                            "name": {
+                                                                "type": "string"
+                                                            },
+                                                            "code": {
+                                                                "type": "string"
+                                                            },
+                                                            "description": {
+                                                                "type": [
+                                                                    "string",
+                                                                    "null"
+                                                                ]
+                                                            },
+                                                            "estimated_duration_minutes": {
+                                                                "type": "integer"
+                                                            },
+                                                            "status": {
+                                                                "type": "string"
+                                                            },
+                                                            "is_active": {
+                                                                "type": "boolean"
+                                                            },
+                                                            "created_at": {
+                                                                "type": [
+                                                                    "string",
+                                                                    "null"
+                                                                ]
+                                                            },
+                                                            "updated_at": {
+                                                                "type": [
+                                                                    "string",
+                                                                    "null"
+                                                                ]
+                                                            }
+                                                        },
+                                                        "required": [
+                                                            "id",
+                                                            "vehicle_id",
+                                                            "vehicle",
+                                                            "vehicle_system_id",
+                                                            "vehicle_system",
+                                                            "name",
+                                                            "code",
+                                                            "description",
+                                                            "estimated_duration_minutes",
+                                                            "status",
+                                                            "is_active",
+                                                            "created_at",
+                                                            "updated_at"
+                                                        ]
+                                                    }
+                                                },
                                                 "is_active": {
                                                     "type": "boolean"
+                                                },
+                                                "created_at": {
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
+                                                },
+                                                "updated_at": {
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
                                                 }
                                             },
                                             "required": [
                                                 "id",
                                                 "code",
                                                 "name",
+                                                "description",
                                                 "recommended_interval_days",
                                                 "recommended_interval_km",
                                                 "task_ids",
-                                                "is_active"
+                                                "tasks",
+                                                "is_active",
+                                                "created_at",
+                                                "updated_at"
                                             ]
                                         }
                                     },
@@ -5590,6 +6980,12 @@
                                                 "name": {
                                                     "type": "string"
                                                 },
+                                                "description": {
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
+                                                },
                                                 "recommended_interval_days": {
                                                     "type": [
                                                         "integer",
@@ -5608,18 +7004,203 @@
                                                         "type": "integer"
                                                     }
                                                 },
+                                                "tasks": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "object",
+                                                        "properties": {
+                                                            "id": {
+                                                                "type": "integer"
+                                                            },
+                                                            "vehicle_id": {
+                                                                "type": [
+                                                                    "integer",
+                                                                    "null"
+                                                                ]
+                                                            },
+                                                            "vehicle": {
+                                                                "type": [
+                                                                    "object",
+                                                                    "null"
+                                                                ],
+                                                                "properties": {
+                                                                    "id": {
+                                                                        "type": "integer"
+                                                                    },
+                                                                    "owner_id": {
+                                                                        "type": "integer"
+                                                                    },
+                                                                    "license_plate": {
+                                                                        "type": "string"
+                                                                    },
+                                                                    "brand": {
+                                                                        "type": [
+                                                                            "string",
+                                                                            "null"
+                                                                        ]
+                                                                    },
+                                                                    "model": {
+                                                                        "type": [
+                                                                            "string",
+                                                                            "null"
+                                                                        ]
+                                                                    },
+                                                                    "year": {
+                                                                        "type": [
+                                                                            "integer",
+                                                                            "null"
+                                                                        ]
+                                                                    },
+                                                                    "color": {
+                                                                        "type": [
+                                                                            "string",
+                                                                            "null"
+                                                                        ]
+                                                                    },
+                                                                    "odometer_km": {
+                                                                        "type": "integer"
+                                                                    },
+                                                                    "created_at": {
+                                                                        "type": [
+                                                                            "string",
+                                                                            "null"
+                                                                        ]
+                                                                    },
+                                                                    "updated_at": {
+                                                                        "type": [
+                                                                            "string",
+                                                                            "null"
+                                                                        ]
+                                                                    }
+                                                                },
+                                                                "required": [
+                                                                    "id",
+                                                                    "owner_id",
+                                                                    "license_plate",
+                                                                    "brand",
+                                                                    "model",
+                                                                    "year",
+                                                                    "color",
+                                                                    "odometer_km",
+                                                                    "created_at",
+                                                                    "updated_at"
+                                                                ]
+                                                            },
+                                                            "vehicle_system_id": {
+                                                                "type": "integer"
+                                                            },
+                                                            "vehicle_system": {
+                                                                "type": "object",
+                                                                "properties": {
+                                                                    "id": {
+                                                                        "type": "integer"
+                                                                    },
+                                                                    "code": {
+                                                                        "type": "string"
+                                                                    },
+                                                                    "name": {
+                                                                        "type": "string"
+                                                                    },
+                                                                    "created_at": {
+                                                                        "type": [
+                                                                            "string",
+                                                                            "null"
+                                                                        ]
+                                                                    },
+                                                                    "updated_at": {
+                                                                        "type": [
+                                                                            "string",
+                                                                            "null"
+                                                                        ]
+                                                                    }
+                                                                },
+                                                                "required": [
+                                                                    "id",
+                                                                    "code",
+                                                                    "name",
+                                                                    "created_at",
+                                                                    "updated_at"
+                                                                ]
+                                                            },
+                                                            "name": {
+                                                                "type": "string"
+                                                            },
+                                                            "code": {
+                                                                "type": "string"
+                                                            },
+                                                            "description": {
+                                                                "type": [
+                                                                    "string",
+                                                                    "null"
+                                                                ]
+                                                            },
+                                                            "estimated_duration_minutes": {
+                                                                "type": "integer"
+                                                            },
+                                                            "status": {
+                                                                "type": "string"
+                                                            },
+                                                            "is_active": {
+                                                                "type": "boolean"
+                                                            },
+                                                            "created_at": {
+                                                                "type": [
+                                                                    "string",
+                                                                    "null"
+                                                                ]
+                                                            },
+                                                            "updated_at": {
+                                                                "type": [
+                                                                    "string",
+                                                                    "null"
+                                                                ]
+                                                            }
+                                                        },
+                                                        "required": [
+                                                            "id",
+                                                            "vehicle_id",
+                                                            "vehicle",
+                                                            "vehicle_system_id",
+                                                            "vehicle_system",
+                                                            "name",
+                                                            "code",
+                                                            "description",
+                                                            "estimated_duration_minutes",
+                                                            "status",
+                                                            "is_active",
+                                                            "created_at",
+                                                            "updated_at"
+                                                        ]
+                                                    }
+                                                },
                                                 "is_active": {
                                                     "type": "boolean"
+                                                },
+                                                "created_at": {
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
+                                                },
+                                                "updated_at": {
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
                                                 }
                                             },
                                             "required": [
                                                 "id",
                                                 "code",
                                                 "name",
+                                                "description",
                                                 "recommended_interval_days",
                                                 "recommended_interval_km",
                                                 "task_ids",
-                                                "is_active"
+                                                "tasks",
+                                                "is_active",
+                                                "created_at",
+                                                "updated_at"
                                             ]
                                         }
                                     },
@@ -6619,6 +8200,9 @@
                                                             "email": {
                                                                 "type": "string"
                                                             },
+                                                            "preferred_locale": {
+                                                                "type": "string"
+                                                            },
                                                             "roles": {
                                                                 "type": "array",
                                                                 "items": {
@@ -6652,6 +8236,97 @@
                                                                     "null"
                                                                 ]
                                                             },
+                                                            "workshop": {
+                                                                "type": [
+                                                                    "object",
+                                                                    "null"
+                                                                ],
+                                                                "properties": {
+                                                                    "id": {
+                                                                        "type": "integer"
+                                                                    },
+                                                                    "manager_user_id": {
+                                                                        "type": "integer"
+                                                                    },
+                                                                    "name": {
+                                                                        "type": "string"
+                                                                    },
+                                                                    "code": {
+                                                                        "type": "string"
+                                                                    },
+                                                                    "address": {
+                                                                        "type": [
+                                                                            "string",
+                                                                            "null"
+                                                                        ]
+                                                                    },
+                                                                    "city": {
+                                                                        "type": [
+                                                                            "string",
+                                                                            "null"
+                                                                        ]
+                                                                    },
+                                                                    "phone": {
+                                                                        "type": [
+                                                                            "string",
+                                                                            "null"
+                                                                        ]
+                                                                    },
+                                                                    "email": {
+                                                                        "type": [
+                                                                            "string",
+                                                                            "null"
+                                                                        ]
+                                                                    },
+                                                                    "weekly_schedule": {
+                                                                        "type": "object",
+                                                                        "additionalProperties": {
+                                                                            "type": "object",
+                                                                            "properties": {
+                                                                                "opens_at": {
+                                                                                    "type": "string"
+                                                                                },
+                                                                                "closes_at": {
+                                                                                    "type": "string"
+                                                                                }
+                                                                            },
+                                                                            "required": [
+                                                                                "opens_at",
+                                                                                "closes_at"
+                                                                            ]
+                                                                        }
+                                                                    },
+                                                                    "is_active": {
+                                                                        "type": "boolean"
+                                                                    },
+                                                                    "created_at": {
+                                                                        "type": [
+                                                                            "string",
+                                                                            "null"
+                                                                        ]
+                                                                    },
+                                                                    "updated_at": {
+                                                                        "type": [
+                                                                            "string",
+                                                                            "null"
+                                                                        ]
+                                                                    }
+                                                                },
+                                                                "required": [
+                                                                    "id",
+                                                                    "manager_user_id",
+                                                                    "name",
+                                                                    "code",
+                                                                    "address",
+                                                                    "city",
+                                                                    "phone",
+                                                                    "email",
+                                                                    "weekly_schedule",
+                                                                    "is_active",
+                                                                    "created_at",
+                                                                    "updated_at"
+                                                                ]
+                                                            },
                                                             "email_verified_at": {
                                                                 "type": [
                                                                     "string",
@@ -6675,12 +8350,14 @@
                                                             "id",
                                                             "name",
                                                             "email",
+                                                            "preferred_locale",
                                                             "roles",
                                                             "is_active",
                                                             "phone",
                                                             "document_number",
                                                             "address",
                                                             "workshop_id",
+                                                            "workshop",
                                                             "email_verified_at",
                                                             "created_at",
                                                             "updated_at"
@@ -6791,18 +8468,167 @@
                                                 "email": {
                                                     "type": "string"
                                                 },
+                                                "preferred_locale": {
+                                                    "type": "string"
+                                                },
                                                 "roles": {
                                                     "type": "array",
                                                     "items": {
                                                         "type": "string"
                                                     }
+                                                },
+                                                "is_active": {
+                                                    "type": "boolean"
+                                                },
+                                                "phone": {
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
+                                                },
+                                                "document_number": {
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
+                                                },
+                                                "address": {
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
+                                                },
+                                                "workshop_id": {
+                                                    "type": [
+                                                        "integer",
+                                                        "null"
+                                                    ]
+                                                },
+                                                "workshop": {
+                                                    "type": [
+                                                        "object",
+                                                        "null"
+                                                    ],
+                                                    "properties": {
+                                                        "id": {
+                                                            "type": "integer"
+                                                        },
+                                                        "manager_user_id": {
+                                                            "type": "integer"
+                                                        },
+                                                        "name": {
+                                                            "type": "string"
+                                                        },
+                                                        "code": {
+                                                            "type": "string"
+                                                        },
+                                                        "address": {
+                                                            "type": [
+                                                                "string",
+                                                                "null"
+                                                            ]
+                                                        },
+                                                        "city": {
+                                                            "type": [
+                                                                "string",
+                                                                "null"
+                                                            ]
+                                                        },
+                                                        "phone": {
+                                                            "type": [
+                                                                "string",
+                                                                "null"
+                                                            ]
+                                                        },
+                                                        "email": {
+                                                            "type": [
+                                                                "string",
+                                                                "null"
+                                                            ]
+                                                        },
+                                                        "weekly_schedule": {
+                                                            "type": "object",
+                                                            "additionalProperties": {
+                                                                "type": "object",
+                                                                "properties": {
+                                                                    "opens_at": {
+                                                                        "type": "string"
+                                                                    },
+                                                                    "closes_at": {
+                                                                        "type": "string"
+                                                                    }
+                                                                },
+                                                                "required": [
+                                                                    "opens_at",
+                                                                    "closes_at"
+                                                                ]
+                                                            }
+                                                        },
+                                                        "is_active": {
+                                                            "type": "boolean"
+                                                        },
+                                                        "created_at": {
+                                                            "type": [
+                                                                "string",
+                                                                "null"
+                                                            ]
+                                                        },
+                                                        "updated_at": {
+                                                            "type": [
+                                                                "string",
+                                                                "null"
+                                                            ]
+                                                        }
+                                                    },
+                                                    "required": [
+                                                        "id",
+                                                        "manager_user_id",
+                                                        "name",
+                                                        "code",
+                                                        "address",
+                                                        "city",
+                                                        "phone",
+                                                        "email",
+                                                        "weekly_schedule",
+                                                        "is_active",
+                                                        "created_at",
+                                                        "updated_at"
+                                                    ]
+                                                },
+                                                "email_verified_at": {
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
+                                                },
+                                                "created_at": {
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
+                                                },
+                                                "updated_at": {
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
                                                 }
                                             },
                                             "required": [
                                                 "id",
                                                 "name",
                                                 "email",
-                                                "roles"
+                                                "preferred_locale",
+                                                "roles",
+                                                "is_active",
+                                                "phone",
+                                                "document_number",
+                                                "address",
+                                                "workshop_id",
+                                                "workshop",
+                                                "email_verified_at",
+                                                "created_at",
+                                                "updated_at"
                                             ]
                                         }
                                     },
@@ -6872,18 +8698,167 @@
                                                 "email": {
                                                     "type": "string"
                                                 },
+                                                "preferred_locale": {
+                                                    "type": "string"
+                                                },
                                                 "roles": {
                                                     "type": "array",
                                                     "items": {
                                                         "type": "string"
                                                     }
+                                                },
+                                                "is_active": {
+                                                    "type": "boolean"
+                                                },
+                                                "phone": {
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
+                                                },
+                                                "document_number": {
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
+                                                },
+                                                "address": {
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
+                                                },
+                                                "workshop_id": {
+                                                    "type": [
+                                                        "integer",
+                                                        "null"
+                                                    ]
+                                                },
+                                                "workshop": {
+                                                    "type": [
+                                                        "object",
+                                                        "null"
+                                                    ],
+                                                    "properties": {
+                                                        "id": {
+                                                            "type": "integer"
+                                                        },
+                                                        "manager_user_id": {
+                                                            "type": "integer"
+                                                        },
+                                                        "name": {
+                                                            "type": "string"
+                                                        },
+                                                        "code": {
+                                                            "type": "string"
+                                                        },
+                                                        "address": {
+                                                            "type": [
+                                                                "string",
+                                                                "null"
+                                                            ]
+                                                        },
+                                                        "city": {
+                                                            "type": [
+                                                                "string",
+                                                                "null"
+                                                            ]
+                                                        },
+                                                        "phone": {
+                                                            "type": [
+                                                                "string",
+                                                                "null"
+                                                            ]
+                                                        },
+                                                        "email": {
+                                                            "type": [
+                                                                "string",
+                                                                "null"
+                                                            ]
+                                                        },
+                                                        "weekly_schedule": {
+                                                            "type": "object",
+                                                            "additionalProperties": {
+                                                                "type": "object",
+                                                                "properties": {
+                                                                    "opens_at": {
+                                                                        "type": "string"
+                                                                    },
+                                                                    "closes_at": {
+                                                                        "type": "string"
+                                                                    }
+                                                                },
+                                                                "required": [
+                                                                    "opens_at",
+                                                                    "closes_at"
+                                                                ]
+                                                            }
+                                                        },
+                                                        "is_active": {
+                                                            "type": "boolean"
+                                                        },
+                                                        "created_at": {
+                                                            "type": [
+                                                                "string",
+                                                                "null"
+                                                            ]
+                                                        },
+                                                        "updated_at": {
+                                                            "type": [
+                                                                "string",
+                                                                "null"
+                                                            ]
+                                                        }
+                                                    },
+                                                    "required": [
+                                                        "id",
+                                                        "manager_user_id",
+                                                        "name",
+                                                        "code",
+                                                        "address",
+                                                        "city",
+                                                        "phone",
+                                                        "email",
+                                                        "weekly_schedule",
+                                                        "is_active",
+                                                        "created_at",
+                                                        "updated_at"
+                                                    ]
+                                                },
+                                                "email_verified_at": {
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
+                                                },
+                                                "created_at": {
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
+                                                },
+                                                "updated_at": {
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
                                                 }
                                             },
                                             "required": [
                                                 "id",
                                                 "name",
                                                 "email",
-                                                "roles"
+                                                "preferred_locale",
+                                                "roles",
+                                                "is_active",
+                                                "phone",
+                                                "document_number",
+                                                "address",
+                                                "workshop_id",
+                                                "workshop",
+                                                "email_verified_at",
+                                                "created_at",
+                                                "updated_at"
                                             ]
                                         }
                                     },
@@ -6961,18 +8936,167 @@
                                                 "email": {
                                                     "type": "string"
                                                 },
+                                                "preferred_locale": {
+                                                    "type": "string"
+                                                },
                                                 "roles": {
                                                     "type": "array",
                                                     "items": {
                                                         "type": "string"
                                                     }
+                                                },
+                                                "is_active": {
+                                                    "type": "boolean"
+                                                },
+                                                "phone": {
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
+                                                },
+                                                "document_number": {
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
+                                                },
+                                                "address": {
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
+                                                },
+                                                "workshop_id": {
+                                                    "type": [
+                                                        "integer",
+                                                        "null"
+                                                    ]
+                                                },
+                                                "workshop": {
+                                                    "type": [
+                                                        "object",
+                                                        "null"
+                                                    ],
+                                                    "properties": {
+                                                        "id": {
+                                                            "type": "integer"
+                                                        },
+                                                        "manager_user_id": {
+                                                            "type": "integer"
+                                                        },
+                                                        "name": {
+                                                            "type": "string"
+                                                        },
+                                                        "code": {
+                                                            "type": "string"
+                                                        },
+                                                        "address": {
+                                                            "type": [
+                                                                "string",
+                                                                "null"
+                                                            ]
+                                                        },
+                                                        "city": {
+                                                            "type": [
+                                                                "string",
+                                                                "null"
+                                                            ]
+                                                        },
+                                                        "phone": {
+                                                            "type": [
+                                                                "string",
+                                                                "null"
+                                                            ]
+                                                        },
+                                                        "email": {
+                                                            "type": [
+                                                                "string",
+                                                                "null"
+                                                            ]
+                                                        },
+                                                        "weekly_schedule": {
+                                                            "type": "object",
+                                                            "additionalProperties": {
+                                                                "type": "object",
+                                                                "properties": {
+                                                                    "opens_at": {
+                                                                        "type": "string"
+                                                                    },
+                                                                    "closes_at": {
+                                                                        "type": "string"
+                                                                    }
+                                                                },
+                                                                "required": [
+                                                                    "opens_at",
+                                                                    "closes_at"
+                                                                ]
+                                                            }
+                                                        },
+                                                        "is_active": {
+                                                            "type": "boolean"
+                                                        },
+                                                        "created_at": {
+                                                            "type": [
+                                                                "string",
+                                                                "null"
+                                                            ]
+                                                        },
+                                                        "updated_at": {
+                                                            "type": [
+                                                                "string",
+                                                                "null"
+                                                            ]
+                                                        }
+                                                    },
+                                                    "required": [
+                                                        "id",
+                                                        "manager_user_id",
+                                                        "name",
+                                                        "code",
+                                                        "address",
+                                                        "city",
+                                                        "phone",
+                                                        "email",
+                                                        "weekly_schedule",
+                                                        "is_active",
+                                                        "created_at",
+                                                        "updated_at"
+                                                    ]
+                                                },
+                                                "email_verified_at": {
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
+                                                },
+                                                "created_at": {
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
+                                                },
+                                                "updated_at": {
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
                                                 }
                                             },
                                             "required": [
                                                 "id",
                                                 "name",
                                                 "email",
-                                                "roles"
+                                                "preferred_locale",
+                                                "roles",
+                                                "is_active",
+                                                "phone",
+                                                "document_number",
+                                                "address",
+                                                "workshop_id",
+                                                "workshop",
+                                                "email_verified_at",
+                                                "created_at",
+                                                "updated_at"
                                             ]
                                         }
                                     },

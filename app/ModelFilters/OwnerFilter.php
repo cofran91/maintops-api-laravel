@@ -27,12 +27,6 @@ final class OwnerFilter extends ModelFilter
 
     public function isActive(bool|int|string $value): void
     {
-        $isActive = filter_var($value, FILTER_VALIDATE_BOOL, FILTER_NULL_ON_FAILURE);
-
-        if ($isActive === null) {
-            return;
-        }
-
-        $this->where('is_active', $isActive);
+        $this->whereBoolean('is_active', $value);
     }
 }

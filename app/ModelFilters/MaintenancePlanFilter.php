@@ -52,20 +52,14 @@ final class MaintenancePlanFilter extends ModelFilter
 
     public function isActive(bool|int|string $value): void
     {
-        $isActive = filter_var($value, FILTER_VALIDATE_BOOL, FILTER_NULL_ON_FAILURE);
-
-        if ($isActive === null) {
-            return;
-        }
-
-        $this->where('is_active', $isActive);
+        $this->whereBoolean('is_active', $value);
     }
 
     public function taskId(int|string $value): void
     {
-        $taskId = filter_var($value, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
+        $taskId = $this->positiveInteger($value);
 
-        if ($taskId === false) {
+        if ($taskId === null) {
             return;
         }
 
@@ -76,67 +70,31 @@ final class MaintenancePlanFilter extends ModelFilter
 
     public function recommendedIntervalDaysFrom(int|string $value): void
     {
-        $days = filter_var($value, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
-
-        if ($days === false) {
-            return;
-        }
-
-        $this->where('recommended_interval_days', '>=', $days);
+        $this->wherePositiveIntegerComparison('recommended_interval_days', '>=', $value);
     }
 
     public function recommendedIntervalDaysTo(int|string $value): void
     {
-        $days = filter_var($value, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
-
-        if ($days === false) {
-            return;
-        }
-
-        $this->where('recommended_interval_days', '<=', $days);
+        $this->wherePositiveIntegerComparison('recommended_interval_days', '<=', $value);
     }
 
     public function recommendedIntervalKmFrom(int|string $value): void
     {
-        $kilometers = filter_var($value, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
-
-        if ($kilometers === false) {
-            return;
-        }
-
-        $this->where('recommended_interval_km', '>=', $kilometers);
+        $this->wherePositiveIntegerComparison('recommended_interval_km', '>=', $value);
     }
 
     public function recommendedIntervalKmTo(int|string $value): void
     {
-        $kilometers = filter_var($value, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
-
-        if ($kilometers === false) {
-            return;
-        }
-
-        $this->where('recommended_interval_km', '<=', $kilometers);
+        $this->wherePositiveIntegerComparison('recommended_interval_km', '<=', $value);
     }
 
     public function createdFrom(string $value): void
     {
-        $date = $this->dateFilterValue($value);
-
-        if ($date === null) {
-            return;
-        }
-
-        $this->where('created_at', '>=', $date->startOfDay());
+        $this->whereDateFrom('created_at', $value);
     }
 
     public function createdTo(string $value): void
     {
-        $date = $this->dateFilterValue($value);
-
-        if ($date === null) {
-            return;
-        }
-
-        $this->where('created_at', '<=', $date->endOfDay());
+        $this->whereDateTo('created_at', $value);
     }
 }

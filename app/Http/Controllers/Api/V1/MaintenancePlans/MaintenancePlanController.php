@@ -34,7 +34,7 @@ class MaintenancePlanController extends ApiController
      *             recommended_interval_days: int|null,
      *             recommended_interval_km: int|null,
      *             task_ids: array<int, int>,
-     *             tasks: array<int, array{id: int, vehicle_id: int|null, vehicle_system_id: int, name: string, code: string, estimated_duration_minutes: int, status: string, is_active: bool}>,
+     *             tasks: array<int, array{id: int, vehicle_id: int|null, vehicle: array{id: int, owner_id: int, license_plate: string, brand: string|null, model: string|null, year: int|null, color: string|null, odometer_km: int, created_at: string|null, updated_at: string|null}|null, vehicle_system_id: int, vehicle_system: array{id: int, code: string, name: string, created_at: string|null, updated_at: string|null}, name: string, code: string, description: string|null, estimated_duration_minutes: int, status: string, is_active: bool, created_at: string|null, updated_at: string|null}>,
      *             is_active: bool,
      *             created_at: string|null,
      *             updated_at: string|null
@@ -85,7 +85,7 @@ class MaintenancePlanController extends ApiController
      * @bodyParam task_ids integer[] required Active reusable task IDs to include. Example: [1,2,3]
      * @bodyParam is_active boolean required Whether the plan can be selected in operations. Example: true
      *
-     * @return JsonResponse<array{success: bool, message: string, data: array{id: int, code: string, name: string, recommended_interval_days: int|null, recommended_interval_km: int|null, task_ids: array<int, int>, is_active: bool}}, 201>
+     * @return JsonResponse<array{success: bool, message: string, data: array{id: int, code: string, name: string, description: string|null, recommended_interval_days: int|null, recommended_interval_km: int|null, task_ids: array<int, int>, tasks: array<int, array{id: int, vehicle_id: int|null, vehicle: array{id: int, owner_id: int, license_plate: string, brand: string|null, model: string|null, year: int|null, color: string|null, odometer_km: int, created_at: string|null, updated_at: string|null}|null, vehicle_system_id: int, vehicle_system: array{id: int, code: string, name: string, created_at: string|null, updated_at: string|null}, name: string, code: string, description: string|null, estimated_duration_minutes: int, status: string, is_active: bool, created_at: string|null, updated_at: string|null}>, is_active: bool, created_at: string|null, updated_at: string|null}}, 201>
      */
     public function store(MaintenancePlanRequest $request, CreateMaintenancePlanAction $createMaintenancePlanAction): JsonResponse
     {
@@ -103,7 +103,7 @@ class MaintenancePlanController extends ApiController
     /**
      * Show maintenance plan.
      *
-     * @return JsonResponse<array{success: bool, message: string, data: array{id: int, code: string, name: string, recommended_interval_days: int|null, recommended_interval_km: int|null, task_ids: array<int, int>, is_active: bool}}, 200>
+     * @return JsonResponse<array{success: bool, message: string, data: array{id: int, code: string, name: string, description: string|null, recommended_interval_days: int|null, recommended_interval_km: int|null, task_ids: array<int, int>, tasks: array<int, array{id: int, vehicle_id: int|null, vehicle: array{id: int, owner_id: int, license_plate: string, brand: string|null, model: string|null, year: int|null, color: string|null, odometer_km: int, created_at: string|null, updated_at: string|null}|null, vehicle_system_id: int, vehicle_system: array{id: int, code: string, name: string, created_at: string|null, updated_at: string|null}, name: string, code: string, description: string|null, estimated_duration_minutes: int, status: string, is_active: bool, created_at: string|null, updated_at: string|null}>, is_active: bool, created_at: string|null, updated_at: string|null}}, 200>
      */
     public function show(Request $request, MaintenancePlan $maintenancePlan): JsonResponse
     {
@@ -128,7 +128,7 @@ class MaintenancePlanController extends ApiController
      * @bodyParam task_ids integer[] required Active reusable task IDs to include. Example: [1,2]
      * @bodyParam is_active boolean required Whether the plan can be selected in operations. Example: true
      *
-     * @return JsonResponse<array{success: bool, message: string, data: array{id: int, code: string, name: string, recommended_interval_days: int|null, recommended_interval_km: int|null, task_ids: array<int, int>, is_active: bool}}, 200>
+     * @return JsonResponse<array{success: bool, message: string, data: array{id: int, code: string, name: string, description: string|null, recommended_interval_days: int|null, recommended_interval_km: int|null, task_ids: array<int, int>, tasks: array<int, array{id: int, vehicle_id: int|null, vehicle: array{id: int, owner_id: int, license_plate: string, brand: string|null, model: string|null, year: int|null, color: string|null, odometer_km: int, created_at: string|null, updated_at: string|null}|null, vehicle_system_id: int, vehicle_system: array{id: int, code: string, name: string, created_at: string|null, updated_at: string|null}, name: string, code: string, description: string|null, estimated_duration_minutes: int, status: string, is_active: bool, created_at: string|null, updated_at: string|null}>, is_active: bool, created_at: string|null, updated_at: string|null}}, 200>
      */
     public function update(
         MaintenancePlanRequest $request,

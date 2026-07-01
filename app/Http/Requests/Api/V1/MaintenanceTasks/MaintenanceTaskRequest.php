@@ -3,42 +3,26 @@
 namespace App\Http\Requests\Api\V1\MaintenanceTasks;
 
 use App\Enums\SystemRole;
+use App\Http\Requests\Api\V1\ResourceRequest;
 use App\Models\MaintenanceTask;
-use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 
-class MaintenanceTaskRequest extends FormRequest
+class MaintenanceTaskRequest extends ResourceRequest
 {
-    public function authorize(): bool
+    protected function modelClass(): string
     {
-        $actor = $this->user();
+        return MaintenanceTask::class;
+    }
 
-        if ($actor === null) {
-            return false;
-        }
-
-        if ($this->isMethod('post')) {
-            return $actor->can('create', MaintenanceTask::class);
-        }
-
-        $maintenanceTask = $this->route('maintenance_task');
-
-        return $maintenanceTask instanceof MaintenanceTask
-            && $actor->can('update', $maintenanceTask);
+    protected function routeParameter(): string
+    {
+        return 'maintenance_task';
     }
 
     protected function prepareForValidation(): void
     {
-        if ($this->has('vehicle_id') && $this->input('vehicle_id') === '') {
-            $this->merge(['vehicle_id' => null]);
-        }
-
-        if ($this->has('code')) {
-            $this->merge([
-                'code' => Str::upper(Str::slug((string) $this->input('code'), '-')),
-            ]);
-        }
+        $this->emptyStringToNull('vehicle_id');
+        $this->upperSlugString('code');
     }
 
     /**
@@ -46,8 +30,7 @@ class MaintenanceTaskRequest extends FormRequest
      */
     public function rules(): array
     {
-        $maintenanceTask = $this->route('maintenance_task');
-        $maintenanceTaskId = $maintenanceTask instanceof MaintenanceTask ? $maintenanceTask->getKey() : null;
+        $maintenanceTaskId = $this->routeModelKey();
         $vehicleIdPresence = $this->user()?->hasRole(SystemRole::Advisor->value) ? 'required' : 'nullable';
 
         return [

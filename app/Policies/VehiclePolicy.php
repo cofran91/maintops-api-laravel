@@ -5,9 +5,12 @@ namespace App\Policies;
 use App\Enums\SystemRole;
 use App\Models\User;
 use App\Models\Vehicle;
+use App\Policies\Concerns\AuthorizesRoles;
 
 final class VehiclePolicy
 {
+    use AuthorizesRoles;
+
     public function viewAny(User $user): bool
     {
         return $this->canReadVehicleRecords($user);
@@ -30,17 +33,17 @@ final class VehiclePolicy
 
     public function export(User $user): bool
     {
-        return $user->is_active && $this->isSystemAdmin($user);
+        return $this->isActiveSystemAdmin($user);
     }
 
     public function import(User $user): bool
     {
-        return $user->is_active && $this->isSystemAdmin($user);
+        return $this->isActiveSystemAdmin($user);
     }
 
     public function delete(User $user, Vehicle $vehicle): bool
     {
-        return $user->is_active && $this->isSystemAdmin($user);
+        return $this->isActiveSystemAdmin($user);
     }
 
     /**
@@ -49,16 +52,12 @@ final class VehiclePolicy
      */
     private function canReadVehicleRecords(User $user): bool
     {
-        if (! $user->is_active) {
-            return false;
-        }
-
-        return $user->hasRole($this->roleValues([
+        return $this->hasActiveRole($user, [
             SystemRole::SuperAdmin,
             SystemRole::Admin,
             SystemRole::WorkshopManager,
             SystemRole::Advisor,
-        ]));
+        ]);
     }
 
     /**
@@ -67,37 +66,10 @@ final class VehiclePolicy
      */
     private function canManageVehicleRecords(User $user): bool
     {
-        if (! $user->is_active) {
-            return false;
-        }
-
-        return $user->hasRole($this->roleValues([
+        return $this->hasActiveRole($user, [
             SystemRole::SuperAdmin,
             SystemRole::Admin,
             SystemRole::WorkshopManager,
-        ]));
-    }
-
-    /**
-     * Destructive vehicle operations are limited to system administrators.
-     */
-    private function isSystemAdmin(User $user): bool
-    {
-        return $user->hasRole($this->roleValues([
-            SystemRole::SuperAdmin,
-            SystemRole::Admin,
-        ]));
-    }
-
-    /**
-     * @param  array<int, SystemRole>  $roles
-     * @return array<int, string>
-     */
-    private function roleValues(array $roles): array
-    {
-        return array_map(
-            static fn (SystemRole $role): string => $role->value,
-            $roles,
-        );
+        ]);
     }
 }

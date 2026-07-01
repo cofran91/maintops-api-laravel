@@ -59,43 +59,17 @@ final class MaintenanceTaskFilter extends ModelFilter
 
     public function vehicleId(int|string $value): void
     {
-        $normalizedValue = strtolower(trim((string) $value));
-
-        if (in_array($normalizedValue, ['null', 'none', 'unassigned'], true)) {
-            $this->whereNull('vehicle_id');
-
-            return;
-        }
-
-        $vehicleId = filter_var($value, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
-
-        if ($vehicleId === false) {
-            return;
-        }
-
-        $this->where('vehicle_id', $vehicleId);
+        $this->whereNullableInteger('vehicle_id', $value);
     }
 
     public function withoutVehicle(bool|int|string $value): void
     {
-        $withoutVehicle = filter_var($value, FILTER_VALIDATE_BOOL, FILTER_NULL_ON_FAILURE);
-
-        if ($withoutVehicle !== true) {
-            return;
-        }
-
-        $this->whereNull('vehicle_id');
+        $this->whereBooleanNull('vehicle_id', $value);
     }
 
     public function vehicleSystemId(int|string $value): void
     {
-        $vehicleSystemId = filter_var($value, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
-
-        if ($vehicleSystemId === false) {
-            return;
-        }
-
-        $this->where('vehicle_system_id', $vehicleSystemId);
+        $this->whereInteger('vehicle_system_id', $value);
     }
 
     public function status(string $value): void
@@ -109,56 +83,26 @@ final class MaintenanceTaskFilter extends ModelFilter
 
     public function isActive(bool|int|string $value): void
     {
-        $isActive = filter_var($value, FILTER_VALIDATE_BOOL, FILTER_NULL_ON_FAILURE);
-
-        if ($isActive === null) {
-            return;
-        }
-
-        $this->where('is_active', $isActive);
+        $this->whereBoolean('is_active', $value);
     }
 
     public function estimatedDurationFrom(int|string $value): void
     {
-        $minutes = filter_var($value, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
-
-        if ($minutes === false) {
-            return;
-        }
-
-        $this->where('estimated_duration_minutes', '>=', $minutes);
+        $this->wherePositiveIntegerComparison('estimated_duration_minutes', '>=', $value);
     }
 
     public function estimatedDurationTo(int|string $value): void
     {
-        $minutes = filter_var($value, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
-
-        if ($minutes === false) {
-            return;
-        }
-
-        $this->where('estimated_duration_minutes', '<=', $minutes);
+        $this->wherePositiveIntegerComparison('estimated_duration_minutes', '<=', $value);
     }
 
     public function createdFrom(string $value): void
     {
-        $date = $this->dateFilterValue($value);
-
-        if ($date === null) {
-            return;
-        }
-
-        $this->where('created_at', '>=', $date->startOfDay());
+        $this->whereDateFrom('created_at', $value);
     }
 
     public function createdTo(string $value): void
     {
-        $date = $this->dateFilterValue($value);
-
-        if ($date === null) {
-            return;
-        }
-
-        $this->where('created_at', '<=', $date->endOfDay());
+        $this->whereDateTo('created_at', $value);
     }
 }

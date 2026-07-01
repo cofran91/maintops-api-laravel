@@ -71,23 +71,11 @@ final class VehicleFilter extends ModelFilter
 
     public function createdFrom(string $value): void
     {
-        $date = $this->dateFilterValue($value);
-
-        if ($date === null) {
-            return;
-        }
-
-        $this->where('created_at', '>=', $date->startOfDay());
+        $this->whereDateFrom('created_at', $value);
     }
 
     public function createdTo(string $value): void
     {
-        $date = $this->dateFilterValue($value);
-
-        if ($date === null) {
-            return;
-        }
-
-        $this->where('created_at', '<=', $date->endOfDay());
+        $this->whereDateTo('created_at', $value);
     }
 }

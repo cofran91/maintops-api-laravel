@@ -4,13 +4,16 @@ namespace App\Policies;
 
 use App\Enums\SystemRole;
 use App\Models\User;
+use App\Policies\Concerns\AuthorizesRoles;
 
 final class UserPolicy
 {
+    use AuthorizesRoles;
+
     public function viewAny(User $user): bool
     {
         return $this->isSystemAdmin($user)
-            || $user->hasRole(SystemRole::WorkshopManager->value);
+            || $this->hasAnyRole($user, [SystemRole::WorkshopManager]);
     }
 
     public function view(User $user, User $target): bool
@@ -20,7 +23,7 @@ final class UserPolicy
 
     public function create(User $user): bool
     {
-        return $user->is_active && $this->isSystemAdmin($user);
+        return $this->isActiveSystemAdmin($user);
     }
 
     public function update(User $user, User $target): bool
@@ -46,8 +49,8 @@ final class UserPolicy
         }
 
         if (
-            $actor->hasRole(SystemRole::WorkshopManager->value)
-            && $target->hasRole(SystemRole::Technician->value)
+            $this->hasAnyRole($actor, [SystemRole::WorkshopManager])
+            && $this->hasAnyRole($target, [SystemRole::Technician])
             && $target->workshop_id !== null
         ) {
             return $actor
@@ -65,33 +68,6 @@ final class UserPolicy
      */
     private function canManageUser(User $actor, User $target): bool
     {
-        if (! $actor->is_active) {
-            return false;
-        }
-
-        return $this->isSystemAdmin($actor);
-    }
-
-    /**
-     * Groups the two administrative roles that share full user-management access.
-     */
-    private function isSystemAdmin(User $user): bool
-    {
-        return $user->hasRole($this->roleValues([
-            SystemRole::SuperAdmin,
-            SystemRole::Admin,
-        ]));
-    }
-
-    /**
-     * @param  array<int, SystemRole>  $roles
-     * @return array<int, string>
-     */
-    private function roleValues(array $roles): array
-    {
-        return array_map(
-            static fn (SystemRole $role): string => $role->value,
-            $roles,
-        );
+        return $this->isActiveSystemAdmin($actor);
     }
 }

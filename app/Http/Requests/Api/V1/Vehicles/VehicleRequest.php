@@ -2,38 +2,25 @@
 
 namespace App\Http\Requests\Api\V1\Vehicles;
 
+use App\Http\Requests\Api\V1\ResourceRequest;
 use App\Models\Vehicle;
-use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 
-class VehicleRequest extends FormRequest
+class VehicleRequest extends ResourceRequest
 {
-    public function authorize(): bool
+    protected function modelClass(): string
     {
-        $actor = $this->user();
+        return Vehicle::class;
+    }
 
-        if ($actor === null) {
-            return false;
-        }
-
-        if ($this->isMethod('post')) {
-            return $actor->can('create', Vehicle::class);
-        }
-
-        $vehicle = $this->route('vehicle');
-
-        return $vehicle instanceof Vehicle
-            && $actor->can('update', $vehicle);
+    protected function routeParameter(): string
+    {
+        return 'vehicle';
     }
 
     protected function prepareForValidation(): void
     {
-        if ($this->has('license_plate')) {
-            $this->merge([
-                'license_plate' => Str::upper(trim((string) $this->input('license_plate'))),
-            ]);
-        }
+        $this->upperTrimmedString('license_plate');
     }
 
     /**
@@ -41,8 +28,7 @@ class VehicleRequest extends FormRequest
      */
     public function rules(): array
     {
-        $vehicle = $this->route('vehicle');
-        $vehicleId = $vehicle instanceof Vehicle ? $vehicle->getKey() : null;
+        $vehicleId = $this->routeModelKey();
         $maxYear = now()->addYear()->year;
 
         return [

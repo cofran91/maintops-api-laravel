@@ -5,9 +5,12 @@ namespace App\Policies;
 use App\Enums\SystemRole;
 use App\Models\MaintenanceOrder;
 use App\Models\User;
+use App\Policies\Concerns\AuthorizesRoles;
 
 final class MaintenanceOrderPolicy
 {
+    use AuthorizesRoles;
+
     public function viewAny(User $user): bool
     {
         return $this->isActiveAllowedRole($user);
@@ -36,23 +39,16 @@ final class MaintenanceOrderPolicy
 
     private function canManageAnyOrder(User $user): bool
     {
-        return $user->is_active
-            && $user->hasRole($this->roleValues([
-                SystemRole::SuperAdmin,
-                SystemRole::Admin,
-            ]));
+        return $this->isActiveSystemAdmin($user);
     }
 
     private function isAssignedWorkshopManager(User $user, MaintenanceOrder $maintenanceOrder): bool
     {
-        if (! $user->is_active || ! $user->hasRole(SystemRole::WorkshopManager->value)) {
+        if (! $this->hasActiveRole($user, [SystemRole::WorkshopManager])) {
             return false;
         }
 
-        if ($user->hasRole($this->roleValues([
-            SystemRole::SuperAdmin,
-            SystemRole::Admin,
-        ]))) {
+        if ($this->isSystemAdmin($user)) {
             return false;
         }
 
@@ -63,16 +59,16 @@ final class MaintenanceOrderPolicy
 
     private function isAssignedTechnician(User $user, MaintenanceOrder $maintenanceOrder): bool
     {
-        if (! $user->is_active || ! $user->hasRole(SystemRole::Technician->value)) {
+        if (! $this->hasActiveRole($user, [SystemRole::Technician])) {
             return false;
         }
 
-        if ($user->hasRole($this->roleValues([
+        if ($this->hasAnyRole($user, [
             SystemRole::SuperAdmin,
             SystemRole::Admin,
             SystemRole::WorkshopManager,
             SystemRole::Advisor,
-        ]))) {
+        ])) {
             return false;
         }
 
@@ -81,36 +77,22 @@ final class MaintenanceOrderPolicy
 
     private function isPrimaryAdvisor(User $user): bool
     {
-        return $user->is_active
-            && $user->hasRole(SystemRole::Advisor->value)
-            && ! $user->hasRole($this->roleValues([
+        return $this->hasActiveRole($user, [SystemRole::Advisor])
+            && ! $this->hasAnyRole($user, [
                 SystemRole::SuperAdmin,
                 SystemRole::Admin,
                 SystemRole::WorkshopManager,
-            ]));
+            ]);
     }
 
     private function isActiveAllowedRole(User $user): bool
     {
-        return $user->is_active
-            && $user->hasRole($this->roleValues([
-                SystemRole::SuperAdmin,
-                SystemRole::Admin,
-                SystemRole::WorkshopManager,
-                SystemRole::Advisor,
-                SystemRole::Technician,
-            ]));
-    }
-
-    /**
-     * @param  array<int, SystemRole>  $roles
-     * @return array<int, string>
-     */
-    private function roleValues(array $roles): array
-    {
-        return array_map(
-            static fn (SystemRole $role): string => $role->value,
-            $roles,
-        );
+        return $this->hasActiveRole($user, [
+            SystemRole::SuperAdmin,
+            SystemRole::Admin,
+            SystemRole::WorkshopManager,
+            SystemRole::Advisor,
+            SystemRole::Technician,
+        ]);
     }
 }

@@ -2,6 +2,8 @@
 
 namespace App\Http\Resources\Api\V1\MaintenanceOrders;
 
+use App\Http\Resources\Api\V1\MaintenancePlans\MaintenancePlanResource;
+use App\Http\Resources\Api\V1\MaintenanceTasks\MaintenanceTaskResource;
 use App\Models\MaintenanceOrderItem;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
@@ -21,55 +23,20 @@ class MaintenanceOrderItemResource extends JsonResource
         return [
             'id' => $this->id,
             'maintenance_order_id' => $this->maintenance_order_id,
-            'maintenance_order' => $this->whenLoaded('maintenanceOrder', function (): array {
-                return [
-                    'id' => $this->maintenanceOrder->id,
-                    'vehicle_id' => $this->maintenanceOrder->vehicle_id,
-                    'owner_id' => $this->maintenanceOrder->relationLoaded('vehicle')
-                        ? $this->maintenanceOrder->vehicle?->owner_id
-                        : null,
-                    'advisor_id' => $this->maintenanceOrder->advisor_id,
-                    'workshop_id' => $this->maintenanceOrder->workshop_id,
-                    'technician_id' => $this->maintenanceOrder->technician_id,
-                    'status' => $this->maintenanceOrder->status?->getValue(),
-                ];
-            }),
+            'maintenance_order' => $this->whenLoaded(
+                'maintenanceOrder',
+                fn () => MaintenanceOrderResource::make($this->maintenanceOrder),
+            ),
             'maintenance_task_id' => $this->maintenance_task_id,
-            'maintenance_task' => $this->whenLoaded('maintenanceTask', function (): array {
-                return [
-                    'id' => $this->maintenanceTask->id,
-                    'vehicle_id' => $this->maintenanceTask->vehicle_id,
-                    'vehicle_system_id' => $this->maintenanceTask->vehicle_system_id,
-                    'vehicle_system' => $this->maintenanceTask->relationLoaded('vehicleSystem')
-                        ? [
-                            'id' => $this->maintenanceTask->vehicleSystem->id,
-                            'code' => $this->maintenanceTask->vehicleSystem->code,
-                            'name' => $this->maintenanceTask->vehicleSystem->name,
-                        ]
-                        : null,
-                    'name' => $this->maintenanceTask->name,
-                    'code' => $this->maintenanceTask->code,
-                    'description' => $this->maintenanceTask->description,
-                    'estimated_duration_minutes' => $this->maintenanceTask->estimated_duration_minutes,
-                    'status' => $this->maintenanceTask->status?->getValue(),
-                    'is_active' => (bool) $this->maintenanceTask->is_active,
-                ];
-            }),
+            'maintenance_task' => $this->whenLoaded(
+                'maintenanceTask',
+                fn () => MaintenanceTaskResource::make($this->maintenanceTask),
+            ),
             'maintenance_plan_id' => $this->maintenance_plan_id,
-            'maintenance_plan' => $this->whenLoaded('maintenancePlan', function (): ?array {
-                if ($this->maintenancePlan === null) {
-                    return null;
-                }
-
-                return [
-                    'id' => $this->maintenancePlan->id,
-                    'code' => $this->maintenancePlan->code,
-                    'name' => $this->maintenancePlan->name,
-                    'recommended_interval_days' => $this->maintenancePlan->recommended_interval_days,
-                    'recommended_interval_km' => $this->maintenancePlan->recommended_interval_km,
-                    'is_active' => (bool) $this->maintenancePlan->is_active,
-                ];
-            }),
+            'maintenance_plan' => $this->whenLoaded(
+                'maintenancePlan',
+                fn () => MaintenancePlanResource::make($this->maintenancePlan),
+            ),
             'status' => $this->status?->getValue(),
             'odometer_km' => $this->odometer_km,
             'planned_duration_minutes' => $this->planned_duration_minutes,
