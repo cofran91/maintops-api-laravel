@@ -28,6 +28,16 @@ final class VehiclePolicy
         return $this->canManageVehicleRecords($user);
     }
 
+    public function export(User $user): bool
+    {
+        return $user->is_active && $this->isSystemAdmin($user);
+    }
+
+    public function import(User $user): bool
+    {
+        return $user->is_active && $this->isSystemAdmin($user);
+    }
+
     public function delete(User $user, Vehicle $vehicle): bool
     {
         return $user->is_active && $this->isSystemAdmin($user);

@@ -48,6 +48,9 @@ return [
             'retrieved_one' => 'Workshop retrieved.',
             'updated' => 'Workshop updated successfully.',
             'deleted' => 'Workshop deleted successfully.',
+            'imported' => 'Workshops import processed.',
+            'import_empty' => 'The uploaded workshops file is empty.',
+            'import_invalid' => 'The uploaded workshops file could not be read.',
         ],
         'vehicles' => [
             'retrieved' => 'Vehicles retrieved.',
@@ -55,6 +58,9 @@ return [
             'retrieved_one' => 'Vehicle retrieved.',
             'updated' => 'Vehicle updated successfully.',
             'deleted' => 'Vehicle deleted successfully.',
+            'imported' => 'Vehicles import processed.',
+            'import_empty' => 'The uploaded vehicles file is empty.',
+            'import_invalid' => 'The uploaded vehicles file could not be read.',
         ],
         'dashboard' => [
             'retrieved' => 'Dashboard retrieved.',
@@ -75,6 +81,9 @@ return [
             'retrieved_one' => 'Owner retrieved.',
             'updated' => 'Owner updated successfully.',
             'deleted' => 'Owner deleted successfully.',
+            'imported' => 'Owners import processed.',
+            'import_empty' => 'The uploaded owners file is empty.',
+            'import_invalid' => 'The uploaded owners file could not be read.',
         ],
         'analytics_initial_sync' => [
             'snapshot_retrieved' => 'Analytics initial sync snapshot retrieved.',

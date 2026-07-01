@@ -6,6 +6,7 @@ RUN apt-get update \
     && apt-get install -y --no-install-recommends \
         git \
         libcurl4-openssl-dev \
+        libpng-dev \
         libicu-dev \
         libonig-dev \
         libzip-dev \
@@ -13,6 +14,7 @@ RUN apt-get update \
     && docker-php-ext-install \
         bcmath \
         curl \
+        gd \
         intl \
         mbstring \
         pcntl \

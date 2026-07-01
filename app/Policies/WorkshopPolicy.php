@@ -28,6 +28,16 @@ final class WorkshopPolicy
         return $this->isSystemAdmin($user);
     }
 
+    public function export(User $user): bool
+    {
+        return $this->isSystemAdmin($user);
+    }
+
+    public function import(User $user): bool
+    {
+        return $this->isSystemAdmin($user);
+    }
+
     public function delete(User $user, Workshop $workshop): bool
     {
         return $this->isSystemAdmin($user);

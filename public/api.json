@@ -593,6 +593,68 @@
                 }
             }
         },
+        "/auth/language": {
+            "patch": {
+                "operationId": "v1.auth.language.update",
+                "description": "Stores the locale used for subsequent authenticated API responses.",
+                "summary": "Update authenticated user language",
+                "tags": [
+                    "Authentication"
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/UpdateLanguageRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean"
+                                        },
+                                        "message": {
+                                            "type": "string"
+                                        },
+                                        "data": {
+                                            "type": "object",
+                                            "properties": {
+                                                "locale": {
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "required": [
+                                                "locale"
+                                            ]
+                                        }
+                                    },
+                                    "required": [
+                                        "success",
+                                        "message",
+                                        "data"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    },
+                    "422": {
+                        "$ref": "#/components/responses/ValidationException"
+                    }
+                }
+            }
+        },
         "/auth/service-token": {
             "post": {
                 "operationId": "v1.auth.service-token",
@@ -859,6 +921,176 @@
                                 }
                             }
                         }
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    }
+                }
+            }
+        },
+        "/owners/export": {
+            "get": {
+                "operationId": "v1.owners.export",
+                "description": "Downloads owner records as a localized Excel workbook. The workbook can be\nused as exported data or as an import template.",
+                "summary": "Export owners",
+                "tags": [
+                    "Catalogs"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Localized owners workbook in XLSX format.",
+                        "content": {
+                            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": {
+                                "schema": {
+                                    "type": "string",
+                                    "format": "binary"
+                                }
+                            }
+                        },
+                        "headers": {
+                            "Content-Disposition": {
+                                "description": "Attachment filename generated as owners-{download-date}.xlsx.",
+                                "schema": {
+                                    "type": "string"
+                                },
+                                "example": "attachment; filename=owners-2026-06-30.xlsx"
+                            },
+                            "Cache-Control": {
+                                "description": "Prevents clients and intermediaries from caching exported owner data.",
+                                "schema": {
+                                    "type": "string"
+                                },
+                                "example": "no-store, no-cache, must-revalidate"
+                            },
+                            "Pragma": {
+                                "description": "Legacy no-cache directive.",
+                                "schema": {
+                                    "type": "string"
+                                },
+                                "example": "no-cache"
+                            }
+                        }
+                    },
+                    "403": {
+                        "$ref": "#/components/responses/AuthorizationException"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    }
+                }
+            }
+        },
+        "/owners/import": {
+            "post": {
+                "operationId": "v1.owners.import",
+                "description": "Processes the first worksheet in a localized owners workbook. Empty rows\nand repeated header rows are ignored. Invalid rows are reported without\nstopping the rest of the import.",
+                "summary": "Import owners",
+                "tags": [
+                    "Catalogs"
+                ],
+                "requestBody": {
+                    "content": {
+                        "multipart/form-data": {
+                            "schema": {
+                                "allOf": [
+                                    {
+                                        "$ref": "#/components/schemas/ImportRequest"
+                                    },
+                                    {
+                                        "type": "object",
+                                        "properties": {
+                                            "file": {
+                                                "type": "string",
+                                                "format": "binary",
+                                                "description": "Owners XLSX or XLS workbook generated from the export template."
+                                            }
+                                        },
+                                        "required": [
+                                            "file"
+                                        ]
+                                    }
+                                ]
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Owner import summary including per-row validation errors.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean"
+                                        },
+                                        "message": {
+                                            "type": "string"
+                                        },
+                                        "data": {
+                                            "type": "object",
+                                            "properties": {
+                                                "processed_rows": {
+                                                    "type": "integer"
+                                                },
+                                                "rows_with_errors": {
+                                                    "type": "integer"
+                                                },
+                                                "created_records": {
+                                                    "type": "integer"
+                                                },
+                                                "updated_records": {
+                                                    "type": "integer"
+                                                },
+                                                "errors": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "object",
+                                                        "properties": {
+                                                            "row": {
+                                                                "type": "integer"
+                                                            },
+                                                            "errors": {
+                                                                "type": "object",
+                                                                "additionalProperties": {
+                                                                    "type": "array",
+                                                                    "items": {
+                                                                        "type": "string"
+                                                                    }
+                                                                }
+                                                            }
+                                                        },
+                                                        "required": [
+                                                            "row",
+                                                            "errors"
+                                                        ]
+                                                    }
+                                                }
+                                            },
+                                            "required": [
+                                                "processed_rows",
+                                                "rows_with_errors",
+                                                "created_records",
+                                                "updated_records",
+                                                "errors"
+                                            ]
+                                        }
+                                    },
+                                    "required": [
+                                        "success",
+                                        "message",
+                                        "data"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "$ref": "#/components/responses/ValidationException"
+                    },
+                    "403": {
+                        "$ref": "#/components/responses/AuthorizationException"
                     },
                     "401": {
                         "$ref": "#/components/responses/AuthenticationException"
@@ -1452,6 +1684,162 @@
                     },
                     "404": {
                         "$ref": "#/components/responses/ModelNotFoundException"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    }
+                }
+            }
+        },
+        "/vehicles/export": {
+            "get": {
+                "operationId": "v1.vehicles.export",
+                "description": "Downloads vehicle records as a localized Excel workbook.",
+                "summary": "Export vehicles",
+                "tags": [
+                    "Catalogs"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Localized vehicles workbook in XLSX format.",
+                        "content": {
+                            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": {
+                                "schema": {
+                                    "type": "string",
+                                    "format": "binary"
+                                }
+                            }
+                        },
+                        "headers": {
+                            "Content-Disposition": {
+                                "description": "Attachment filename generated as vehicles-{download-date}.xlsx.",
+                                "schema": {
+                                    "type": "string"
+                                },
+                                "example": "attachment; filename=vehicles-2026-06-30.xlsx"
+                            }
+                        }
+                    },
+                    "403": {
+                        "$ref": "#/components/responses/AuthorizationException"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    }
+                }
+            }
+        },
+        "/vehicles/import": {
+            "post": {
+                "operationId": "v1.vehicles.import",
+                "description": "Processes the first worksheet in a vehicles workbook. Invalid rows are\nreported without stopping the rest of the import.",
+                "summary": "Import vehicles",
+                "tags": [
+                    "Catalogs"
+                ],
+                "requestBody": {
+                    "content": {
+                        "multipart/form-data": {
+                            "schema": {
+                                "allOf": [
+                                    {
+                                        "$ref": "#/components/schemas/ImportRequest"
+                                    },
+                                    {
+                                        "type": "object",
+                                        "properties": {
+                                            "file": {
+                                                "type": "string",
+                                                "format": "binary",
+                                                "description": "Vehicles XLSX or XLS workbook generated from the export template."
+                                            }
+                                        },
+                                        "required": [
+                                            "file"
+                                        ]
+                                    }
+                                ]
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Vehicle import summary including per-row validation errors.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean"
+                                        },
+                                        "message": {
+                                            "type": "string"
+                                        },
+                                        "data": {
+                                            "type": "object",
+                                            "properties": {
+                                                "processed_rows": {
+                                                    "type": "integer"
+                                                },
+                                                "rows_with_errors": {
+                                                    "type": "integer"
+                                                },
+                                                "created_records": {
+                                                    "type": "integer"
+                                                },
+                                                "updated_records": {
+                                                    "type": "integer"
+                                                },
+                                                "errors": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "object",
+                                                        "properties": {
+                                                            "row": {
+                                                                "type": "integer"
+                                                            },
+                                                            "errors": {
+                                                                "type": "object",
+                                                                "additionalProperties": {
+                                                                    "type": "array",
+                                                                    "items": {
+                                                                        "type": "string"
+                                                                    }
+                                                                }
+                                                            }
+                                                        },
+                                                        "required": [
+                                                            "row",
+                                                            "errors"
+                                                        ]
+                                                    }
+                                                }
+                                            },
+                                            "required": [
+                                                "processed_rows",
+                                                "rows_with_errors",
+                                                "created_records",
+                                                "updated_records",
+                                                "errors"
+                                            ]
+                                        }
+                                    },
+                                    "required": [
+                                        "success",
+                                        "message",
+                                        "data"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "$ref": "#/components/responses/ValidationException"
+                    },
+                    "403": {
+                        "$ref": "#/components/responses/AuthorizationException"
                     },
                     "401": {
                         "$ref": "#/components/responses/AuthenticationException"
@@ -2318,6 +2706,162 @@
                     },
                     "404": {
                         "$ref": "#/components/responses/ModelNotFoundException"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    }
+                }
+            }
+        },
+        "/workshops/export": {
+            "get": {
+                "operationId": "v1.workshops.export",
+                "description": "Downloads workshop records as a localized Excel workbook.",
+                "summary": "Export workshops",
+                "tags": [
+                    "Catalogs"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Localized workshops workbook in XLSX format.",
+                        "content": {
+                            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": {
+                                "schema": {
+                                    "type": "string",
+                                    "format": "binary"
+                                }
+                            }
+                        },
+                        "headers": {
+                            "Content-Disposition": {
+                                "description": "Attachment filename generated as workshops-{download-date}.xlsx.",
+                                "schema": {
+                                    "type": "string"
+                                },
+                                "example": "attachment; filename=workshops-2026-06-30.xlsx"
+                            }
+                        }
+                    },
+                    "403": {
+                        "$ref": "#/components/responses/AuthorizationException"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    }
+                }
+            }
+        },
+        "/workshops/import": {
+            "post": {
+                "operationId": "v1.workshops.import",
+                "description": "Processes the first worksheet in a workshops workbook. Invalid rows are\nreported without stopping the rest of the import.",
+                "summary": "Import workshops",
+                "tags": [
+                    "Catalogs"
+                ],
+                "requestBody": {
+                    "content": {
+                        "multipart/form-data": {
+                            "schema": {
+                                "allOf": [
+                                    {
+                                        "$ref": "#/components/schemas/ImportRequest"
+                                    },
+                                    {
+                                        "type": "object",
+                                        "properties": {
+                                            "file": {
+                                                "type": "string",
+                                                "format": "binary",
+                                                "description": "Workshops XLSX or XLS workbook generated from the export template."
+                                            }
+                                        },
+                                        "required": [
+                                            "file"
+                                        ]
+                                    }
+                                ]
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Workshop import summary including per-row validation errors.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean"
+                                        },
+                                        "message": {
+                                            "type": "string"
+                                        },
+                                        "data": {
+                                            "type": "object",
+                                            "properties": {
+                                                "processed_rows": {
+                                                    "type": "integer"
+                                                },
+                                                "rows_with_errors": {
+                                                    "type": "integer"
+                                                },
+                                                "created_records": {
+                                                    "type": "integer"
+                                                },
+                                                "updated_records": {
+                                                    "type": "integer"
+                                                },
+                                                "errors": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "object",
+                                                        "properties": {
+                                                            "row": {
+                                                                "type": "integer"
+                                                            },
+                                                            "errors": {
+                                                                "type": "object",
+                                                                "additionalProperties": {
+                                                                    "type": "array",
+                                                                    "items": {
+                                                                        "type": "string"
+                                                                    }
+                                                                }
+                                                            }
+                                                        },
+                                                        "required": [
+                                                            "row",
+                                                            "errors"
+                                                        ]
+                                                    }
+                                                }
+                                            },
+                                            "required": [
+                                                "processed_rows",
+                                                "rows_with_errors",
+                                                "created_records",
+                                                "updated_records",
+                                                "errors"
+                                            ]
+                                        }
+                                    },
+                                    "required": [
+                                        "success",
+                                        "message",
+                                        "data"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "$ref": "#/components/responses/ValidationException"
+                    },
+                    "403": {
+                        "$ref": "#/components/responses/AuthorizationException"
                     },
                     "401": {
                         "$ref": "#/components/responses/AuthenticationException"
@@ -6541,6 +7085,21 @@
                 ],
                 "title": "ForgotPasswordRequest"
             },
+            "ImportRequest": {
+                "type": "object",
+                "properties": {
+                    "file": {
+                        "type": "string",
+                        "format": "binary",
+                        "contentMediaType": "application/octet-stream",
+                        "maxLength": 10240
+                    }
+                },
+                "required": [
+                    "file"
+                ],
+                "title": "ImportRequest"
+            },
             "LoginRequest": {
                 "type": "object",
                 "properties": {
@@ -6764,6 +7323,22 @@
                 ],
                 "title": "ServiceTokenRequest"
             },
+            "UpdateLanguageRequest": {
+                "type": "object",
+                "properties": {
+                    "locale": {
+                        "type": "string",
+                        "enum": [
+                            "en",
+                            "es"
+                        ]
+                    }
+                },
+                "required": [
+                    "locale"
+                ],
+                "title": "UpdateLanguageRequest"
+            },
             "UserRequest": {
                 "type": "object",
                 "properties": {
@@ -6778,6 +7353,13 @@
                     },
                     "password": {
                         "type": "string"
+                    },
+                    "preferred_locale": {
+                        "type": "string",
+                        "enum": [
+                            "en",
+                            "es"
+                        ]
                     },
                     "role": {
                         "type": "string",

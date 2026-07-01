@@ -48,6 +48,9 @@ return [
             'retrieved_one' => 'Taller obtenido.',
             'updated' => 'Taller actualizado correctamente.',
             'deleted' => 'Taller eliminado correctamente.',
+            'imported' => 'Importación de talleres procesada.',
+            'import_empty' => 'El archivo de talleres está vacío.',
+            'import_invalid' => 'No se pudo leer el archivo de talleres.',
         ],
         'vehicles' => [
             'retrieved' => 'Vehículos obtenidos.',
@@ -55,6 +58,9 @@ return [
             'retrieved_one' => 'Vehículo obtenido.',
             'updated' => 'Vehículo actualizado correctamente.',
             'deleted' => 'Vehículo eliminado correctamente.',
+            'imported' => 'Importación de vehículos procesada.',
+            'import_empty' => 'El archivo de vehículos está vacío.',
+            'import_invalid' => 'No se pudo leer el archivo de vehículos.',
         ],
         'dashboard' => [
             'retrieved' => 'Dashboard obtenido.',
@@ -75,6 +81,9 @@ return [
             'retrieved_one' => 'Propietario obtenido.',
             'updated' => 'Propietario actualizado correctamente.',
             'deleted' => 'Propietario eliminado correctamente.',
+            'imported' => 'Importación de propietarios procesada.',
+            'import_empty' => 'El archivo de propietarios está vacío.',
+            'import_invalid' => 'No se pudo leer el archivo de propietarios.',
         ],
         'analytics_initial_sync' => [
             'snapshot_retrieved' => 'Snapshot de sincronización inicial de Analytics obtenido.',

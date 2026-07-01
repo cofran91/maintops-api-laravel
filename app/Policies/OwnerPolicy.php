@@ -28,6 +28,16 @@ final class OwnerPolicy
         return $this->canManageOwnerRecords($user);
     }
 
+    public function export(User $user): bool
+    {
+        return $user->is_active && $this->isSystemAdmin($user);
+    }
+
+    public function import(User $user): bool
+    {
+        return $user->is_active && $this->isSystemAdmin($user);
+    }
+
     public function delete(User $user, Owner $owner): bool
     {
         return $user->is_active && $this->isSystemAdmin($user);

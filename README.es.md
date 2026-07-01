@@ -35,6 +35,7 @@ El proyecto está diseñado como parte del stack completo de portafolio MaintOps
 | Spatie Laravel Model States | State machines explícitas para ciclos de vida operativos. |
 | OwenIt Laravel Auditing | Auditoría de cambios de modelos y workflows. |
 | EloquentFilter | Filtrado declarativo para endpoints paginados. |
+| Laravel Excel | Flujos de importación y exportación Excel sobre PhpSpreadsheet. |
 | Dedoc Scramble | OpenAPI generado desde rutas, requests, resources y PHPDoc. |
 | Laravel Telescope | Observabilidad local para requests, queries, jobs, logs, eventos y mail. |
 | MySQL | Fuente de verdad transaccional. |
@@ -61,9 +62,11 @@ app/
   Actions/          Workflows de escritura de varios pasos y actualizaciones de agregados.
   Console/Commands/ Automatización operativa programada.
   Enums/            Vocabulario de dominio para roles, estados y códigos.
+  Exporters/        Generadores de datos de salida, incluyendo Excel.
   Http/Controllers/ Controladores API versionados y controladores web internos.
   Http/Requests/    Validación de requests y restricciones de valores enviados.
   Http/Resources/   Serialización de respuestas API.
+  Importers/        Flujos de importación Excel.
   Jobs/             Publicación de eventos y entrega de correos en cola.
   Mail/             Correos operativos dirigidos al owner.
   ModelFilters/     Filtros de consulta para listados.

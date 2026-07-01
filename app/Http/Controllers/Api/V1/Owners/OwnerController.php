@@ -2,15 +2,29 @@
 
 namespace App\Http\Controllers\Api\V1\Owners;
 
+use App\Exporters\Owners\OwnerExporter;
 use App\Http\Controllers\Api\ApiController;
+use App\Http\Requests\Api\V1\ImportRequest;
 use App\Http\Requests\Api\V1\Owners\OwnerRequest;
 use App\Http\Resources\Api\V1\Owners\OwnerResource;
+use App\Importers\Owners\OwnerImporter;
 use App\ModelFilters\OwnerFilter;
 use App\Models\Owner;
+use Dedoc\Scramble\Attributes\BodyParameter;
+use Dedoc\Scramble\Attributes\Header;
 use Dedoc\Scramble\Attributes\QueryParameter;
+use Dedoc\Scramble\Attributes\Response as ScrambleResponse;
+use Illuminate\Contracts\Filesystem\FileNotFoundException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Gate;
+use Maatwebsite\Excel\Excel;
+use Maatwebsite\Excel\Exceptions\NoTypeDetectedException;
+use Maatwebsite\Excel\Exceptions\SheetNotFoundException;
+use PhpOffice\PhpSpreadsheet\Exception as PhpSpreadsheetException;
+use PhpOffice\PhpSpreadsheet\Reader\Exception as ExcelReaderException;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\HttpFoundation\Response;
 
 class OwnerController extends ApiController
@@ -45,6 +59,114 @@ class OwnerController extends ApiController
         return $this->success(
             data: OwnerFilter::paginatedResource($paginator, OwnerResource::class, $request),
             message: __('api.messages.owners.retrieved'),
+        );
+    }
+
+    /**
+     * Export owners.
+     *
+     * Downloads owner records as a localized Excel workbook. The workbook can be
+     * used as exported data or as an import template.
+     *
+     * @return BinaryFileResponse<string, 200, array{'Content-Type': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 'Cache-Control': 'no-store, no-cache, must-revalidate', 'Pragma': 'no-cache'}, 'attachment'>
+     */
+    #[ScrambleResponse(
+        status: 200,
+        description: 'Localized owners workbook in XLSX format.',
+        mediaType: OwnerExporter::CONTENT_TYPE,
+    )]
+    #[Header(
+        name: 'Content-Disposition',
+        description: 'Attachment filename generated as owners-{download-date}.xlsx.',
+        type: 'string',
+        example: 'attachment; filename=owners-2026-06-30.xlsx',
+        status: 200,
+    )]
+    #[Header(
+        name: 'Cache-Control',
+        description: 'Prevents clients and intermediaries from caching exported owner data.',
+        type: 'string',
+        example: 'no-store, no-cache, must-revalidate',
+        status: 200,
+    )]
+    #[Header(
+        name: 'Pragma',
+        description: 'Legacy no-cache directive.',
+        type: 'string',
+        example: 'no-cache',
+        status: 200,
+    )]
+    public function export(OwnerExporter $exporter): BinaryFileResponse
+    {
+        Gate::authorize('export', Owner::class);
+
+        return $exporter->download($exporter->fileName(), Excel::XLSX, [
+            'Content-Type' => OwnerExporter::CONTENT_TYPE,
+            'Cache-Control' => 'no-store, no-cache, must-revalidate',
+            'Pragma' => 'no-cache',
+        ]);
+    }
+
+    /**
+     * Import owners.
+     *
+     * Processes the first worksheet in a localized owners workbook. Empty rows
+     * and repeated header rows are ignored. Invalid rows are reported without
+     * stopping the rest of the import.
+     *
+     * @requestMediaType multipart/form-data
+     *
+     * @return JsonResponse<array{
+     *     success: bool,
+     *     message: string,
+     *     data: array{
+     *         processed_rows: int,
+     *         rows_with_errors: int,
+     *         created_records: int,
+     *         updated_records: int,
+     *         errors: array<int, array{row: int, errors: array<string, array<int, string>>}>
+     *     }
+     * }, 200>
+     */
+    #[BodyParameter(
+        'file',
+        description: 'Owners XLSX or XLS workbook generated from the export template.',
+        required: true,
+        type: 'string',
+        format: 'binary',
+    )]
+    #[ScrambleResponse(
+        status: 200,
+        description: 'Owner import summary including per-row validation errors.',
+        type: 'array{success: bool, message: string, data: array{processed_rows: int, rows_with_errors: int, created_records: int, updated_records: int, errors: array<int, array{row: int, errors: array<string, array<int, string>>}>}}',
+    )]
+    public function import(ImportRequest $request, OwnerImporter $importer): JsonResponse
+    {
+        Gate::authorize('import', Owner::class);
+
+        try {
+            /** @var UploadedFile $file */
+            $file = $request->file('file');
+            $result = $importer->import($file);
+        } catch (ExcelReaderException|FileNotFoundException|NoTypeDetectedException|PhpSpreadsheetException|SheetNotFoundException) {
+            return $this->error(
+                message: __('api.messages.owners.import_invalid'),
+                status: Response::HTTP_UNPROCESSABLE_ENTITY,
+                errors: ['file' => [__('api.messages.owners.import_invalid')]],
+            );
+        }
+
+        if ($result['processed_rows'] === 0) {
+            return $this->error(
+                message: __('api.messages.owners.import_empty'),
+                status: Response::HTTP_UNPROCESSABLE_ENTITY,
+                errors: ['file' => [__('api.messages.owners.import_empty')]],
+            );
+        }
+
+        return $this->success(
+            data: $result,
+            message: __('api.messages.owners.imported'),
         );
     }
 
