@@ -12,7 +12,6 @@ use Dedoc\Scramble\Attributes\QueryParameter;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
-use Symfony\Component\HttpFoundation\Response;
 
 class MaintenanceTaskController extends ApiController
 {
@@ -62,14 +61,13 @@ class MaintenanceTaskController extends ApiController
     {
         Gate::authorize('viewAny', MaintenanceTask::class);
 
-        $paginator = MaintenanceTask::query()
-            ->with(['vehicle', 'vehicleSystem'])
-            ->latest('id')
-            ->filter($request->query())
-            ->paginateFilter(MaintenanceTaskFilter::perPage($request));
-
-        return $this->success(
-            data: MaintenanceTaskFilter::paginatedResource($paginator, MaintenanceTaskResource::class, $request),
+        return $this->paginatedResourceResponse(
+            request: $request,
+            query: MaintenanceTask::query()
+                ->with(['vehicle', 'vehicleSystem'])
+                ->latest('id'),
+            filter: MaintenanceTaskFilter::class,
+            resource: MaintenanceTaskResource::class,
             message: __('api.messages.maintenance_tasks.retrieved'),
         );
     }
@@ -97,10 +95,11 @@ class MaintenanceTaskController extends ApiController
             ]))
             ->load(['vehicle', 'vehicleSystem']);
 
-        return $this->success(
-            data: (new MaintenanceTaskResource($maintenanceTask))->resolve($request),
+        return $this->createdResourceResponse(
+            request: $request,
+            resource: $maintenanceTask,
+            resourceClass: MaintenanceTaskResource::class,
             message: __('api.messages.maintenance_tasks.created'),
-            status: Response::HTTP_CREATED,
         );
     }
 
@@ -113,8 +112,10 @@ class MaintenanceTaskController extends ApiController
     {
         Gate::authorize('view', $maintenanceTask);
 
-        return $this->success(
-            data: (new MaintenanceTaskResource($maintenanceTask->load(['vehicle', 'vehicleSystem'])))->resolve($request),
+        return $this->resourceResponse(
+            request: $request,
+            resource: $maintenanceTask->load(['vehicle', 'vehicleSystem']),
+            resourceClass: MaintenanceTaskResource::class,
             message: __('api.messages.maintenance_tasks.retrieved_one'),
         );
     }
@@ -138,8 +139,10 @@ class MaintenanceTaskController extends ApiController
     {
         $maintenanceTask->update($request->validated());
 
-        return $this->success(
-            data: (new MaintenanceTaskResource($maintenanceTask->refresh()->load(['vehicle', 'vehicleSystem'])))->resolve($request),
+        return $this->resourceResponse(
+            request: $request,
+            resource: $maintenanceTask->refresh()->load(['vehicle', 'vehicleSystem']),
+            resourceClass: MaintenanceTaskResource::class,
             message: __('api.messages.maintenance_tasks.updated'),
         );
     }
@@ -155,8 +158,6 @@ class MaintenanceTaskController extends ApiController
     {
         Gate::authorize('delete', $maintenanceTask);
 
-        $maintenanceTask->delete();
-
-        return $this->success(message: __('api.messages.maintenance_tasks.deleted'));
+        return $this->deleteResourceAndRespond($maintenanceTask, __('api.messages.maintenance_tasks.deleted'));
     }
 }

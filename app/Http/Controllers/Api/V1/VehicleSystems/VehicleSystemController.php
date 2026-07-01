@@ -35,13 +35,11 @@ class VehicleSystemController extends ApiController
     #[QueryParameter('per_page', description: 'Records per page. Minimum 1, maximum 100.', type: 'integer', example: 15)]
     public function index(Request $request): JsonResponse
     {
-        $paginator = VehicleSystem::query()
-            ->orderBy('code')
-            ->filter($request->query())
-            ->paginateFilter(VehicleSystemFilter::perPage($request));
-
-        return $this->success(
-            data: VehicleSystemFilter::paginatedResource($paginator, VehicleSystemResource::class, $request),
+        return $this->paginatedResourceResponse(
+            request: $request,
+            query: VehicleSystem::query()->orderBy('code'),
+            filter: VehicleSystemFilter::class,
+            resource: VehicleSystemResource::class,
             message: __('api.messages.vehicle_systems.retrieved'),
         );
     }

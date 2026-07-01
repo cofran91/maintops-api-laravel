@@ -6,6 +6,7 @@ use App\Actions\Workshops\CreateWorkshopAction;
 use App\Actions\Workshops\UpdateWorkshopAction;
 use App\Exporters\Workshops\WorkshopExporter;
 use App\Http\Controllers\Api\ApiController;
+use App\Http\Controllers\Api\Concerns\HandlesImportsAndExports;
 use App\Http\Requests\Api\V1\ImportRequest;
 use App\Http\Requests\Api\V1\Workshops\WorkshopRequest;
 use App\Http\Resources\Api\V1\Workshops\WorkshopResource;
@@ -16,21 +17,15 @@ use Dedoc\Scramble\Attributes\BodyParameter;
 use Dedoc\Scramble\Attributes\Header;
 use Dedoc\Scramble\Attributes\QueryParameter;
 use Dedoc\Scramble\Attributes\Response as ScrambleResponse;
-use Illuminate\Contracts\Filesystem\FileNotFoundException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Gate;
-use Maatwebsite\Excel\Excel;
-use Maatwebsite\Excel\Exceptions\NoTypeDetectedException;
-use Maatwebsite\Excel\Exceptions\SheetNotFoundException;
-use PhpOffice\PhpSpreadsheet\Exception as PhpSpreadsheetException;
-use PhpOffice\PhpSpreadsheet\Reader\Exception as ExcelReaderException;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
-use Symfony\Component\HttpFoundation\Response;
 
 class WorkshopController extends ApiController
 {
+    use HandlesImportsAndExports;
+
     /**
      * List workshops.
      *
@@ -80,107 +75,14 @@ class WorkshopController extends ApiController
     {
         Gate::authorize('viewAny', Workshop::class);
 
-        $paginator = Workshop::query()
-            ->with(['manager.roles', 'vehicleSystems', 'technicians.roles'])
-            ->latest('id')
-            ->filter($request->query())
-            ->paginateFilter(WorkshopFilter::perPage($request));
-
-        return $this->success(
-            data: WorkshopFilter::paginatedResource($paginator, WorkshopResource::class, $request),
+        return $this->paginatedResourceResponse(
+            request: $request,
+            query: Workshop::query()
+                ->with(['manager.roles', 'vehicleSystems', 'technicians.roles'])
+                ->latest('id'),
+            filter: WorkshopFilter::class,
+            resource: WorkshopResource::class,
             message: __('api.messages.workshops.retrieved'),
-        );
-    }
-
-    /**
-     * Export workshops.
-     *
-     * Downloads workshop records as a localized Excel workbook.
-     *
-     * @return BinaryFileResponse<string, 200, array{'Content-Type': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 'Cache-Control': 'no-store, no-cache, must-revalidate', 'Pragma': 'no-cache'}, 'attachment'>
-     */
-    #[ScrambleResponse(
-        status: 200,
-        description: 'Localized workshops workbook in XLSX format.',
-        mediaType: WorkshopExporter::CONTENT_TYPE,
-    )]
-    #[Header(
-        name: 'Content-Disposition',
-        description: 'Attachment filename generated as workshops-{download-date}.xlsx.',
-        type: 'string',
-        example: 'attachment; filename=workshops-2026-06-30.xlsx',
-        status: 200,
-    )]
-    public function export(WorkshopExporter $exporter): BinaryFileResponse
-    {
-        Gate::authorize('export', Workshop::class);
-
-        return $exporter->download($exporter->fileName(), Excel::XLSX, [
-            'Content-Type' => WorkshopExporter::CONTENT_TYPE,
-            'Cache-Control' => 'no-store, no-cache, must-revalidate',
-            'Pragma' => 'no-cache',
-        ]);
-    }
-
-    /**
-     * Import workshops.
-     *
-     * Processes the first worksheet in a workshops workbook. Invalid rows are
-     * reported without stopping the rest of the import.
-     *
-     * @requestMediaType multipart/form-data
-     *
-     * @return JsonResponse<array{
-     *     success: bool,
-     *     message: string,
-     *     data: array{
-     *         processed_rows: int,
-     *         rows_with_errors: int,
-     *         created_records: int,
-     *         updated_records: int,
-     *         errors: array<int, array{row: int, errors: array<string, array<int, string>>}>
-     *     }
-     * }, 200>
-     */
-    #[BodyParameter(
-        'file',
-        description: 'Workshops XLSX or XLS workbook generated from the export template.',
-        required: true,
-        type: 'string',
-        format: 'binary',
-    )]
-    #[ScrambleResponse(
-        status: 200,
-        description: 'Workshop import summary including per-row validation errors.',
-        type: 'array{success: bool, message: string, data: array{processed_rows: int, rows_with_errors: int, created_records: int, updated_records: int, errors: array<int, array{row: int, errors: array<string, array<int, string>>}>}}',
-    )]
-    public function import(ImportRequest $request, WorkshopImporter $importer): JsonResponse
-    {
-        Gate::authorize('import', Workshop::class);
-
-        try {
-            /** @var UploadedFile $file */
-            $file = $request->file('file');
-            $result = $importer->import($file);
-        } catch (ExcelReaderException|FileNotFoundException|NoTypeDetectedException|PhpSpreadsheetException|SheetNotFoundException) {
-            return $this->error(
-                message: __('api.messages.workshops.import_invalid'),
-                status: Response::HTTP_UNPROCESSABLE_ENTITY,
-                errors: ['file' => [__('api.messages.workshops.import_invalid')]],
-            );
-        }
-
-        if ($result['processed_rows'] === 0) {
-            return $this->error(
-                message: __('api.messages.workshops.import_empty'),
-                status: Response::HTTP_UNPROCESSABLE_ENTITY,
-                errors: ['file' => [__('api.messages.workshops.import_empty')]],
-            );
-        }
-
-        return $this->success(
-            data: $result,
-            message: __('api.messages.workshops.imported'),
         );
     }
 
@@ -231,10 +133,11 @@ class WorkshopController extends ApiController
             ->execute($request->validated())
             ->load(['manager.roles', 'vehicleSystems', 'technicians.roles']);
 
-        return $this->success(
-            data: (new WorkshopResource($workshop))->resolve($request),
+        return $this->createdResourceResponse(
+            request: $request,
+            resource: $workshop,
+            resourceClass: WorkshopResource::class,
             message: __('api.messages.workshops.created'),
-            status: Response::HTTP_CREATED,
         );
     }
 
@@ -269,8 +172,10 @@ class WorkshopController extends ApiController
     {
         Gate::authorize('view', $workshop);
 
-        return $this->success(
-            data: (new WorkshopResource($workshop->load(['manager.roles', 'vehicleSystems', 'technicians.roles'])))->resolve($request),
+        return $this->resourceResponse(
+            request: $request,
+            resource: $workshop->load(['manager.roles', 'vehicleSystems', 'technicians.roles']),
+            resourceClass: WorkshopResource::class,
             message: __('api.messages.workshops.retrieved_one'),
         );
     }
@@ -325,8 +230,10 @@ class WorkshopController extends ApiController
             ->execute($workshop, $request->validated())
             ->load(['manager.roles', 'vehicleSystems', 'technicians.roles']);
 
-        return $this->success(
-            data: (new WorkshopResource($workshop))->resolve($request),
+        return $this->resourceResponse(
+            request: $request,
+            resource: $workshop,
+            resourceClass: WorkshopResource::class,
             message: __('api.messages.workshops.updated'),
         );
     }
@@ -342,8 +249,77 @@ class WorkshopController extends ApiController
     {
         Gate::authorize('delete', $workshop);
 
-        $workshop->delete();
+        return $this->deleteResourceAndRespond($workshop, __('api.messages.workshops.deleted'));
+    }
 
-        return $this->success(message: __('api.messages.workshops.deleted'));
+    /**
+     * Export workshops.
+     *
+     * Downloads workshop records as a localized Excel workbook.
+     *
+     * @return BinaryFileResponse<string, 200, array{'Content-Type': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 'Cache-Control': 'no-store, no-cache, must-revalidate', 'Pragma': 'no-cache'}, 'attachment'>
+     */
+    #[ScrambleResponse(
+        status: 200,
+        description: 'Localized workshops workbook in XLSX format.',
+        mediaType: WorkshopExporter::CONTENT_TYPE,
+    )]
+    #[Header(
+        name: 'Content-Disposition',
+        description: 'Attachment filename generated as workshops-{download-date}.xlsx.',
+        type: 'string',
+        example: 'attachment; filename=workshops-2026-06-30.xlsx',
+        status: 200,
+    )]
+    public function export(WorkshopExporter $exporter): BinaryFileResponse
+    {
+        Gate::authorize('export', Workshop::class);
+
+        return $this->downloadExport($exporter);
+    }
+
+    /**
+     * Import workshops.
+     *
+     * Processes the first worksheet in a workshops workbook. Invalid rows are
+     * reported without stopping the rest of the import.
+     *
+     * @requestMediaType multipart/form-data
+     *
+     * @return JsonResponse<array{
+     *     success: bool,
+     *     message: string,
+     *     data: array{
+     *         processed_rows: int,
+     *         rows_with_errors: int,
+     *         created_records: int,
+     *         updated_records: int,
+     *         errors: array<int, array{row: int, errors: array<string, array<int, string>>}>
+     *     }
+     * }, 200>
+     */
+    #[BodyParameter(
+        'file',
+        description: 'Workshops XLSX or XLS workbook generated from the export template.',
+        required: true,
+        type: 'string',
+        format: 'binary',
+    )]
+    #[ScrambleResponse(
+        status: 200,
+        description: 'Workshop import summary including per-row validation errors.',
+        type: 'array{success: bool, message: string, data: array{processed_rows: int, rows_with_errors: int, created_records: int, updated_records: int, errors: array<int, array{row: int, errors: array<string, array<int, string>>}>}}',
+    )]
+    public function import(ImportRequest $request, WorkshopImporter $importer): JsonResponse
+    {
+        Gate::authorize('import', Workshop::class);
+
+        return $this->importFromUpload(
+            request: $request,
+            importer: $importer,
+            invalidMessage: __('api.messages.workshops.import_invalid'),
+            emptyMessage: __('api.messages.workshops.import_empty'),
+            successMessage: __('api.messages.workshops.imported'),
+        );
     }
 }

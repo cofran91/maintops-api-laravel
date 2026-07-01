@@ -13,7 +13,6 @@ use Dedoc\Scramble\Attributes\QueryParameter;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
-use Symfony\Component\HttpFoundation\Response;
 
 class UserController extends ApiController
 {
@@ -57,14 +56,13 @@ class UserController extends ApiController
     {
         Gate::authorize('viewAny', User::class);
 
-        $paginator = User::query()
-            ->with(['roles', 'workshop'])
-            ->latest('id')
-            ->filter($request->query())
-            ->paginateFilter(UserFilter::perPage($request));
-
-        return $this->success(
-            data: UserFilter::paginatedResource($paginator, UserResource::class, $request),
+        return $this->paginatedResourceResponse(
+            request: $request,
+            query: User::query()
+                ->with(['roles', 'workshop'])
+                ->latest('id'),
+            filter: UserFilter::class,
+            resource: UserResource::class,
             message: __('api.messages.users.retrieved'),
         );
     }
@@ -93,10 +91,11 @@ class UserController extends ApiController
             ->execute($request->validated())
             ->load(['roles', 'workshop']);
 
-        return $this->success(
-            data: (new UserResource($user))->resolve($request),
+        return $this->createdResourceResponse(
+            request: $request,
+            resource: $user,
+            resourceClass: UserResource::class,
             message: __('api.messages.users.created'),
-            status: Response::HTTP_CREATED,
         );
     }
 
@@ -111,8 +110,10 @@ class UserController extends ApiController
     {
         Gate::authorize('view', $user);
 
-        return $this->success(
-            data: (new UserResource($user->load(['roles', 'workshop'])))->resolve($request),
+        return $this->resourceResponse(
+            request: $request,
+            resource: $user->load(['roles', 'workshop']),
+            resourceClass: UserResource::class,
             message: __('api.messages.users.retrieved_one'),
         );
     }
@@ -141,8 +142,10 @@ class UserController extends ApiController
             ->execute($user, $request->validated())
             ->load(['roles', 'workshop']);
 
-        return $this->success(
-            data: (new UserResource($user))->resolve($request),
+        return $this->resourceResponse(
+            request: $request,
+            resource: $user,
+            resourceClass: UserResource::class,
             message: __('api.messages.users.updated'),
         );
     }
@@ -158,8 +161,6 @@ class UserController extends ApiController
     {
         Gate::authorize('delete', $user);
 
-        $user->delete();
-
-        return $this->success(message: __('api.messages.users.deleted'));
+        return $this->deleteResourceAndRespond($user, __('api.messages.users.deleted'));
     }
 }

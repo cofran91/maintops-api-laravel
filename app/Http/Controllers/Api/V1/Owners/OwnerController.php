@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api\V1\Owners;
 
 use App\Exporters\Owners\OwnerExporter;
 use App\Http\Controllers\Api\ApiController;
+use App\Http\Controllers\Api\Concerns\HandlesImportsAndExports;
 use App\Http\Requests\Api\V1\ImportRequest;
 use App\Http\Requests\Api\V1\Owners\OwnerRequest;
 use App\Http\Resources\Api\V1\Owners\OwnerResource;
@@ -14,21 +15,15 @@ use Dedoc\Scramble\Attributes\BodyParameter;
 use Dedoc\Scramble\Attributes\Header;
 use Dedoc\Scramble\Attributes\QueryParameter;
 use Dedoc\Scramble\Attributes\Response as ScrambleResponse;
-use Illuminate\Contracts\Filesystem\FileNotFoundException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Gate;
-use Maatwebsite\Excel\Excel;
-use Maatwebsite\Excel\Exceptions\NoTypeDetectedException;
-use Maatwebsite\Excel\Exceptions\SheetNotFoundException;
-use PhpOffice\PhpSpreadsheet\Exception as PhpSpreadsheetException;
-use PhpOffice\PhpSpreadsheet\Reader\Exception as ExcelReaderException;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
-use Symfony\Component\HttpFoundation\Response;
 
 class OwnerController extends ApiController
 {
+    use HandlesImportsAndExports;
+
     /**
      * List owners.
      *
@@ -51,15 +46,108 @@ class OwnerController extends ApiController
     {
         Gate::authorize('viewAny', Owner::class);
 
-        $paginator = Owner::query()
-            ->latest('id')
-            ->filter($request->query())
-            ->paginateFilter(OwnerFilter::perPage($request));
-
-        return $this->success(
-            data: OwnerFilter::paginatedResource($paginator, OwnerResource::class, $request),
+        return $this->paginatedResourceResponse(
+            request: $request,
+            query: Owner::query()->latest('id'),
+            filter: OwnerFilter::class,
+            resource: OwnerResource::class,
             message: __('api.messages.owners.retrieved'),
         );
+    }
+
+    /**
+     * Create owner.
+     *
+     * Creates a vehicle owner contact. Owners are domain records and do not sign in.
+     *
+     * @bodyParam name string required Full owner name. Example: Maria Perez
+     * @bodyParam email string required Unique contact email. Example: owner@example.com
+     * @bodyParam is_active boolean required Whether the owner can be assigned to vehicles. Example: true
+     * @bodyParam phone string|null Main phone number. Example: +57 300 123 4567
+     * @bodyParam document_number string|null Unique document number when provided. Example: 123456789
+     * @bodyParam address string|null Contact address. Example: 10 Main Street
+     *
+     * @return JsonResponse<array{
+     *     success: bool,
+     *     message: string,
+     *     data: array{id: int, name: string, email: string, is_active: bool, phone: string|null, document_number: string|null, address: string|null, created_at: string|null, updated_at: string|null}
+     * }, 201>
+     */
+    public function store(OwnerRequest $request): JsonResponse
+    {
+        $owner = Owner::query()->create($request->validated());
+
+        return $this->createdResourceResponse(
+            request: $request,
+            resource: $owner,
+            resourceClass: OwnerResource::class,
+            message: __('api.messages.owners.created'),
+        );
+    }
+
+    /**
+     * Show owner.
+     *
+     * @return JsonResponse<array{
+     *     success: bool,
+     *     message: string,
+     *     data: array{id: int, name: string, email: string, is_active: bool, phone: string|null, document_number: string|null, address: string|null, created_at: string|null, updated_at: string|null}
+     * }, 200>
+     */
+    public function show(Request $request, Owner $owner): JsonResponse
+    {
+        Gate::authorize('view', $owner);
+
+        return $this->resourceResponse(
+            request: $request,
+            resource: $owner,
+            resourceClass: OwnerResource::class,
+            message: __('api.messages.owners.retrieved_one'),
+        );
+    }
+
+    /**
+     * Update owner.
+     *
+     * Updates an owner using the same required fields as create.
+     *
+     * @bodyParam name string required Full owner name. Example: Maria Perez
+     * @bodyParam email string required Unique contact email. Example: owner@example.com
+     * @bodyParam is_active boolean required Whether the owner can be assigned to vehicles. Example: true
+     * @bodyParam phone string|null Main phone number. Example: +57 300 123 4567
+     * @bodyParam document_number string|null Unique document number when provided. Example: 123456789
+     * @bodyParam address string|null Contact address. Example: 10 Main Street
+     *
+     * @return JsonResponse<array{
+     *     success: bool,
+     *     message: string,
+     *     data: array{id: int, name: string, email: string, is_active: bool, phone: string|null, document_number: string|null, address: string|null, created_at: string|null, updated_at: string|null}
+     * }, 200>
+     */
+    public function update(OwnerRequest $request, Owner $owner): JsonResponse
+    {
+        $owner->update($request->validated());
+
+        return $this->resourceResponse(
+            request: $request,
+            resource: $owner->refresh(),
+            resourceClass: OwnerResource::class,
+            message: __('api.messages.owners.updated'),
+        );
+    }
+
+    /**
+     * Delete owner.
+     *
+     * Soft deletes an owner record.
+     *
+     * @return JsonResponse<array{success: bool, message: string}, 200>
+     */
+    public function destroy(Owner $owner): JsonResponse
+    {
+        Gate::authorize('delete', $owner);
+
+        return $this->deleteResourceAndRespond($owner, __('api.messages.owners.deleted'));
     }
 
     /**
@@ -100,11 +188,7 @@ class OwnerController extends ApiController
     {
         Gate::authorize('export', Owner::class);
 
-        return $exporter->download($exporter->fileName(), Excel::XLSX, [
-            'Content-Type' => OwnerExporter::CONTENT_TYPE,
-            'Cache-Control' => 'no-store, no-cache, must-revalidate',
-            'Pragma' => 'no-cache',
-        ]);
+        return $this->downloadExport($exporter);
     }
 
     /**
@@ -144,121 +228,12 @@ class OwnerController extends ApiController
     {
         Gate::authorize('import', Owner::class);
 
-        try {
-            /** @var UploadedFile $file */
-            $file = $request->file('file');
-            $result = $importer->import($file);
-        } catch (ExcelReaderException|FileNotFoundException|NoTypeDetectedException|PhpSpreadsheetException|SheetNotFoundException) {
-            return $this->error(
-                message: __('api.messages.owners.import_invalid'),
-                status: Response::HTTP_UNPROCESSABLE_ENTITY,
-                errors: ['file' => [__('api.messages.owners.import_invalid')]],
-            );
-        }
-
-        if ($result['processed_rows'] === 0) {
-            return $this->error(
-                message: __('api.messages.owners.import_empty'),
-                status: Response::HTTP_UNPROCESSABLE_ENTITY,
-                errors: ['file' => [__('api.messages.owners.import_empty')]],
-            );
-        }
-
-        return $this->success(
-            data: $result,
-            message: __('api.messages.owners.imported'),
+        return $this->importFromUpload(
+            request: $request,
+            importer: $importer,
+            invalidMessage: __('api.messages.owners.import_invalid'),
+            emptyMessage: __('api.messages.owners.import_empty'),
+            successMessage: __('api.messages.owners.imported'),
         );
-    }
-
-    /**
-     * Create owner.
-     *
-     * Creates a vehicle owner contact. Owners are domain records and do not sign in.
-     *
-     * @bodyParam name string required Full owner name. Example: Maria Perez
-     * @bodyParam email string required Unique contact email. Example: owner@example.com
-     * @bodyParam is_active boolean required Whether the owner can be assigned to vehicles. Example: true
-     * @bodyParam phone string|null Main phone number. Example: +57 300 123 4567
-     * @bodyParam document_number string|null Unique document number when provided. Example: 123456789
-     * @bodyParam address string|null Contact address. Example: 10 Main Street
-     *
-     * @return JsonResponse<array{
-     *     success: bool,
-     *     message: string,
-     *     data: array{id: int, name: string, email: string, is_active: bool, phone: string|null, document_number: string|null, address: string|null, created_at: string|null, updated_at: string|null}
-     * }, 201>
-     */
-    public function store(OwnerRequest $request): JsonResponse
-    {
-        $owner = Owner::query()->create($request->validated());
-
-        return $this->success(
-            data: (new OwnerResource($owner))->resolve($request),
-            message: __('api.messages.owners.created'),
-            status: Response::HTTP_CREATED,
-        );
-    }
-
-    /**
-     * Show owner.
-     *
-     * @return JsonResponse<array{
-     *     success: bool,
-     *     message: string,
-     *     data: array{id: int, name: string, email: string, is_active: bool, phone: string|null, document_number: string|null, address: string|null, created_at: string|null, updated_at: string|null}
-     * }, 200>
-     */
-    public function show(Request $request, Owner $owner): JsonResponse
-    {
-        Gate::authorize('view', $owner);
-
-        return $this->success(
-            data: (new OwnerResource($owner))->resolve($request),
-            message: __('api.messages.owners.retrieved_one'),
-        );
-    }
-
-    /**
-     * Update owner.
-     *
-     * Updates an owner using the same required fields as create.
-     *
-     * @bodyParam name string required Full owner name. Example: Maria Perez
-     * @bodyParam email string required Unique contact email. Example: owner@example.com
-     * @bodyParam is_active boolean required Whether the owner can be assigned to vehicles. Example: true
-     * @bodyParam phone string|null Main phone number. Example: +57 300 123 4567
-     * @bodyParam document_number string|null Unique document number when provided. Example: 123456789
-     * @bodyParam address string|null Contact address. Example: 10 Main Street
-     *
-     * @return JsonResponse<array{
-     *     success: bool,
-     *     message: string,
-     *     data: array{id: int, name: string, email: string, is_active: bool, phone: string|null, document_number: string|null, address: string|null, created_at: string|null, updated_at: string|null}
-     * }, 200>
-     */
-    public function update(OwnerRequest $request, Owner $owner): JsonResponse
-    {
-        $owner->update($request->validated());
-
-        return $this->success(
-            data: (new OwnerResource($owner->refresh()))->resolve($request),
-            message: __('api.messages.owners.updated'),
-        );
-    }
-
-    /**
-     * Delete owner.
-     *
-     * Soft deletes an owner record.
-     *
-     * @return JsonResponse<array{success: bool, message: string}, 200>
-     */
-    public function destroy(Owner $owner): JsonResponse
-    {
-        Gate::authorize('delete', $owner);
-
-        $owner->delete();
-
-        return $this->success(message: __('api.messages.owners.deleted'));
     }
 }

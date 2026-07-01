@@ -60,14 +60,13 @@ final class AuditController extends ApiController
     {
         Gate::authorize('viewAny', Audit::class);
 
-        $paginator = Audit::query()
-            ->with(['user', 'auditable'])
-            ->latest('id')
-            ->filter($request->query())
-            ->paginateFilter(AuditFilter::perPage($request));
-
-        return $this->success(
-            data: AuditFilter::paginatedResource($paginator, AuditResource::class, $request),
+        return $this->paginatedResourceResponse(
+            request: $request,
+            query: Audit::query()
+                ->with(['user', 'auditable'])
+                ->latest('id'),
+            filter: AuditFilter::class,
+            resource: AuditResource::class,
             message: __('api.messages.audits.retrieved'),
         );
     }
